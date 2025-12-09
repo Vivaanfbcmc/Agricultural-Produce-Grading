@@ -1,0 +1,91 @@
+:root{
+  --bg1: #0f172a;
+  --card: #ffffff;
+  --muted: #6b7280;
+  --accent: linear-gradient(135deg,#16a34a 0%,#059669 100%);
+  --primary: #059669;
+  /* Use viewport units so the offscreen amount doesn't depend on image intrinsic size */
+  --hero-offset: 30vw; /* how much of image sits off the right edge */
+  --fade-extra: 6vw;   /* extra width added to fade for smooth blending */
+}
+
+.site-header{position:relative;z-index:6}
+/* Big white header: larger title and slogan underneath */
+.site-header{padding:20px 20px}
+.site-header .header-inner{max-width:1200px;margin:0;display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.site-header .brand{display:flex;align-items:center;gap:12px}
+.site-header .logo-placeholder{width:56px;height:56px;border-radius:10px;background:linear-gradient(180deg,#10b981,#059669);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px}
+.site-header .brand .title{font-size:34px;color:#ffffff;font-weight:800;letter-spacing:0.6px}
+.site-header .tagline{color:#ffffff;opacity:0.92;font-size:15px;margin-left:0}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body,#app{height:100%}
+body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial; background:linear-gradient(180deg,#07101a 0%, #0b1220 100%); color:#111827; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale}
+body{overflow-x:hidden}
+
+.page{max-width:1100px;margin:36px auto;padding:20px;display:grid;grid-template-columns:1fr 420px;gap:28px;align-items:start}
+
+/* layout: card on left, hero image on right */
+.page{max-width:1200px;margin:36px auto;padding:20px;display:grid;grid-template-columns:420px 1fr;gap:28px;align-items:center}
+
+.hero{display:flex;align-items:center;justify-content:flex-end;padding-right:0}
+/* hero-media becomes a fixed vertical strip on the right side of the viewport.
+   width:100vw and translateX(50%) makes half the element visible on the right half of the screen.
+   We use background-image for consistent cropping across images. */
+.hero-media{--hero-offset:50vw;--fade-extra:6vw;position:fixed;top:0;right:0;width:100vw;height:100vh;transform:translateX(50%);background-size:cover;background-position:right center;background-repeat:no-repeat;overflow:hidden;z-index:1;transition:opacity .9s ease, transform .9s ease}
+/* hide inline <img> (we'll use background-image instead) */
+.hero-media img{display:none}
+
+/* left-side fade overlay — fixed on the viewport at the left edge of the visible strip
+  left:50vw aligns it with the left edge of the visible portion (right half). */
+.hero-media .hero-fade{position:fixed;top:0;left:50vw;height:100vh;width:calc(20vw + var(--fade-extra));pointer-events:none;z-index:4;background:linear-gradient(90deg,#07101a 0%, #07101a 12%, rgba(7,11,20,0.95) 25%, rgba(11,18,32,0.6) 45%, rgba(11,18,32,0) 100%);}
+
+/* subtle inset shadow on the visible strip edge to blend into page */
+.hero-media::before{content:'';position:fixed;left:50vw;top:0;height:100vh;width:2px;box-shadow: -30px 0 80px rgba(2,6,23,0.6);pointer-events:none;z-index:3}
+
+.card{background:var(--card);border-radius:14px;box-shadow:0 12px 40px rgba(2,6,23,0.4);overflow:hidden;align-self:center;position:relative;z-index:5}
+.card-header{padding:18px 22px;border-bottom:1px solid #f3f4f6;background:linear-gradient(180deg,rgba(5,150,105,0.06),transparent)}
+.tabs{display:flex;gap:8px}
+.tab{flex:1;padding:10px 12px;border-radius:8px;border:1px solid transparent;background:transparent;color:var(--muted);cursor:pointer;font-weight:600}
+.tab.active{background:var(--accent);color:white;box-shadow:0 8px 30px rgba(5,150,105,0.12)}
+
+.card-body{padding:22px}
+.form{display:none;animation:fade .28s ease both}
+.form.active{display:block}
+.form h2{font-size:20px;margin-bottom:6px}
+.subtitle{color:var(--muted);margin-bottom:14px}
+
+label{display:block;font-size:13px;color:#374151;margin-top:12px}
+input[type=text], input[type=password], input[type=email], select{width:100%;padding:12px;border-radius:10px;border:1px solid #e6e9ef;margin-top:6px;background:#fff;outline:none;transition:box-shadow .18s ease,transform .12s ease}
+input:focus, select:focus{box-shadow:0 6px 18px rgba(2,6,23,0.06);transform:translateY(-1px)}
+
+.row{display:flex;gap:12px}
+.col{flex:1}
+
+.btn{display:inline-block;padding:12px 14px;border-radius:10px;border:1px solid transparent;background:linear-gradient(90deg,#10b981,#059669);color:#fff;font-weight:700;cursor:pointer;width:100%;margin-top:14px;box-shadow:0 10px 30px rgba(5,150,105,0.12);transition:transform .12s ease,box-shadow .12s ease}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:linear-gradient(90deg,#047857,#059669)}
+
+/* small helper */
+.muted{color:var(--muted);font-size:13px}
+
+@media (max-width:980px){
+  .page{grid-template-columns:1fr; padding:18px}
+  .hero{order:2}
+  .hero-media{height:260px;width:100%}
+  .card{order:1}
+}
+
+/* Increase left fade on very large (QHD / 1440p) displays so the dark overlay is stronger */
+@media (min-width:2560px) and (min-height:1440px) {
+  .hero-media .hero-fade{
+    /* add extra fade width on top of hero-offset to ensure full coverage on large displays */
+    width: calc(var(--hero-offset) + 20%);
+    background: linear-gradient(90deg, rgba(11,18,32,1) 0%, rgba(11,18,32,0.95) 20%, rgba(11,18,32,0.6) 45%, rgba(11,18,32,0) 100%);
+  }
+}
+
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* simple accessibility focus */
+button:focus,input:focus,select:focus{outline:3px solid rgba(5,150,105,0.12);outline-offset:2px}
