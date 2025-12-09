@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>VEGEGRADE — Sign In / Sign Up</title>
+
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="style.css" />
+    </head>
+
+    <body>
+        <header class="site-header">
+            <div class="header-inner">
+                <div class="brand">
+                    <div class="logo-placeholder" aria-hidden="true">LOGO</div>
+                    <div class="title">VEGEGRADE</div>
+                </div>
+                <div class="tagline">Smart grading &amp; marketplace tools for smallholder vegetable sellers</div>
+            </div>
+        </header>
+
+        <main class="page">
+            <section class="card">
+                <div class="card-header">
+                    <div class="tabs" role="tablist">
+                        <button class="tab active" id="tab-signin">Sign In</button>
+                        <button class="tab" id="tab-signup">Sign Up</button>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <!-- SIGN IN FORM -->
+                    <form id="signin-form" class="form active">
+                        <h2>Welcome Back</h2>
+                        <p class="subtitle">Sign in to access your dashboard</p>
+
+                        <label for="signin_phone">Phone Number</label>
+                        <input type="text" id="signin_phone" placeholder="Enter phone number" />
+
+                        <label for="signin_password">Password</label>
+                        <input type="password" id="signin_password" placeholder="Enter password" />
+
+                        <button class="btn" type="button" onclick="handleSignIn()">Sign In</button>
+                    </form>
+
+                    <!-- SIGN UP FORM -->
+                    <form id="signup-form" class="form">
+                        <h2>Create Account</h2>
+                        <p class="subtitle">Register and start selling</p>
+
+                        <div class="row">
+                            <div class="col">
+                                <label for="fname">First Name</label>
+                                <input type="text" id="fname" />
+                            </div>
+                            <div class="col">
+                                <label for="lname">Last Name</label>
+                                <input type="text" id="lname" />
+                            </div>
+                        </div>
+
+                        <label for="phone">Phone Number</label>
+                        <input type="text" id="phone" />
+
+                        <label for="email">Email (optional)</label>
+                        <input type="email" id="email" />
+
+                        <div class="row">
+                            <div class="col">
+                                <label for="password">Password</label>
+                                <input type="password" id="password" />
+                            </div>
+                            <div class="col">
+                                <label for="confirm_password">Confirm</label>
+                                <input type="password" id="confirm_password" />
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col">
+                                <label for="state">State</label>
+                                <select id="state"><option value="">-- Select State --</option></select>
+                            </div>
+                            <div class="col">
+                                <label for="district">District</label>
+                                <select id="district"><option value="">-- Select District --</option></select>
+                            </div>
+                        </div>
+
+                        <label for="veg_type">Vegetables you sell</label>
+                        <input type="text" id="veg_type" placeholder="e.g. Tomatoes, Onions" />
+
+                        <button class="btn btn-primary" type="button" onclick="handleSignUp()">Create account</button>
+                    </form>
+                </div>
+            </section>
+
+            <section class="hero">
+                <div class="hero-media">
+                    <div class="hero-fade"></div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Scripts: Cities (states/districts) + UI behaviour -->
+        <script src="Cities.Js"></script>
+        <script src="script.js"></script>
+        <script>
+            // Tab switching
+            document.getElementById('tab-signin').addEventListener('click', () => {
+                document.getElementById('signin-form').classList.add('active');
+                document.getElementById('signup-form').classList.remove('active');
+                document.getElementById('tab-signin').classList.add('active');
+                document.getElementById('tab-signup').classList.remove('active');
+            });
+            document.getElementById('tab-signup').addEventListener('click', () => {
+                document.getElementById('signup-form').classList.add('active');
+                document.getElementById('signin-form').classList.remove('active');
+                document.getElementById('tab-signup').classList.add('active');
+                document.getElementById('tab-signin').classList.remove('active');
+            });
+
+            // Placeholder handlers (replace with real auth logic later)
+            function handleSignIn() {
+                alert('Sign in clicked — implement authentication logic');
+
+                //to be implemented
+            }
+            function handleSignUp() {
+                alert('Sign up clicked — implement registration logic');
+                //TBI
+            }
+        </script>
+    </body>
+</html>
