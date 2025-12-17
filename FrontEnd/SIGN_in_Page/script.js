@@ -80,3 +80,42 @@ if (heroMedia && images.length > 0) {
     setHeroBackground(images[index]);
   }, 6000);
 }
+
+function handleSignUp() {
+  const data = {
+    fname: document.getElementById("fname").value,
+    lname: document.getElementById("lname").value,
+    phone: document.getElementById("phone").value,
+    email: document.getElementById("email").value,
+    password: document.getElementById("password").value,
+    state: document.getElementById("state").value,
+    district: document.getElementById("district").value,
+    veg_type: document.getElementById("veg_type").value,
+  };
+
+  fetch("http://localhost:5000/api/auth/register", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(data)
+  })
+      .then(res => res.json())
+      .then(data => console.log(data));
+
+  console.log("signed up ig");
+}
+
+
+function handleSignIn() {
+  const data = {
+    phone: document.getElementById("signin_phone").value,
+    password: document.getElementById("signin_password").value
+  };
+
+  fetch("http://localhost:5000/api/auth/login", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(data)
+  })
+      .then(res => res.json())
+      .then(data => console.log(data));
+}
