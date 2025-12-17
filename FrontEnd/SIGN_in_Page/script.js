@@ -41,6 +41,8 @@ stateDropdown.addEventListener("change", function () {
 const images = [
   
   "../images/corn_field.jpg",
+  "../images/shutterstock_274829372.webp",
+  "../images/landscape.jpg",
   "../images/shutterstock_274829372.webp"
 ];
 
