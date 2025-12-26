@@ -75,7 +75,7 @@ exports.register = async (req, res) => {
         // Hash password before storing
         const hashedPassword = await bcrypt.hash(password, 10);
         await db.query(
-            "INSERT INTO farmers (fname, lname, phone, email, password, state, district) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO farmers (fname, lname, phone, email, hashedPassword, state, district) VALUES (?, ?, ?, ?, ?, ?, ?)",
             [fname, lname, phone, email, hashedPassword, state, district]
         );
 
@@ -130,7 +130,12 @@ exports.login = async (req, res) => {
         const farmer = rows[0];
 
         // Verify password against hash
-        const isPasswordValid = await bcrypt.compare(password, farmer.password);
+        const isPasswordValid = await bcrypt.compare(
+            password,
+            farmer.hashedPassword
+        );
+
+
 
         if (!isPasswordValid) {
             return res.status(401).json({
