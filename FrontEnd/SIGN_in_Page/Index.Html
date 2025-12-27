@@ -43,6 +43,8 @@
                         <label for="signin_password">Password</label>
                         <input type="password" id="signin_password" placeholder="Enter password" />
 
+                        <div id = "error"></div>
+
                         <button class="btn" type="button" onclick="handleSignIn()">Sign In</button>
                     </form>
 
@@ -77,7 +79,9 @@
                                 <label for="confirm_password">Confirm</label>
                                 <input type="password" id="confirm_password" />
                             </div>
+                            
                         </div>
+                        <span id = "errorCP"><br></span>
 
                         <div class="row">
                             <div class="col">
@@ -90,8 +94,8 @@
                             </div>
                         </div>
 
-                        <label for="veg_type">Vegetables you sell</label>
-                        <input type="text" id="veg_type" placeholder="e.g. Tomatoes, Onions" />
+                        <!-- <label for="veg_type">Vegetables you sell</label>
+                        <input type="text" id="veg_type" placeholder="e.g. Tomatoes, Onions" /> -->
 
                         <button class="btn btn-primary" type="button" onclick="handleSignUp()">Create account</button>
                     </form>
