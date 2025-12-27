@@ -1,9 +1,11 @@
 /* -------------------------
    STATE → DISTRICT LOGIC
 --------------------------*/
-
 const stateDropdown = document.getElementById("state");
 const districtDropdown = document.getElementById("district");
+
+// Running in browser — do not use Node "require" here.
+console.log('SIGN_in_Page script loaded');
 
 // Load states into state dropdown
 for (const stateName in stateDistricts) {
@@ -83,7 +85,64 @@ if (heroMedia && images.length > 0) {
   }, 6000);
 }
 
-function handleSignUp() {
+
+
+
+
+
+// HANDLING SIGN UP THROUGH HERE
+//updated to async
+
+
+
+/////OLD ONE DONOT FOLLOW
+//////////
+
+
+
+
+// function handleSignUp() {
+//   const password = document.getElementById("password").value;
+//   const confirmPassword = document.getElementById("confirm_password").value;
+
+//   if (password !== confirmPassword) {
+//     alert("Password and Confirm Password should be same");
+//     return;
+//   }
+
+//   const data = {
+//     fname: document.getElementById("fname").value,
+//     lname: document.getElementById("lname").value,
+//     phone: document.getElementById("phone").value,
+//     email: document.getElementById("email").value,
+//     password,
+//     state: document.getElementById("state").value,
+//     district: document.getElementById("district").value
+//   };
+
+//   fetch("http://localhost:5000/api/auth/register", {
+//     method: "POST",
+//     headers: { "Content-Type": "application/json" },
+//     body: JSON.stringify(data)
+//   })
+//   .then(res => res.json())
+//   .then(() => alert("Registered successfully"))
+//   .catch(() => alert("Server error"));
+// }
+
+///old one above/////
+////////////////////
+
+async function handleSignUp() {
+  const password = document.getElementById("password").value;
+  const confirmPassword = document.getElementById("confirm_password").value;
+
+  if (password !== confirmPassword) {
+    document.getElementById("errorCP").innerText =
+      "Password and Confirm Password must match";
+    return;
+  }
+
   const data = {
     fname: document.getElementById("fname").value,
     lname: document.getElementById("lname").value,
@@ -91,33 +150,74 @@ function handleSignUp() {
     email: document.getElementById("email").value,
     password: document.getElementById("password").value,
     state: document.getElementById("state").value,
-    district: document.getElementById("district").value,
-    veg_type: document.getElementById("veg_type").value,
+    district: document.getElementById("district").value
   };
+  console.log(data);
+  try {
+    const response = await fetch("http://localhost:5000/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
 
-  fetch("http://localhost:5000/api/auth/register", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify(data)
-  })
-      .then(res => res.json())
-      .then(data => console.log(data));
+    const result = await response.json();
 
-  console.log("signed up ig");
+    // Signup failed
+    if (!response.ok) {
+      document.getElementById("error").innerText = result.message;
+      return;
+    }
+
+    // Signup success
+    alert("Registration successful! Please sign in.");
+    // window.location.href = "/login.html";
+
+  } catch (err) {
+    console.error(err);
+
+    document.getElementById("error").innerText = "Server error";
+  }
 }
 
 
-function handleSignIn() {
+
+
+
+
+
+///HANDLING SINGING THROUGH THIS FUNCTION
+async function handleSignIn() {
   const data = {
     phone: document.getElementById("signin_phone").value,
     password: document.getElementById("signin_password").value
   };
 
-  fetch("http://localhost:5000/api/auth/login", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify(data)
-  })
-      .then(res => res.json())
-      .then(data => console.log(data));
+  try{
+     const response = await fetch("http://localhost:5000/api/auth/login", 
+    {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(data)
+
+    }
+      
+      )
+       
+       const result = await response.json();
+
+       //CHECK RESPONSE 
+      if (!response.ok) 
+      {
+        document.getElementById("error").innerText = result.message;
+        return;
+      }
+
+    //  Login success
+      window.location.href = "../Main_AI_DashBoard/AIIndex.html";
+  } 
+
+   catch (err) {
+    console.error(err);
+    document.getElementById("error").innerText = "Server error";
+  }
 }

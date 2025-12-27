@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>VEGEGRADE</title>
+  <link rel="stylesheet" href="AIIndex.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="bg-gradient"></div>
+
+  <!-- HERO -->
+  <section class="hero">
+    <h1>VEGEGRADE</h1>
+    <p>AI-Powered Vegetable Quality & Pricing</p>
+
+    <div class="glass-card">
+      <label class="upload-area">
+        <input type="file" id="imageInput" hidden accept="image/*">
+        <span>Upload Vegetable Image</span>
+      </label>
+
+      <img id="preview" />
+
+      <button onclick="submitImage()">Analyze with AI</button>
+    </div>
+  </section>
+
+  <!-- RESULT -->
+  <section class="result hidden">
+    <div class="result-card">
+      <img id="resultImage">
+
+      <div class="ai-output">
+        <h2>AI Assessment</h2>
+        <div class="pill">Grade <span id="grade">A</span></div>
+        <div class="pill">Price <span id="price">₹40–₹60 / kg</span></div>
+      </div>
+    </div>
+  </section>
+
+  <script src="AIIndex.js"></script>
+</body>
+</html>
