@@ -45,7 +45,11 @@
 			<div class="profile-container">
 				<div class="profile-grid">
 					<div>
-						<div class="avatar" id="avatar">F</div>
+						<div class="avatar" id="avatar">
+							<img id="avatarImg" src="" alt="avatar" style="width:100%;height:100%;object-fit:cover;border-radius:8px;display:none" />
+							<span id="avatarLetter">F</span>
+						</div>
+						<input type="file" id="avatarInput" accept="image/*" style="display:none" />
 						<p class="muted" style="margin-top:8px">Profile picture (click to change)</p>
 					</div>
 
@@ -158,7 +162,36 @@
 
 		document.addEventListener('DOMContentLoaded', ()=>{
 			// TODO: replace with API call to backend to fetch farmer info
-			populate(sampleData);
+				populate(sampleData);
+
+				// Avatar change handling: click avatar to pick a file and preview it.
+				const avatar = document.getElementById('avatar');
+				const avatarImg = document.getElementById('avatarImg');
+				const avatarLetter = document.getElementById('avatarLetter');
+				const avatarInput = document.getElementById('avatarInput');
+				let avatarObjectUrl = null;
+
+				avatar.style.cursor = 'pointer';
+				avatar.addEventListener('click', () => avatarInput.click());
+
+				avatarInput.addEventListener('change', (e) => {
+					const file = e.target.files && e.target.files[0];
+					if (!file) return;
+					if (!file.type.startsWith('image/')) {
+						alert('Please select an image file.');
+						return;
+					}
+
+					// Revoke previous object URL
+					if (avatarObjectUrl) URL.revokeObjectURL(avatarObjectUrl);
+					avatarObjectUrl = URL.createObjectURL(file);
+					avatarImg.src = avatarObjectUrl;
+					avatarImg.style.display = 'block';
+					avatarLetter.style.display = 'none';
+
+					// Optional: upload file to backend here (placeholder)
+					// uploadAvatar(file);
+				});
 		});
 	</script>
 </body>

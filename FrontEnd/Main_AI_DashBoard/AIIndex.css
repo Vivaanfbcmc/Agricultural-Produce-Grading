@@ -28,6 +28,22 @@
       padding: 20px;
     }
 
+    /* Right-side hero image strip */
+    .hero-media{
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 50vw;
+      height: 100vh;
+      background-image: url('../images/landscape.jpg');
+      background-size: cover;
+      background-position: center right;
+      transform: translateX(20%);
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.95;
+    }
+
     /* Header */
     .header {
       display: flex;
