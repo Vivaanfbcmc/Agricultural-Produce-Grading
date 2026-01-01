@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>VEGEGRADE - History</title>
+	<link rel="stylesheet" href="AIIndex.css">
+	<style>
+		.header { display:flex; justify-content:space-between; align-items:center; padding:18px 0; }
+		.nav-links { display:flex; gap:14px; align-items:center; }
+		.nav-links a { color: #ffffff; text-decoration:none; padding:8px 12px; border-radius:6px; font-weight:600; }
+		.nav-links a:hover { background: rgba(255,255,255,0.06); }
+		.profile-link { display:inline-flex; align-items:center; }
+		.profile-circle { width:40px; height:40px; border-radius:50%; background:#fff; color:#1a1a1a; display:flex; align-items:center; justify-content:center; font-weight:700; }
+		.history-card { background: rgba(255,255,255,0.04); padding:18px; border-radius:10px; margin-top:22px; }
+		table.history { width:100%; border-collapse:collapse; margin-top:12px; }
+		table.history th, table.history td { padding:10px 8px; text-align:left; border-bottom:1px solid rgba(255,255,255,0.06); }
+		.controls { display:flex; gap:10px; margin-top:12px; }
+		.muted { color: rgba(255,255,255,0.7); }
+	</style>
+</head>
+<body>
+	<div class="bg-gradient"></div>
+
+	<div class="container">
+		<!-- Header (shared) -->
+		<header class="header">
+			<div>
+				<div class="logo">VEGE<span>GRADE</span></div>
+				<div class="tagline">AI-Powered Vegetable Quality & Pricing</div>
+			</div>
+			<nav class="nav-links">
+				<a href="AIIndex.html">VEGEGRADE AI</a>
+				<a href="AIIndex.html">Dashboard</a>
+				<a href="history.html">History</a>
+				<a href="profile.html" class="profile-link" title="Profile">
+					<div class="profile-circle">P</div>
+				</a>
+			</nav>
+		</header>
+
+		<main>
+			<section class="hero">
+				<h1>Sales History</h1>
+				<p class="muted">View the records of vegetables you've sold. Entries are stored locally in your browser.</p>
+
+				<div class="history-card">
+					<div class="controls">
+						<!-- <button onclick="addDemoEntry()" class="analyze-btn">Add Demo Entry</button> -->
+						<!-- <button onclick="clearHistory()" class="try-again-btn">Clear History</button> -->
+					</div>
+
+					<table class="history" id="historyTable">
+						<thead>
+							<tr>
+								<th>Date</th>
+								<th>Item</th>
+								<th>Quantity</th>
+								<th>Price / unit</th>
+								<th>Buyer</th>
+								<th>Total</th>
+							</tr>
+						</thead>
+						<tbody id="historyBody">
+							<!-- rows inserted by JS -->
+						</tbody>
+					</table>
+
+					<p id="emptyState" class="muted" style="display:none; margin-top:12px;">No history yet. Use the <strong>Add Demo Entry</strong> button to add a sample record.</p>
+				</div>
+			</section>
+		</main>
+
+		<footer class="footer">
+			<p>VEGEGRADE &copy; 2023. AI-Powered Vegetable Quality Assessment System.</p>
+		</footer>
+	</div>
+
+	<script>
+		/* ==========================
+							 History integration notes
+							 - This page should fetch history for a specific farmer from the backend.
+							 - Decide how to provide farmerId to this page:
+								 1) Server-rendered: inject a JS variable like window.FARMER_ID = 'F-0001' into the page.
+								 2) Query parameter: open /history.html?farmerId=F-0001 and use getFarmerId() below.
+							 - Backend endpoint convention (example): GET /api/farmers/{farmerId}/history
+								 Response shape expected: JSON array of objects with keys: date, item, quantity, price, buyer, total
+							 - Authentication: set an Authorization header (Bearer token) in fetch() if needed.
+							 - Replace the URL and headers in fetchHistoryFromBackend() with your actual backend details.
+							 ========================== */
+
+		function formatDate(iso){ const d = new Date(iso); return d.toLocaleString(); }
+
+		// Utility: try to read farmerId from window variable or query param
+		function getFarmerId(){
+			// Option A: server inserts window.FARMER_ID before this script runs
+			if(window.FARMER_ID) return window.FARMER_ID;
+			// Option B: read from query param ?farmerId=
+			const params = new URLSearchParams(window.location.search);
+			if(params.has('farmerId')) return params.get('farmerId');
+			// Fallback: null (no farmer id provided)
+			return null;
+		}
+
+		// Fetch history from backend for a given farmerId.
+		// TODO: replace the URL and headers with your real backend endpoint and auth.
+		async function fetchHistoryFromBackend(farmerId){
+			if(!farmerId) return [];
+			try{
+				const url = '/api/farmers/' + encodeURIComponent(farmerId) + '/history'; // example endpoint
+				const res = await fetch(url, {
+					method: 'GET',
+					headers: {
+						'Content-Type': 'application/json',
+						// 'Authorization': 'Bearer <TOKEN>', // add auth if required
+					}
+				});
+				if(!res.ok) throw new Error('Network response was not ok');
+				const data = await res.json();
+				// Expecting an array; validate minimally
+				if(Array.isArray(data)) return data;
+				return [];
+			}catch(err){
+				console.error('Failed to fetch history from backend:', err);
+				return [];
+			}
+		}
+
+		// Render list of history entries into the table body
+		function renderHistory(list){
+			const body = document.getElementById('historyBody');
+			const empty = document.getElementById('emptyState');
+			body.innerHTML = '';
+			if(!list || !list.length){ empty.style.display = 'block'; return; }
+			empty.style.display = 'none';
+			list.forEach(entry => {
+				const tr = document.createElement('tr');
+				var row = '';
+				row += '<td>' + formatDate(entry.date) + '</td>';
+				row += '<td>' + (entry.item || '') + '</td>';
+				row += '<td>' + (entry.quantity || '') + '</td>';
+				row += '<td>₹' + (entry.price || '') + '</td>';
+				row += '<td>' + (entry.buyer || '-') + '</td>';
+				row += '<td>₹' + (entry.total || '') + '</td>';
+				tr.innerHTML = row;
+				body.appendChild(tr);
+			});
+		}
+
+		// Keep demo/local helpers for offline testing
+		function addDemoEntry(){
+			const list = JSON.parse(localStorage.getItem('vegegrade_history') || '[]');
+			const demo = { date: new Date().toISOString(), item: 'Tomato', quantity: '10 kg', price: 40, buyer: 'Local Market', total: 400 };
+			list.unshift(demo);
+			localStorage.setItem('vegegrade_history', JSON.stringify(list));
+			renderHistory(list);
+		}
+
+		function clearHistory(){
+			if(!confirm('Clear local demo history?')) return;
+			localStorage.removeItem('vegegrade_history');
+			renderHistory([]);
+		}
+
+		// Public: synchronize with backend and render results.
+		async function syncHistory(){
+			const farmerId = getFarmerId();
+			if(!farmerId){
+				// If no farmerId available, show local demo history as fallback
+				const local = JSON.parse(localStorage.getItem('vegegrade_history') || '[]');
+				renderHistory(local);
+				console.warn('No farmerId supplied. Provide farmerId via window.FARMER_ID or ?farmerId=');
+				return;
+			}
+			// Fetch from backend and render. Replace endpoint/auth as required.
+			const remoteList = await fetchHistoryFromBackend(farmerId);
+			if(remoteList && remoteList.length){
+				renderHistory(remoteList);
+			}else{
+				// Optional: fallback to local cache
+				const local = JSON.parse(localStorage.getItem('vegegrade_history') || '[]');
+				renderHistory(local);
+			}
+		}
+
+		// Wire UI control buttons (if present) to actions
+		document.addEventListener('DOMContentLoaded', ()=>{
+			// If you want server-side rendering to inject FARMER_ID, set window.FARMER_ID before this script.
+			// Example server-side injection (Node/Express EJS/Pug):
+			// <script>window.FARMER_ID = '<%= farmer.id %>';</script>
+
+			// Attach optional control buttons if you uncomment them in the markup
+			const addBtn = document.querySelector('.controls .analyze-btn');
+			if(addBtn) addBtn.addEventListener('click', addDemoEntry);
+			const clearBtn = document.querySelector('.controls .try-again-btn');
+			if(clearBtn) clearBtn.addEventListener('click', clearHistory);
+
+			// Primary action: sync from backend for the current farmer
+			syncHistory();
+		});
+	</script>
+</body>
+</html>
