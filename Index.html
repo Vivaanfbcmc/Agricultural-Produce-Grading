@@ -1,11 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>VEGEGRADE — Home</title>
+        <style>
+            :root{--accent:#059669}
+            body{font-family:Inter,system-ui,Arial;margin:0;background:#f8fafc;color:#0f172a}
+            .carousel{position:relative;max-width:1100px;margin:48px auto;border-radius:12px;overflow:hidden;background:#000}
+            .slides{display:flex;transition:transform .6s ease}
+            .slide{min-width:100%;height:420px;display:flex;align-items:center;justify-content:center;background-size:cover;background-position:center}
+            .slide .caption{background:rgba(0,0,0,0.4);color:#fff;padding:12px 16px;border-radius:8px;font-weight:700}
+            .controls{position:absolute;top:50%;left:0;right:0;display:flex;justify-content:space-between;transform:translateY(-50%);pointer-events:none}
+            .btn{pointer-events:auto;background:rgba(255,255,255,0.85);border:none;padding:10px 12px;margin:0 12px;border-radius:8px;cursor:pointer}
+            .dots{display:flex;gap:8px;justify-content:center;padding:12px;background:#fff}
+            .dot{width:10px;height:10px;border-radius:50%;background:#cbd5e1;cursor:pointer}
+            .dot.active{background:var(--accent)}
+            @media (max-width:600px){.slide{height:260px}}
+        </style>
 </head>
 <body>
-    hi hello my niggers
+
+    <main>
+        <section class="carousel" aria-label="Homepage carousel">
+            <div class="slides" id="slides">
+                <div class="slide" style="background-image:url('FrontEnd/images/landscape.jpg')">
+                    <div class="caption">Fresh Vegetables — Quality Grading</div>
+                </div>
+                <div class="slide" style="background-image:url('FrontEnd/images/farmer.jpg')">
+                    <div class="caption">Connect with Local Buyers</div>
+                </div>
+                <div class="slide" style="background-image:url('FrontEnd/images/corn_field.jpg')">
+                    <div class="caption">AI Powered Pricing Insights</div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="btn" id="prev" aria-label="Previous slide">◀</button>
+                <button class="btn" id="next" aria-label="Next slide">▶</button>
+            </div>
+
+            <div class="dots" id="dots"></div>
+        </section>
+    </main>
+
+    <script>
+        (function(){
+            const slides = document.getElementById('slides');
+            const dotsContainer = document.getElementById('dots');
+            const slidesCount = slides.children.length;
+            let index = 0;
+            let interval = null;
+
+            function renderDots(){
+                for(let i=0;i<slidesCount;i++){
+                    const d = document.createElement('div'); d.className='dot'; d.dataset.i=i;
+                    d.addEventListener('click',()=>goTo(i));
+                    dotsContainer.appendChild(d);
+                }
+                updateDots();
+            }
+
+            function updateDots(){
+                Array.from(dotsContainer.children).forEach((dot,i)=>dot.classList.toggle('active', i===index));
+            }
+
+            function goTo(i){ index = (i+slidesCount)%slidesCount; slides.style.transform = `translateX(-${index*100}%)`; updateDots(); }
+
+            document.getElementById('prev').addEventListener('click', ()=>{ goTo(index-1); resetAuto(); });
+            document.getElementById('next').addEventListener('click', ()=>{ goTo(index+1); resetAuto(); });
+
+            function startAuto(){ interval = setInterval(()=> goTo(index+1), 4000); }
+            function resetAuto(){ clearInterval(interval); startAuto(); }
+
+            renderDots(); startAuto();
+        })();
+    </script>
+
 </body>
 </html>
