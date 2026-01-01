@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>VEGEGRADE - Farmer Profile</title>
+	<link rel="stylesheet" href="AIIndex.css">
+	<style>
+		.header { display:flex; justify-content:space-between; align-items:center; padding:18px 0; }
+		.nav-links { display:flex; gap:14px; align-items:center; }
+		.nav-links a { color: #ffffff; text-decoration:none; padding:8px 12px; border-radius:6px; font-weight:600; }
+		.profile-container { background: rgba(255,255,255,0.03); padding:20px; border-radius:10px; margin-top:20px; }
+		.profile-grid { display:grid; grid-template-columns: 1fr 2fr; gap:18px; align-items:start; }
+		.avatar { width:140px; height:140px; border-radius:8px; background:#fff; display:flex; align-items:center; justify-content:center; color:#111; font-weight:700; }
+		.field { margin-bottom:10px; }
+		.field label { display:block; font-weight:600; margin-bottom:6px; }
+		.field .value, .field input, .field textarea { width:100%; padding:8px; border-radius:6px; border:1px solid rgba(255,255,255,0.06); background:transparent; color:inherit; }
+		.actions { margin-top:12px; display:flex; gap:10px; }
+		.muted { color: rgba(255,255,255,0.7); }
+	</style>
+</head>
+<body>
+	<div class="bg-gradient"></div>
+
+	<div class="container">
+		<!-- Header (shared) -->
+		<header class="header">
+			<div>
+				<div class="logo">VEGE<span>GRADE</span></div>
+				<div class="tagline">AI-Powered Vegetable Quality & Pricing</div>
+			</div>
+			<nav class="nav-links">
+				<a href="AIIndex.html">VEGEGRADE AI</a>
+				<a href="AIIndex.html">Dashboard</a>
+				<a href="history.html">History</a>
+				<a href="profile.html" class="profile-link" title="Profile">
+					<div class="profile-circle">P</div>
+				</a>
+			</nav>
+		</header>
+
+		<main>
+			<h1>Farmer Profile</h1>
+
+			<div class="profile-container">
+				<div class="profile-grid">
+					<div>
+						<div class="avatar" id="avatar">F</div>
+						<p class="muted" style="margin-top:8px">Profile picture (click to change)</p>
+					</div>
+
+					<div>
+						<div class="field">
+							<label>Farmer ID</label>
+							<div class="value" id="farmerId">--</div>
+						</div>
+
+						<div class="field">
+							<label>Full Name</label>
+							<div class="value" id="fullName">--</div>
+						</div>
+
+						<div class="field">
+							<label>Contact Number</label>
+							<div class="value" id="contact">--</div>
+						</div>
+
+						<div class="field">
+							<label>Email</label>
+							<div class="value" id="email">--</div>
+						</div>
+
+						<div class="field">
+							<label>Address</label>
+							<div class="value" id="address">--</div>
+						</div>
+
+						<div class="field">
+							<label>Farm Size</label>
+							<div class="value" id="farmSize">--</div>
+						</div>
+
+						<div class="field">
+							<label>Government ID (Aadhaar / Voter)</label>
+							<div class="value" id="govId">--</div>
+						</div>
+
+						<div class="field">
+							<label>Bank Name</label>
+							<div class="value" id="bankName">--</div>
+						</div>
+
+						<div class="field">
+							<label>Account Number</label>
+							<div class="value" id="accountNumber">--</div>
+						</div>
+
+						<div class="field">
+							<label>IFSC</label>
+							<div class="value" id="ifsc">--</div>
+						</div>
+
+						<div class="field">
+							<label>Crop Types</label>
+							<div class="value" id="crops">--</div>
+						</div>
+
+						<div class="field">
+							<label>Last Sold</label>
+							<div class="value" id="lastSold">--</div>
+						</div>
+
+						<div class="field">
+							<label>Total Sales</label>
+							<div class="value" id="totalSales">--</div>
+						</div>
+
+						<div class="actions">
+							<button class="analyze-btn" id="editBtn">Edit</button>
+							<button class="try-again-btn" id="saveBtn" style="display:none">Save</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</main>
+
+		<footer class="footer">
+			<p>VEGEGRADE &copy; 2023</p>
+		</footer>
+	</div>
+
+	<script>
+		// Placeholder: backend integration will populate these fields
+
+        
+		const sampleData = {
+			farmerId: 'F-0001', fullName: 'Ramesh Kumar', contact: '+91-9876543210', email: 'ramesh@example.com',
+			address: 'Vill: ABC, Dist: XYZ', farmSize: '2 acres', govId: 'XXXX-XXXX-XXXX', bankName: 'State Bank',
+			accountNumber: '01234567890', ifsc: 'SBIN0000123', crops: 'Tomato, Brinjal', lastSold: new Date().toISOString(), totalSales: '₹12,400'
+		};
+
+		function populate(data){
+			document.getElementById('farmerId').textContent = data.farmerId || '--';
+			document.getElementById('fullName').textContent = data.fullName || '--';
+			document.getElementById('contact').textContent = data.contact || '--';
+			document.getElementById('email').textContent = data.email || '--';
+			document.getElementById('address').textContent = data.address || '--';
+			document.getElementById('farmSize').textContent = data.farmSize || '--';
+			document.getElementById('govId').textContent = data.govId || '--';
+			document.getElementById('bankName').textContent = data.bankName || '--';
+			document.getElementById('accountNumber').textContent = data.accountNumber || '--';
+			document.getElementById('ifsc').textContent = data.ifsc || '--';
+			document.getElementById('crops').textContent = data.crops || '--';
+			document.getElementById('lastSold').textContent = new Date(data.lastSold).toLocaleString() || '--';
+			document.getElementById('totalSales').textContent = data.totalSales || '--';
+			document.getElementById('avatar').textContent = (data.fullName || 'F').charAt(0).toUpperCase();
+		}
+
+		document.addEventListener('DOMContentLoaded', ()=>{
+			// TODO: replace with API call to backend to fetch farmer info
+			populate(sampleData);
+		});
+	</script>
+</body>
+</html>
