@@ -17,6 +17,12 @@
     // Current state
     let currentImage = null;
 
+    // Default location and commodity (replace with real values from farmer profile or UI)
+    // TODO: wire these to actual farmer/location inputs or inject via server-side variable
+    const DEFAULT_STATE = 'Maharashtra';
+    const DEFAULT_DISTRICT = 'Sholapur';
+    const DEFAULT_COMMODITY = 'Tomato';
+
     // Drag and drop functionality
     uploadArea.addEventListener('dragover', (e) => {
       e.preventDefault();
@@ -90,7 +96,7 @@
       analyzeBtn.disabled = true;
       
       // Simulate API call delay
-      setTimeout(() => {
+      setTimeout(async () => {
         // Hide loading
         loading.style.display = 'none';
         
@@ -110,7 +116,36 @@
         
         // Update result UI
         gradeValue.textContent = grade;
-        priceValue.textContent = priceRange;
+        // Show temporary range while we fetch market price
+        priceValue.textContent = priceRange + ' (estimating market price...)';
+
+        // Fetch market price from backend price API and update UI dynamically
+        try {
+          const priceResp = await getPriceForGrade(DEFAULT_STATE, DEFAULT_DISTRICT, DEFAULT_COMMODITY, grade);
+          if (priceResp && priceResp.success) {
+            const sel = priceResp.selected_price;
+            const type = priceResp.selected_price_type || '';
+            // Format number as INR without decimals
+            const formatted = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(sel);
+            priceValue.textContent = `${formatted} per unit (for Grade ${grade})`;
+            // Optionally show which price type was used
+            const note = document.createElement('div');
+            note.style.fontSize = '12px';
+            note.style.marginTop = '6px';
+            note.style.color = 'rgba(255,255,255,0.8)';
+            note.textContent = `Price source: ${type.replace('_', ' ').toUpperCase()}`;
+            // Remove previous note if any
+            const prevNote = document.getElementById('priceSourceNote');
+            if (prevNote) prevNote.remove();
+            note.id = 'priceSourceNote';
+            priceValue.parentNode.appendChild(note);
+          } else {
+            // keep the estimated range already shown
+            console.warn('Price API did not return a valid response, keeping estimate.');
+          }
+        } catch (err) {
+          console.error('Error fetching price for grade:', err);
+        }
         
         // Generate analysis details based on grade
         generateAnalysisDetails(grade);
@@ -165,6 +200,33 @@
         li.innerHTML = `<strong>${detail.label}:</strong> <span style="color: ${detail.color}">${detail.value}</span>`;
         analysisDetails.appendChild(li);
       });
+    }
+
+    // Helper: call backend /api/price to get market prices for a grade
+    // Base URL for backend price API. You can override by setting `window.PRICE_API_BASE` from server-side.
+    // If the frontend is served from the backend (port 5000), use relative path. Otherwise default to localhost:5000.
+    const PRICE_API_BASE = (typeof window.PRICE_API_BASE !== 'undefined')
+      ? window.PRICE_API_BASE
+      : (location.port === '5000' ? '' : 'http://localhost:5000');
+
+    async function getPriceForGrade(state, district, commodity, grade){
+      // Ensure values provided
+      if(!state || !district || !commodity || !grade) return null;
+      try{
+        const params = new URLSearchParams({ state, district, commodity, grade });
+        const url = (PRICE_API_BASE ? PRICE_API_BASE : '') + '/api/price?' + params.toString();
+        console.log('Fetching price from:', url);
+        const res = await fetch(url);
+        if(!res.ok){
+          console.error('Price API HTTP error', res.status, await res.text());
+          return null;
+        }
+        const json = await res.json();
+        return json;
+      }catch(err){
+        console.error('getPriceForGrade error:', err);
+        return null;
+      }
     }
 
     // Reset the application to analyze another image

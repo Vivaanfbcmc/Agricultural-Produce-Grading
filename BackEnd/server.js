@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const app = express();
 const authRoutes = require("./routes/auth");
+const priceRoute = require('./PriceAPI/priceRoute');
 const db = require("./db/connect");
 
 app.use(cors({
@@ -14,6 +15,7 @@ app.use(express.json());
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use('/api/price', priceRoute);
 
 // Before starting, verify DB connectivity so errors are visible immediately
 (async () => {
