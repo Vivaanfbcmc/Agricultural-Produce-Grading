@@ -162,7 +162,17 @@
 
 		document.addEventListener('DOMContentLoaded', ()=>{
 			// TODO: replace with API call to backend to fetch farmer info
-				populate(sampleData);
+				fetch('/api/auth/profile')
+					.then(res => {
+						if (!res.ok) throw new Error('Not logged in');
+						return res.json();
+					})
+					.then(data => {
+						populate(data);
+					})
+					.catch(() => {
+						window.location.href = '/SIGN_in_Page/Index.html';
+					});
 
 				// Avatar change handling: click avatar to pick a file and preview it.
 				const avatar = document.getElementById('avatar');
