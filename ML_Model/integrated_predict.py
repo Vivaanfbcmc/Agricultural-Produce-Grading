@@ -99,6 +99,6 @@ def predict(image_path, show_gradcam=True):
 
 # ================= MAIN =================
 if __name__ == "__main__":
-    result = predict("D:\\Assignments\\tomato_project\\images (17).jpg")
+    result = predict("D:\COLLEGE STUFF\sem7\PROJECTVEGETABLE\Agricultural-Produce-Grading-\ML_Model\images (1).jpg")
     print("\n🍅 FINAL RESULT")
     print(result)
