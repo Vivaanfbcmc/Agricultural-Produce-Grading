@@ -1,30 +1,41 @@
+require("dotenv").config();
 const express = require("express");
-const cors = require("cors");
-const app = express();
+const session = require("express-session");
+const path = require("path");
 const authRoutes = require("./routes/auth");
-const priceRoute = require('./PriceAPI/priceRoute');
+const priceRoute = require("./PriceAPI/priceRoute");
 const db = require("./db/connect");
 
-app.use(cors({
-    origin: "*",
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type"]
-}));
+const app = express();
+
 
 app.use(express.json());
 
+// Serve Frontend
+app.use(express.static(path.join(__dirname, "../FrontEnd")));
+
+// Session Middleware
+app.use(
+    session({
+        secret: process.env.SESSION_SECRET,
+        resave: false,
+        saveUninitialized: false
+    })
+);
+
 // Routes
 app.use("/api/auth", authRoutes);
-app.use('/api/price', priceRoute);
+app.use("/api/price", priceRoute);
 
-// Before starting, verify DB connectivity so errors are visible immediately
+// Start server after DB check
 (async () => {
     try {
-        // simple query to verify connection
-        await db.query('SELECT 1');
-        app.listen(5000, () => console.log("Server running on port 5000"));
+        await db.query("SELECT 1");
+        app.listen(5000, () =>
+            console.log("Server running on http://localhost:5000")
+        );
     } catch (err) {
-        console.error('Unable to connect to database at startup:', err);
+        console.error("DB connection failed:", err);
         process.exit(1);
     }
 })();
