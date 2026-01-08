@@ -1,42 +1,24 @@
+import os
 import cv2
 import numpy as np
-import os
 import tensorflow as tf
 from tensorflow.keras.models import load_model
-from gradcam import make_gradcam_heatmap
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 
-# ================= CONFIG =================
 IMG_SIZE = 128
+GRADE_CLASSES = ["A", "B", "C", "R"]  # Added Rotten grade
 
-GRADE_CLASSES = [
-    "Grade A (Red)",
-    "Grade B (Orange / Yellow)",
-    "Grade C (Green)",
-    "Rotten"
-]
-
-# ================= LOAD MODELS =================
+# Load models once
 tomato_model = load_model("tomato_classifier.h5")
 grading_model = load_model("tomato_grading_model.h5")
 
-# ================= FIND LAST CONV LAYER =================
-def get_last_conv_layer(model):
-    for layer in reversed(model.layers):
-        if "conv" in layer.name.lower():
-            return layer.name
-    return None
-
-LAST_CONV_LAYER = get_last_conv_layer(grading_model)
-print("✅ Grad-CAM layer:", LAST_CONV_LAYER)
-
-# ================= PREPROCESS =================
 def preprocess(img):
     img = cv2.resize(img, (IMG_SIZE, IMG_SIZE))
     img = img.astype("float32") / 255.0
     img = np.expand_dims(img, axis=0)
     return tf.convert_to_tensor(img)
 
-# ================= CENTER CROP =================
 def center_crop(img):
     h, w, _ = img.shape
     size = min(h, w)
@@ -44,61 +26,41 @@ def center_crop(img):
     sy = h // 2 - size // 2
     return img[sy:sy+size, sx:sx+size]
 
-# ================= PIPELINE =================
-def predict(image_path, show_gradcam=True):
-    if not os.path.exists(image_path):
-        raise FileNotFoundError(f"Image not found: {image_path}")
-
-    img = cv2.imread(image_path)
+def predict_grade(file):
+    arr = np.frombuffer(file.read(), np.uint8)
+    img = cv2.imdecode(arr, cv2.IMREAD_COLOR)
     if img is None:
-        raise ValueError("Failed to load image")
+        return "R"
 
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    t_input = preprocess(img_rgb)
+    t_pred = tomato_model.predict(t_input, verbose=0)
+    if np.argmax(t_pred) == 0:
+        return "R"
 
-    # ---- STEP 1: TOMATO CHECK ----
-    tomato_input = preprocess(img)
-    tomato_pred = tomato_model.predict(tomato_input, verbose=0)
+    cropped = center_crop(img_rgb)
+    g_input = preprocess(cropped)
+    g_pred = grading_model.predict(g_input, verbose=0)
+    idx = int(np.argmax(g_pred))
+    return GRADE_CLASSES[idx]
 
-    if np.argmax(tomato_pred) == 0:
-        return "Not a Tomato", 0.0
+app = Flask(__name__)
+CORS(app)  # Fix CORS for all origins
 
-    # ---- STEP 2: CROP ----
-    cropped = center_crop(img)
+@app.route('/analyze', methods=['POST', 'OPTIONS'])
+def analyze_image():
+    if request.method == 'OPTIONS':
+        return jsonify({"success": True}), 200
 
-    # ---- STEP 3: GRADE ----
-    grading_input = preprocess(cropped)
-    grade_pred = grading_model.predict(grading_input, verbose=0)
+    if 'image' not in request.files:
+        return jsonify({"success": False, "message": "No image uploaded"}), 400
 
-    print("Grading probabilities:", grade_pred)
+    try:
+        grade = predict_grade(request.files['image'])
+        return jsonify({"success": True, "grade": grade})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
 
-    idx = np.argmax(grade_pred)
-    grade = GRADE_CLASSES[idx]
-    confidence = float(np.max(grade_pred) * 100)
-
-    # ---- STEP 4: GRAD-CAM (OPTIONAL & SAFE) ----
-    if show_gradcam and LAST_CONV_LAYER is not None:
-        heatmap = make_gradcam_heatmap(
-            grading_input,
-            grading_model,
-            LAST_CONV_LAYER
-        )
-
-        if heatmap is not None:
-            heatmap = cv2.resize(heatmap, (cropped.shape[1], cropped.shape[0]))
-            heatmap = np.uint8(255 * heatmap)
-            heatmap = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)
-            overlay = cv2.addWeighted(cropped, 0.6, heatmap, 0.4, 0)
-
-            cv2.imshow("Grad-CAM", overlay)
-            cv2.waitKey(0)
-            cv2.destroyAllWindows()
-        else:
-            print("⚠️ Grad-CAM skipped (gradients unavailable)")
-
-    return grade, confidence
-
-# ================= MAIN =================
 if __name__ == "__main__":
-    result = predict("D:\COLLEGE STUFF\sem7\PROJECTVEGETABLE\Agricultural-Produce-Grading-\ML_Model\images (1).jpg")
-    print("\n🍅 FINAL RESULT")
-    print(result)
+    print("✅ ML API running on http://localhost:5001")
+    app.run(port=5001, threaded=True)
