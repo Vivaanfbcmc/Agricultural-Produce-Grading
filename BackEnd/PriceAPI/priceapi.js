@@ -20,7 +20,7 @@ class AgmarknetPriceFetcher {
         const encodedState = encodeURIComponent(state);
         const encodedDistrict = encodeURIComponent(district);
         const encodedCommodity = encodeURIComponent(commodity);
-        
+
         return `${this.baseUrl}?api-key=${this.apiKey}&format=json` +
                `&filters%5Bstate.keyword%5D=${encodedState}` +
                `&filters%5Bdistrict%5D=${encodedDistrict}` +
@@ -35,20 +35,20 @@ class AgmarknetPriceFetcher {
      * @returns {Promise<Object|null>} - API response data or null if error
      */
 
-    
+
     async fetchPriceData(state, district, commodity) {
         const url = this.buildApiUrl(state, district, commodity);
-        
+
         try {
             console.log(`Fetching data from: ${url}`);
             const response = await fetch(url);
-            
+
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
-            
+
             const data = await response.json();
-            
+
             if (data.status === "ok" && data.count > 0) {
                 console.log(`Successfully fetched ${data.count} record(s)`);
                 return data;
@@ -75,7 +75,7 @@ class AgmarknetPriceFetcher {
 
         const record = apiData.records[0];
         const gradeUpper = grade.toUpperCase();
-        
+
         // Map grades to price types
         const gradePriceMap = {
             'A': 'max_price',     // Grade A → Max Price
@@ -124,7 +124,7 @@ class AgmarknetPriceFetcher {
      */
     async getPrice(state, district, commodity, grade) {
         console.log(`Getting price for: ${commodity} in ${district}, ${state} with grade ${grade}`);
-        
+
         // Validate inputs
         if (!state || !district || !commodity || !grade) {
             return {
@@ -146,7 +146,7 @@ class AgmarknetPriceFetcher {
         try {
             // Fetch data from API
             const apiData = await this.fetchPriceData(state, district, commodity);
-            
+
             if (!apiData) {
                 return {
                     success: false,
@@ -157,7 +157,7 @@ class AgmarknetPriceFetcher {
 
             // Get price based on grade
             const priceInfo = this.getPriceByGrade(apiData, grade);
-            
+
             if (!priceInfo) {
                 return {
                     success: false,
@@ -218,6 +218,11 @@ class AgmarknetPriceFetcher {
     }
 }
 
+//temp hardcoded attributes
+const state = "Maharashtra";
+const district = "Sholapur";
+const commodity = "Tomato";
+
 // Example 1: Direct function call with parameters
 async function exampleDirectCall() {
     console.log('='.repeat(50));
@@ -225,7 +230,7 @@ async function exampleDirectCall() {
     console.log('='.repeat(50));
 
     const fetcher = new AgmarknetPriceFetcher();
-    
+
     // Direct parameter call
     const result = await fetcher.getPrice(
         'Maharashtra',  // state
@@ -245,7 +250,7 @@ async function exampleJsonInput() {
     console.log('='.repeat(50));
 
     const fetcher = new AgmarknetPriceFetcher();
-    
+
     // JSON input object
     const inputParams = {
         state: 'Maharashtra',
@@ -278,7 +283,7 @@ async function exampleMultipleGrades() {
     };
 
     const grades = ['A', 'B', 'C'];
-    
+
     for (const grade of grades) {
         console.log(`\n📋 Grade ${grade}:`);
         const result = await fetcher.getPrice(
@@ -287,14 +292,14 @@ async function exampleMultipleGrades() {
             params.commodity,
             grade
         );
-        
+
         if (result.success) {
             const priceFormatted = new Intl.NumberFormat('en-IN', {
                 style: 'currency',
                 currency: 'INR',
                 minimumFractionDigits: 0
             }).format(result.data.selectedPrice);
-            
+
             console.log(`   Price: ${priceFormatted} (${result.data.selectedPriceType})`);
         } else {
             console.log(`   Error: ${result.message}`);
@@ -309,17 +314,17 @@ async function exampleErrorHandling() {
     console.log('='.repeat(50));
 
     const fetcher = new AgmarknetPriceFetcher();
-    
+
     // Test 1: Missing parameters
     console.log('\nTest 1: Missing parameters');
     const result1 = await fetcher.getPrice('Maharashtra', '', 'Tomato', 'A');
     console.log(result1.message);
-    
+
     // Test 2: Invalid grade
     console.log('\nTest 2: Invalid grade');
     const result2 = await fetcher.getPrice('Maharashtra', 'Sholapur', 'Tomato', 'D');
     console.log(result2.message);
-    
+
     // Test 3: Non-existent data
     console.log('\nTest 3: Non-existent data');
     const result3 = await fetcher.getPrice('TestState', 'TestDistrict', 'TestCommodity', 'A');
@@ -333,9 +338,9 @@ async function getVegetablePrice(parameters) {
      * @param {Object|string} parameters - Either an object with {state, district, commodity, grade} or a JSON string
      * @returns {Promise<Object>} - Price result
      */
-    
+
     const fetcher = new AgmarknetPriceFetcher();
-    
+
     // Parse parameters if they come as JSON string
     let params;
     if (typeof parameters === 'string') {
@@ -351,10 +356,10 @@ async function getVegetablePrice(parameters) {
     } else {
         params = parameters;
     }
-    
+
     // Extract parameters
     const { state, district, commodity, grade } = params;
-    
+
     return await fetcher.getPrice(state, district, commodity, grade);
 }
 
@@ -366,11 +371,11 @@ if (typeof window === 'undefined') {
         await exampleJsonInput();
         await exampleMultipleGrades();
         await exampleErrorHandling();
-        
+
         console.log('\n' + '='.repeat(50));
         console.log('UTILITY FUNCTION EXAMPLE');
         console.log('='.repeat(50));
-        
+
         // Example using the utility function
         const params = {
             state: 'Maharashtra',
@@ -378,7 +383,7 @@ if (typeof window === 'undefined') {
             commodity: 'Tomato',
             grade: 'C'
         };
-        
+
         const result = await getVegetablePrice(params);
         console.log(`Grade ${result.data?.inputGrade}: ₹${result.data?.selectedPrice}`);
     })();
@@ -396,4 +401,16 @@ if (typeof module !== 'undefined' && module.exports) {
         AgmarknetPriceFetcher,
         getVegetablePrice
     };
+}
+
+//helper function for price from grade
+async function getPriceFromGrade(grade) {
+    const fetcher = new AgmarknetPriceFetcher();
+
+    return await fetcher.getPrice(
+        state,
+        district,
+        commodity,
+        grade
+    );
 }
