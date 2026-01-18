@@ -164,7 +164,7 @@ async function handleSignUp() {
 
     // Signup failed
     if (!response.ok) {
-      document.getElementById("error").innerText = result.message;
+      // document.getElementById("error").innerText = result.message;
       return;
     }
 
@@ -175,7 +175,7 @@ async function handleSignUp() {
   } catch (err) {
     console.error(err);
 
-    document.getElementById("error").innerText = "Server error";
+    // document.getElementById("error").innerText = "Server error";
   }
 }
 
