@@ -2,44 +2,130 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>VEGEGRADE</title>
-  <link rel="stylesheet" href="AIIndex.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VEGEGRADE - AI Vegetable Grading</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+  <link rel="stylesheet" href="AIIndex.css" />
+  
+  <style>
+    .header { display:flex; justify-content:space-between; align-items:center; padding:18px 0; }
+    .nav-links { display:flex; gap:14px; align-items:center; }
+    .nav-links a { color: #ffffff; text-decoration:none; padding:8px 12px; border-radius:6px; font-weight:600; }
+    .nav-links a:hover { background: rgba(255,255,255,0.06); }
+    .profile-link { display:inline-flex; align-items:center; }
+    .profile-circle { width:40px; height:40px; border-radius:50%; background:#fff; color:#1a1a1a; display:flex; align-items:center; justify-content:center; font-weight:700; }
+  </style>
+
 </head>
 <body>
-
   <div class="bg-gradient"></div>
 
-  <!-- HERO -->
-  <section class="hero">
-    <h1>VEGEGRADE</h1>
-    <p>AI-Powered Vegetable Quality & Pricing</p>
-
-    <div class="glass-card">
-      <label class="upload-area">
-        <input type="file" id="imageInput" hidden accept="image/*">
-        <span>Upload Vegetable Image</span>
-      </label>
-
-      <img id="preview" />
-
-      <button onclick="submitImage()">Analyze with AI</button>
-    </div>
-  </section>
-
-  <!-- RESULT -->
-  <section class="result hidden">
-    <div class="result-card">
-      <img id="resultImage">
-
-      <div class="ai-output">
-        <h2>AI Assessment</h2>
-        <div class="pill">Grade <span id="grade">A</span></div>
-        <div class="pill">Price <span id="price">₹40–₹60 / kg</span></div>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <div>
+        <div class="logo">VEGE<span>GRADE</span></div>
+        <div class="tagline">AI-Powered Vegetable Quality & Pricing</div>
       </div>
-    </div>
-  </section>
+      <nav class="nav-links">
+        <a href="AIIndex.html">VEGEGRADE AI</a>
+        <a href="AIIndex.html">Dashboard</a>
+        <a href="history.html">History</a>
+        <a href="profile.html" class="profile-link" title="Profile">
+          <div class="profile-circle">P</div>
+        </a>
+      </nav>
+    </header>
 
-  <script src="AIIndex.js"></script>
+    <!-- Hero Section -->
+    <section class="hero">
+      <h1>AI Vegetable Quality Assessment</h1>
+      <p>Upload a photo of your vegetables and get instant AI-powered quality grading and price estimation.</p>
+
+      <div class="main-card">
+        <h2 class="card-title">Upload Vegetable Image</h2>
+        <p class="card-subtitle">Our AI will analyze the quality, freshness, and grade of your vegetables.</p>
+
+        <!-- Upload Area -->
+        <div class="upload-area" id="uploadArea">
+          <div class="upload-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
+          </div>
+          <h3>Drag & Drop or Click to Upload</h3>
+          <p>Supported formats: JPG, PNG, WebP (Max 5MB)</p>
+          <button class="upload-btn" onclick="document.getElementById('fileInput').click()">Choose File</button>
+          <input type="file" id="fileInput" class="file-input" accept="image/*" onchange="handleFileSelect(event)">
+        </div>
+
+        <!-- Preview Area -->
+        <div class="preview-container" id="previewContainer">
+          <h3 class="preview-title">Selected Image</h3>
+          <div class="preview-area">
+            <img id="previewImage" class="preview-img" src="" alt="Preview">
+            <div class="preview-info">
+              <p><strong>File Name:</strong> <span id="fileName"></span></p>
+              <p><strong>File Size:</strong> <span id="fileSize"></span></p>
+              <p><strong>Dimensions:</strong> <span id="fileDimensions"></span></p>
+              <p><strong>Uploaded:</strong> Just now</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading Animation -->
+        <div class="loading" id="loading">
+          <div class="spinner"></div>
+          <p>AI is analyzing your vegetable image...</p>
+        </div>
+
+        <!-- Analyze Button -->
+        <button class="analyze-btn" id="analyzeBtn" onclick="analyzeImage()" disabled>Analyze with AI</button>
+      </div>
+    </section>
+
+    <!-- Result Section -->
+    <section class="result-section" id="resultSection">
+      <h2 class="result-title">AI Assessment Result</h2>
+      
+      <div class="result-card">
+        <img id="resultImage" class="result-img" src="" alt="Analyzed Vegetable">
+        
+        <div class="ai-assessment">
+          <h3>Vegetable Quality Analysis</h3>
+          
+          <div class="grade-badge">
+            Grade: <span id="gradeValue">A</span>
+          </div>
+          
+          <div class="price-range">
+            Price: <span id="priceValue">₹40–₹60 / kg</span>
+          </div>
+          
+          <div class="analysis-details">
+            <h4>Detailed Analysis</h4>
+            <ul class="details-list" id="analysisDetails">
+              <!-- Filled by JavaScript -->
+            </ul>
+          </div>
+          
+          <button class="try-again-btn" onclick="resetApp()">Analyze Another Vegetable</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p>VEGEGRADE &copy; 2023. AI-Powered Vegetable Quality Assessment System.</p>
+      <div class="api-note">
+        <strong>API Integration:</strong> Our system can be integrated into your applications using our API. 
+        Register for API access to get real-time vegetable grading and pricing data.
+      </div>
+    </footer>
+  </div>
+
+  <script src = "AIIndex.js">
+    
+  </script>
 </body>
 </html>

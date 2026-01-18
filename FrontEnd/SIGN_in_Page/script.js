@@ -208,6 +208,7 @@ async function handleSignIn() {
        //CHECK RESPONSE 
       if (!response.ok) 
       {
+        document.getElementById("wrong-id-password").innerText = "Password or Phone Number is INCORRECT";
         document.getElementById("error").innerText = result.message;
         return;
       }
