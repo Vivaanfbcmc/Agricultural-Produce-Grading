@@ -77,7 +77,7 @@ function formatFileSize(bytes) {
 
 // Analyze image using backend ML API
 const ML_API = "http://localhost:5001/analyze";
-const PRICE_API = "http://localhost:3000/price";
+const PRICE_API = "http://localhost:3001/price";
 
 async function analyzeImage() {
     if (!currentImage) return;

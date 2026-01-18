@@ -1,14 +1,14 @@
-const express = require("express");
-const cors = require("cors");
-const bodyParser = require("body-parser");
-const { AgmarknetPriceFetcher } = require("./priceapi.js");
+import express from "express";
+import cors from "cors";
+import bodyParser from "body-parser";
+import { AgmarknetPriceFetcher } from "./priceapi.js";
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-const PORT = 3000;
+const PORT = 3001;
 
 app.post("/price", async (req, res) => {
     const { state, district, commodity, grade } = req.body;

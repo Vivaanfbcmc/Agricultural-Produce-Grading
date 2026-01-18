@@ -168,7 +168,7 @@
 						return res.json();
 					})
 					.then(data => {
-						populate(data);
+						populate(data.user);
 					})
 					.catch(() => {
 						window.location.href = '/SIGN_in_Page/Index.html';
