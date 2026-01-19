@@ -1,4 +1,4 @@
-const db = require("../db/connect");
+const { pool } = require("../config/database");
 const bcrypt = require("bcrypt");
 
 const validateEmail = (email) => {
@@ -50,19 +50,19 @@ exports.register = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        await db.query(
-            "INSERT INTO farmers (fname, lname, phone, email, hashedPassword, state, district) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        await pool.query(
+            "INSERT INTO farmers (fname, lname, phone, email, hashedPassword, state, district) VALUES ($1, $2, $3, $4, $5, $6, $7)",
             [fname, lname, phone, email, hashedPassword, state, district]
         );
 
         res.status(201).json({ message: "Account created successfully" });
 
     } catch (err) {
-        if (err.code === "ER_DUP_ENTRY") {
+        if (err.code === "23505") { // PostgreSQL unique constraint violation
             return res.status(409).json({ message: "User already exists" });
         }
 
-        res.status(500).json({ message: "Server error" });
+        res.status(500).json({ message: "Server error", error: err.message });
     }
 };
 
@@ -78,16 +78,16 @@ exports.login = async (req, res) => {
             return res.status(400).json({ message: "Invalid phone format" });
         }
 
-        const [rows] = await db.query(
-            "SELECT * FROM farmers WHERE phone = ?",
+        const result = await pool.query(
+            "SELECT * FROM farmers WHERE phone = $1",
             [phone]
         );
 
-        if (rows.length === 0) {
+        if (result.rows.length === 0) {
             return res.status(401).json({ message: "Invalid credentials" });
         }
 
-        const farmer = rows[0];
+        const farmer = result.rows[0];
 
         const isPasswordValid = await bcrypt.compare(password, farmer.hashedPassword);
 
@@ -108,6 +108,6 @@ exports.login = async (req, res) => {
         res.json({ message: "Login successful" });
 
     } catch (err) {
-        res.status(500).json({ message: "Server error" });
+        res.status(500).json({ message: "Server error", error: err.message });
     }
 };
