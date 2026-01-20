@@ -27,13 +27,17 @@ uploadArea.addEventListener('dragover', (e) => {
     e.preventDefault();
     uploadArea.classList.add('drag-over');
 });
+
 uploadArea.addEventListener('dragleave', () => {
     uploadArea.classList.remove('drag-over');
 });
+
 uploadArea.addEventListener('drop', (e) => {
     e.preventDefault();
     uploadArea.classList.remove('drag-over');
-    if (e.dataTransfer.files.length) handleFileSelect({ target: { files: e.dataTransfer.files } });
+    if (e.dataTransfer.files.length) {
+        handleFileSelect({ target: { files: e.dataTransfer.files } });
+    }
 });
 
 // Handle file selection
@@ -75,10 +79,7 @@ function formatFileSize(bytes) {
     else return (bytes / 1048576).toFixed(2) + ' MB';
 }
 
-// Analyze image using backend ML API
-const ML_API = "http://localhost:5001/analyze";
-const PRICE_API = "http://localhost:3001/price";
-
+// CHANGE: All API calls now go through gateway
 async function analyzeImage() {
     if (!currentImage) return;
 
@@ -87,11 +88,19 @@ async function analyzeImage() {
     resultSection.style.display = 'none';
 
     try {
+        // Step 1: Get grade from ML service via gateway
         const formData = new FormData();
         formData.append("image", currentImage);
 
-        const mlRes = await fetch(ML_API, { method: 'POST', body: formData });
-        if (!mlRes.ok) throw new Error(`ML API error: ${mlRes.status}`);
+        const mlRes = await fetch("/api/ml/analyze", {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!mlRes.ok) {
+            throw new Error(`ML service error: ${mlRes.status}`);
+        }
+
         const mlJson = await mlRes.json();
 
         let grade = mlJson.grade || "Rotten";
@@ -99,9 +108,10 @@ async function analyzeImage() {
         grade = grade.toUpperCase();
         gradeValue.textContent = grade;
 
+        // Step 2: Get price from price API via gateway
         priceValue.textContent = "Fetching market price...";
 
-        const priceRes = await fetch(PRICE_API, {
+        const priceRes = await fetch("/api/price", {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -113,9 +123,11 @@ async function analyzeImage() {
         });
 
         const priceJson = await priceRes.json();
+
         if (priceJson.success && typeof priceJson.selectedPrice === 'number') {
             priceValue.textContent = `${new Intl.NumberFormat('en-IN', {
-                style: 'currency', currency: 'INR'
+                style: 'currency',
+                currency: 'INR'
             }).format(priceJson.selectedPrice)} per unit (Grade ${grade})`;
         } else {
             priceValue.textContent = "Price not available for this grade.";
@@ -126,14 +138,13 @@ async function analyzeImage() {
         resultSection.scrollIntoView({ behavior: 'smooth' });
 
     } catch (err) {
-        console.error(err);
+        console.error('Analysis error:', err);
         alert(`Error: ${err.message}`);
     } finally {
         loading.style.display = 'none';
         analyzeBtn.disabled = false;
     }
 }
-
 
 // Generate analysis details for each grade
 function generateAnalysisDetails(grade) {
@@ -161,7 +172,7 @@ function generateAnalysisDetails(grade) {
             { label: 'Size Consistency', value: 'Inconsistent', color: '#f97316' },
             { label: 'Defects', value: 'Visible Blemishes', color: '#f97316' }
         ],
-        'Rotten': [
+        'ROTTEN': [
             { label: 'Freshness', value: 'Poor', color: '#dc2626' },
             { label: 'Color', value: 'Dull & Discolored', color: '#dc2626' },
             { label: 'Texture', value: 'Soft & Wilted', color: '#dc2626' },
@@ -177,44 +188,6 @@ function generateAnalysisDetails(grade) {
         analysisDetails.appendChild(li);
     });
 }
-
-// Fetch price from backend POST /price
-async function getPriceForGrade(state, district, commodity, grade) {
-    if (!state || !district || !commodity || !grade) return null;
-    try {
-        const url = 'http://localhost:5001/price';
-        const res = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ state, district, commodity, grade })
-        });
-
-        if (!res.ok) {
-            console.error('Price API HTTP error', res.status, await res.text());
-            return null;
-        }
-
-        // THIS IS THE CRUCIAL FIX
-        const json = await res.json();
-        console.log('Price API response JSON:', json);
-
-        // Make sure to safely access the value
-        if (!json || typeof json.selectedPrice !== 'number') {
-            console.warn('Price not found in response, got:', json);
-            return { success: false };
-        }
-
-        return {
-            success: true,
-            selectedPrice: json.selectedPrice,
-            selectedPriceType: json.selectedPriceType || ''
-        };
-    } catch (err) {
-        console.error('getPriceForGrade error:', err);
-        return null;
-    }
-}
-
 
 // Reset the app for another image
 function resetApp() {

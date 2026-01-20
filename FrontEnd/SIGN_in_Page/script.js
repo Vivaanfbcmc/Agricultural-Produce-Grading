@@ -4,7 +4,6 @@
 const stateDropdown = document.getElementById("state");
 const districtDropdown = document.getElementById("district");
 
-// Running in browser — do not use Node "require" here.
 console.log('SIGN_in_Page script loaded');
 
 // Load states into state dropdown
@@ -33,15 +32,10 @@ stateDropdown.addEventListener("change", function () {
   });
 });
 
-
 /* -------------------------
    IMAGE CHANGING LOGIC
 --------------------------*/
-
-// Put your image file names here
-// (Leave empty for now, you can fill later)
 const images = [
-  
   "../images/corn_field.jpg",
   "../images/shutterstock_274829372.webp",
   "../images/landscape.jpg",
@@ -51,23 +45,16 @@ const images = [
 let index = 0;
 const heroMedia = document.querySelector('.hero-media');
 
-// If no hero container or no images, skip rotation
 if (heroMedia && images.length > 0) {
-  // initialize background and transition
   heroMedia.style.transition = 'opacity .8s ease';
   heroMedia.style.opacity = 1;
 
-  // helper to set bg with preload
   function setHeroBackground(src) {
-    // fade out
     heroMedia.style.opacity = 0;
-
     const img = new Image();
     img.onload = () => {
       heroMedia.style.backgroundImage = `url('${src}')`;
-      // slight scale effect via transform for subtle motion
       heroMedia.style.transform = 'translateX(50%) scale(1.03)';
-      // fade in
       requestAnimationFrame(() => {
         heroMedia.style.opacity = 1;
       });
@@ -75,71 +62,29 @@ if (heroMedia && images.length > 0) {
     img.src = src;
   }
 
-  // set initial image
   setHeroBackground(images[0]);
 
-  // rotate images
   setInterval(() => {
     index = (index + 1) % images.length;
     setHeroBackground(images[index]);
   }, 6000);
 }
 
-
-
-
-
-
-// HANDLING SIGN UP THROUGH HERE
-//updated to async
-
-
-
-/////OLD ONE DONOT FOLLOW
-//////////
-
-
-
-
-// function handleSignUp() {
-//   const password = document.getElementById("password").value;
-//   const confirmPassword = document.getElementById("confirm_password").value;
-
-//   if (password !== confirmPassword) {
-//     alert("Password and Confirm Password should be same");
-//     return;
-//   }
-
-//   const data = {
-//     fname: document.getElementById("fname").value,
-//     lname: document.getElementById("lname").value,
-//     phone: document.getElementById("phone").value,
-//     email: document.getElementById("email").value,
-//     password,
-//     state: document.getElementById("state").value,
-//     district: document.getElementById("district").value
-//   };
-
-//   fetch("http://localhost:5000/api/auth/register", {
-//     method: "POST",
-//     headers: { "Content-Type": "application/json" },
-//     body: JSON.stringify(data)
-//   })
-//   .then(res => res.json())
-//   .then(() => alert("Registered successfully"))
-//   .catch(() => alert("Server error"));
-// }
-
-///old one above/////
-////////////////////
-
+/* -------------------------
+   SIGN UP HANDLER
+--------------------------*/
 async function handleSignUp() {
   const password = document.getElementById("password").value;
   const confirmPassword = document.getElementById("confirm_password").value;
 
+  // Clear previous errors
+  const errorElement = document.getElementById("signupError");
+  if (errorElement) errorElement.innerText = "";
+
   if (password !== confirmPassword) {
-    document.getElementById("errorCP").innerText =
-      "Password and Confirm Password must match";
+    if (errorElement) {
+      errorElement.innerText = "Password and Confirm Password must match";
+    }
     return;
   }
 
@@ -152,9 +97,12 @@ async function handleSignUp() {
     state: document.getElementById("state").value,
     district: document.getElementById("district").value
   };
-  console.log(data);
+
+  console.log("Registering user:", data);
+
   try {
-    const response = await fetch("http://localhost:5000/api/auth/register", {
+    // CHANGE: Now calling gateway instead of direct auth service
+    const response = await fetch("/api/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
@@ -162,63 +110,79 @@ async function handleSignUp() {
 
     const result = await response.json();
 
-    // Signup failed
     if (!response.ok) {
-      // document.getElementById("error").innerText = result.message;
+      if (errorElement) {
+        errorElement.innerText = result.error || "Registration failed";
+      }
       return;
     }
 
-    // Signup success
-    alert("Registration successful! Please sign in.");
-    // window.location.href = "/login.html";
+    // Registration successful
+    console.log("Registration successful:", result);
+
+    // Switch to sign-in tab
+    const tabSignIn = document.getElementById('tab-signin');
+    if (tabSignIn) tabSignIn.click();
+
+    // Clear the signup form
+    document.getElementById('signup-form').reset();
+
+    // Show success message in signin form
+    const signinError = document.getElementById('signinError');
+    if (signinError) {
+      signinError.style.color = '#059669';
+      signinError.innerText = "Registration successful! Please sign in.";
+      setTimeout(() => {
+        signinError.innerText = '';
+        signinError.style.color = '';
+      }, 5000);
+    }
 
   } catch (err) {
-    console.error(err);
-
-    // document.getElementById("error").innerText = "Server error";
+    console.error("Registration error:", err);
+    if (errorElement) {
+      errorElement.innerText = "Server error. Please try again.";
+    }
   }
 }
 
-
-
-
-
-
-
-///HANDLING SINGING THROUGH THIS FUNCTION
+/* -------------------------
+   SIGN IN HANDLER
+--------------------------*/
 async function handleSignIn() {
   const data = {
     phone: document.getElementById("signin_phone").value,
     password: document.getElementById("signin_password").value
   };
 
-  try{
-     const response = await fetch("http://localhost:5000/api/auth/login", 
-    {
+  // Clear previous errors
+  const errorElement = document.getElementById("signinError");
+  if (errorElement) errorElement.innerText = "";
+
+  try {
+    // CHANGE: Now calling gateway instead of direct auth service
+    const response = await fetch("/api/auth/login", {
       method: "POST",
-      headers: {"Content-Type": "application/json"},
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
+    });
 
-    }
-      
-      )
-       
-       const result = await response.json();
+    const result = await response.json();
 
-       //CHECK RESPONSE 
-      if (!response.ok) 
-      {
-        document.getElementById("wrong-id-password").innerText = "Password or Phone Number is INCORRECT";
-        document.getElementById("error").innerText = result.message;
-        return;
+    if (!response.ok) {
+      if (errorElement) {
+        errorElement.innerText = result.error || "Invalid credentials";
       }
+      return;
+    }
 
-    //  Login success
-      window.location.href = "../Main_AI_DashBoard/AIIndex.html";
-  } 
+    // Login success - redirect to dashboard
+    window.location.href = "/dashboard";
 
-   catch (err) {
-    console.error(err);
-    document.getElementById("error").innerText = "Server error";
+  } catch (err) {
+    console.error("Login error:", err);
+    if (errorElement) {
+      errorElement.innerText = "Server error. Please try again.";
+    }
   }
 }
