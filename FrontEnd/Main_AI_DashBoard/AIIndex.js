@@ -203,4 +203,166 @@ function resetApp() {
 
 window.addEventListener('DOMContentLoaded', () => {
     console.log('VEGEGRADE AI ready.');
+    initializeTransactionModal();
 });
+
+// ==================== TRANSACTION MODAL FUNCTIONS ====================
+
+// Track analysis results for transaction
+let analysisResults = {
+    grade: '',
+    price: '',
+    produceName: 'Tomato'
+};
+
+function initializeTransactionModal() {
+    // Get farmer ID from localStorage or session
+    const farmerId = localStorage.getItem('farmerId') || 'F' + Date.now();
+    document.getElementById('farmerId').value = farmerId;
+    
+    // Load market price if available
+    const savedPrice = localStorage.getItem('lastMarketPrice');
+    if (savedPrice) {
+        document.getElementById('price').value = savedPrice;
+    }
+
+    // Calculate total amount when quantity or price changes
+    document.getElementById('quantity').addEventListener('change', calculateTotal);
+    document.getElementById('price').addEventListener('change', calculateTotal);
+}
+
+function calculateTotal() {
+    const quantity = parseFloat(document.getElementById('quantity').value) || 0;
+    const price = parseFloat(document.getElementById('price').value) || 0;
+    const total = quantity * price;
+    document.getElementById('totalAmount').textContent = `₹${total.toFixed(2)}`;
+}
+
+function openTransactionModal() {
+    const modal = document.getElementById('transactionModal');
+    const grade = gradeValue.textContent;
+    const price = priceValue.textContent.match(/[\d.]+/) ? priceValue.textContent.match(/[\d.]+/)[0] : '';
+    
+    // Detect produce name from AI analysis
+    analysisResults.grade = grade;
+    analysisResults.price = price;
+    
+    // Auto-fill the modal fields
+    document.getElementById('aiGrade').value = grade;
+    document.getElementById('produceName').value = analysisResults.produceName;
+    
+    // Try to detect produce type from analysis details
+    const detailsText = analysisDetails.innerText.toLowerCase();
+    if (detailsText.includes('tomato')) {
+        analysisResults.produceName = 'Tomato';
+    } else if (detailsText.includes('potato')) {
+        analysisResults.produceName = 'Potato';
+    } else if (detailsText.includes('carrot')) {
+        analysisResults.produceName = 'Carrot';
+    }
+    document.getElementById('produceName').value = analysisResults.produceName;
+    
+    // Pre-fill price if available
+    if (price) {
+        document.getElementById('price').value = price;
+        calculateTotal();
+    }
+    
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeTransactionModal() {
+    const modal = document.getElementById('transactionModal');
+    modal.classList.remove('show');
+    document.body.style.overflow = 'auto';
+    
+    // Reset form
+    document.getElementById('transactionForm').reset();
+    document.getElementById('errorMessage').style.display = 'none';
+}
+
+async function submitTransaction() {
+    const farmerId = document.getElementById('farmerId').value;
+    const produceName = document.getElementById('produceName').value;
+    const quantity = parseFloat(document.getElementById('quantity').value);
+    const aiGrade = document.getElementById('aiGrade').value;
+    const price = parseFloat(document.getElementById('price').value);
+    const status = document.getElementById('status').value;
+
+    // Validation
+    if (!quantity || quantity <= 0) {
+        showError('Please enter a valid quantity');
+        return;
+    }
+    if (!price || price <= 0) {
+        showError('Please enter a valid price');
+        return;
+    }
+
+    // Show loading state
+    document.getElementById('submitTransactionBtn').disabled = true;
+    document.getElementById('loadingModal').style.display = 'block';
+    document.getElementById('errorMessage').style.display = 'none';
+
+    try {
+        const transactionData = {
+            farmer_id: farmerId,
+            produce_name: produceName,
+            quantity: quantity,
+            ai_grade: aiGrade,
+            price: price,
+            status: status
+        };
+
+        console.log('Submitting transaction:', transactionData);
+
+        // Call the blockchain transaction API
+        const response = await fetch('/api/blockchain/transactions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(transactionData)
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.error || 'Failed to create transaction');
+        }
+
+        // Success message
+        showSuccess(result);
+
+    } catch (err) {
+        console.error('Transaction submission error:', err);
+        showError(err.message || 'Error creating transaction. Please try again.');
+    } finally {
+        document.getElementById('submitTransactionBtn').disabled = false;
+        document.getElementById('loadingModal').style.display = 'none';
+    }
+}
+
+function showError(message) {
+    const errorDiv = document.getElementById('errorMessage');
+    errorDiv.textContent = '❌ Error: ' + message;
+    errorDiv.style.display = 'block';
+    errorDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function showSuccess(result) {
+    alert(
+        `✅ Transaction Created Successfully!\n\n` +
+        `Transaction ID: ${result.transaction?.id || 'N/A'}\n` +
+        `Ledger Entry ID: ${result.ledger_entry_id}\n` +
+        `Hash: ${result.hash?.substring(0, 16)}...\n\n` +
+        `🔗 Blockchain Status:\n` +
+        `Tx Hash: ${result.transaction?.blockchain_tx_hash || 'Pending'}\n\n` +
+        `Your transaction has been recorded on Sepolia Testnet.`
+    );
+    
+    // Close modal and reset
+    closeTransactionModal();
+    
+    // Save price for next transaction
+    localStorage.setItem('lastMarketPrice', document.getElementById('price').value);
+}
