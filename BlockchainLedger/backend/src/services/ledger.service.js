@@ -36,10 +36,11 @@ class LedgerService {
     );
 
     // 4. Store proof in separate table (no immutability conflict)
+    const farmerId = transactionData.farmer_id || transactionData.farmerId;
     await client.query(
-      `INSERT INTO ledger_blockchain_proof (ledger_id, blockchain_tx_hash, block_number)
-       VALUES ($1, $2, $3)`,
-      [insertedEntry.id, blockchainProof.txHash, blockchainProof.blockNumber]
+      `INSERT INTO ledger_blockchain_proof (ledger_id, farmer_id, blockchain_tx_hash, block_number)
+       VALUES ($1, $2, $3, $4)`,
+      [insertedEntry.id, farmerId, blockchainProof.txHash, blockchainProof.blockNumber]
     );
 
     return { entry: insertedEntry, blockchainProof };
