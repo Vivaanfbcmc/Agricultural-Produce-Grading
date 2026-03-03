@@ -43,6 +43,23 @@ CREATE INDEX idx_transactions_farmer ON transactions(farmer_id);
 CREATE INDEX idx_transactions_date ON transactions(created_at);
 
 -- ============================================
+-- BLOCKCHAIN PROOF TABLE
+-- ============================================
+CREATE TABLE ledger_blockchain_proof (
+    id BIGSERIAL PRIMARY KEY,
+    ledger_id BIGINT NOT NULL UNIQUE REFERENCES ledger(id),
+    farmer_id VARCHAR(50) NOT NULL REFERENCES farmers(id),
+    blockchain_tx_hash VARCHAR(66),
+    block_number BIGINT,
+    anchored_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_proof_ledger ON ledger_blockchain_proof(ledger_id);
+CREATE INDEX idx_proof_farmer ON ledger_blockchain_proof(farmer_id);
+CREATE INDEX idx_proof_block ON ledger_blockchain_proof(block_number);
+
+-- ============================================
 -- IMMUTABILITY TRIGGERS
 -- ============================================
 

@@ -3,7 +3,7 @@ import LedgerService from '../services/ledger.service.js';
 
 class TransactionController {
   static async createTransaction(req, res) {
-    const { farmer_id, produce_name, quantity, ai_grade, price } = req.body;
+    const { farmer_id, produce_name, quantity, ai_grade, price, farmerName } = req.body;
 
     if (!farmer_id || !produce_name || !quantity || !ai_grade || !price) {
       return res.status(400).json({ error: 'Missing required fields' });
@@ -20,6 +20,7 @@ class TransactionController {
         quantity: parseFloat(quantity),
         ai_grade,
         price: parseFloat(price),
+        farmerName: farmerName || farmer_id, // Use farmer_id as fallback if name not provided
         timestamp: new Date().toISOString()
       };
 
@@ -38,7 +39,9 @@ class TransactionController {
       res.status(201).json({
         transaction: txResult.rows[0],
         ledger_entry_id: ledgerEntry.id,
-        hash: ledgerEntry.hash
+        hash: ledgerEntry.hash,
+        blockchain_tx_hash: ledgerEntry.blockchain_tx_hash,
+        block_number: ledgerEntry.block_number
       });
 
     } catch (error) {
