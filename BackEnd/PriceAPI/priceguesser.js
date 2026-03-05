@@ -20,7 +20,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 const PORT = 3002;
-const CEDA_API_URL = "https://api.ceda.ashoka.edu.in/agmarknet/prices";
+const CEDA_API_URL = "https://api.ceda.ashoka.edu.in/v1/agmarknet/prices";
 const CEDA_API_TOKEN = "4face3859fdd510cb9b259c09cc8309f37bb574b57539ca6f36887742f890a84";  
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
