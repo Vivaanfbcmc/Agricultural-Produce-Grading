@@ -186,16 +186,22 @@ app.post('/api/price', async (req, res) => {
 
 // Create Transaction
 app.post('/api/blockchain/transactions', async (req, res) => {
-    if (!req.session.isAuth || !req.session.user) {
-        return res.status(401).json({ error: 'Not authenticated' });
+    // Support both session-based auth and direct farmerId in request body
+    let transactionData = { ...req.body };
+    
+    if (req.session.isAuth && req.session.user) {
+        // If authenticated via session, add verified session info
+        transactionData = {
+            ...transactionData,
+            farmer_id: req.session.user.farmerId,
+            farmerName: req.session.user.fullName
+        };
+    } else {
+        // Direct request with farmer_id provided
+        if (!transactionData.farmer_id) {
+            return res.status(400).json({ error: 'farmer_id is required' });
+        }
     }
-
-    // Add user info to transaction
-    const transactionData = {
-        ...req.body,
-        farmerId: req.session.user.farmerId,
-        farmerName: req.session.user.fullName
-    };
 
     const result = await forwardRequest(SERVICES.BLOCKCHAIN, '/api/transactions', {
         method: 'POST',

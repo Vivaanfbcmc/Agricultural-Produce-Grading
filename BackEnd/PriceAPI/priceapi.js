@@ -4,7 +4,7 @@
  */
 
 class AgmarknetPriceFetcher {
-    constructor(apiKey = "579b464db66ec23bdd00000114eff3abdc594c2a48422df1e22214a6") {
+    constructor(apiKey = "579b464db66ec23bdd000001530332d5022645b7724118b3558eb825") {
         this.baseUrl = "https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070";
         this.apiKey = apiKey;
     }
@@ -32,6 +32,7 @@ class AgmarknetPriceFetcher {
             }
 
             const data = await response.json();
+            console.log("Raw API response:", JSON.stringify(data).slice(0, 500));
 
             if (data.status === "ok" && data.count > 0) {
                 console.log(`Successfully fetched ${data.count} record(s)`);
@@ -50,8 +51,12 @@ class AgmarknetPriceFetcher {
         if (!apiData || !apiData.records || apiData.records.length === 0) return null;
 
         const record = apiData.records[0];
+        console.log("Record fields:", Object.keys(record));
+        console.log("Record sample:", JSON.stringify(record));
+
         const gradeUpper = grade.toUpperCase();
 
+        // data.gov.in uses these exact field names
         const gradePriceMap = {
             'A': 'max_price',
             'B': 'modal_price',
@@ -61,25 +66,36 @@ class AgmarknetPriceFetcher {
         if (!gradePriceMap[gradeUpper]) return null;
 
         const priceType = gradePriceMap[gradeUpper];
-        const priceValue = record[priceType];
 
-        if (priceValue === undefined || priceValue === null) return null;
+        // Parse prices — API returns them as strings like "2000" or numbers
+        const minPrice   = parseFloat(record.min_price)   || parseFloat(record.minimum_price)   || 0;
+        const maxPrice   = parseFloat(record.max_price)   || parseFloat(record.maximum_price)   || 0;
+        const modalPrice = parseFloat(record.modal_price) || parseFloat(record.modal_price_rs_qtl) || 0;
+
+        const selectedPrice =
+            gradeUpper === 'A' ? maxPrice :
+            gradeUpper === 'B' ? modalPrice :
+            gradeUpper === 'C' ? minPrice : modalPrice;
+
+        if (selectedPrice === 0) {
+            console.warn("Price came out as 0 — check field names in record above");
+        }
 
         return {
-            state: record.state || '',
-            district: record.district || '',
-            market: record.market || '',
-            commodity: record.commodity || '',
-            variety: record.variety || '',
-            recordedGrade: record.grade || '',
-            inputGrade: gradeUpper,
-            arrivalDate: record.arrival_date || '',
-            minPrice: record.min_price || 0,
-            maxPrice: record.max_price || 0,
-            modalPrice: record.modal_price || 0,
+            state:             record.state            || record.state_name   || '',
+            district:          record.district         || record.district_name || '',
+            market:            record.market           || record.market_name  || '',
+            commodity:         record.commodity        || record.commodity_name || '',
+            variety:           record.variety          || '',
+            recordedGrade:     record.grade            || '',
+            inputGrade:        gradeUpper,
+            arrivalDate:       record.arrival_date     || record.date || '',
+            minPrice,
+            maxPrice,
+            modalPrice,
             selectedPriceType: priceType,
-            selectedPrice: priceValue,
-            timestamp: new Date().toISOString()
+            selectedPrice,
+            timestamp:         new Date().toISOString()
         };
     }
 
@@ -112,7 +128,7 @@ class AgmarknetPriceFetcher {
         if (!result.success || !result.data) return `❌ Error: ${result.message}`;
 
         const data = result.data;
-        const priceFormatted = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 }).format(data.selectedPrice);
+        const fmt = (n) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 }).format(n);
 
         return `
 📍 Location: ${data.district}, ${data.state}
@@ -121,17 +137,16 @@ class AgmarknetPriceFetcher {
 📅 Arrival Date: ${data.arrivalDate}
 📊 Grade in Data: ${data.recordedGrade}
 🎯 Selected Grade: ${data.inputGrade}
-💰 Price Type: ${data.selectedPriceType.replace('_', ' ').toUpperCase()}
-💵 Selected Price: ${priceFormatted} per unit
+💰 Price Type: ${data.selectedPriceType.replace(/_/g, ' ').toUpperCase()}
+💵 Selected Price: ${fmt(data.selectedPrice)} per quintal
 📈 All Available Prices:
-   Minimum Price: ₹${data.minPrice.toLocaleString('en-IN')}
-   Maximum Price: ₹${data.maxPrice.toLocaleString('en-IN')}
-   Modal Price: ₹${data.modalPrice.toLocaleString('en-IN')}
+   Minimum Price: ${fmt(data.minPrice)}
+   Maximum Price: ${fmt(data.maxPrice)}
+   Modal Price:   ${fmt(data.modalPrice)}
         `.trim();
     }
 }
 
-// Utility function for web integration
 async function getVegetablePrice(params) {
     const fetcher = new AgmarknetPriceFetcher();
     if (typeof params === 'string') {
