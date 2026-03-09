@@ -219,7 +219,7 @@ function initializeTransactionModal() {
     // Get farmer ID from localStorage or session
     const farmerId = localStorage.getItem('farmerId') || 'F' + Date.now();
     document.getElementById('farmerId').value = farmerId;
-    
+
     // Load market price if available
     const savedPrice = localStorage.getItem('lastMarketPrice');
     if (savedPrice) {
@@ -242,15 +242,15 @@ function openTransactionModal() {
     const modal = document.getElementById('transactionModal');
     const grade = gradeValue.textContent;
     const price = priceValue.textContent.match(/[\d.]+/) ? priceValue.textContent.match(/[\d.]+/)[0] : '';
-    
+
     // Detect produce name from AI analysis
     analysisResults.grade = grade;
     analysisResults.price = price;
-    
+
     // Auto-fill the modal fields
     document.getElementById('aiGrade').value = grade;
     document.getElementById('produceName').value = analysisResults.produceName;
-    
+
     // Try to detect produce type from analysis details
     const detailsText = analysisDetails.innerText.toLowerCase();
     if (detailsText.includes('tomato')) {
@@ -261,13 +261,13 @@ function openTransactionModal() {
         analysisResults.produceName = 'Carrot';
     }
     document.getElementById('produceName').value = analysisResults.produceName;
-    
+
     // Pre-fill price if available
     if (price) {
         document.getElementById('price').value = price;
         calculateTotal();
     }
-    
+
     modal.classList.add('show');
     document.body.style.overflow = 'hidden';
 }
@@ -276,7 +276,7 @@ function closeTransactionModal() {
     const modal = document.getElementById('transactionModal');
     modal.classList.remove('show');
     document.body.style.overflow = 'auto';
-    
+
     // Reset form
     document.getElementById('transactionForm').reset();
     document.getElementById('errorMessage').style.display = 'none';
@@ -349,20 +349,56 @@ function showError(message) {
     errorDiv.scrollIntoView({ behavior: 'smooth' });
 }
 
+// function showSuccess(result) {
+//     alert(
+//         `✅ Transaction Created Successfully!\n\n` +
+//         `Transaction ID: ${result.transaction?.id || 'N/A'}\n` +
+//         `Ledger Entry ID: ${result.ledger_entry_id}\n` +
+//         `Hash: ${result.hash?.substring(0, 16)}...\n\n` +
+//         `🔗 Blockchain Status:\n` +
+//         `Tx Hash: ${result.transaction?.blockchain_tx_hash || 'Pending'}\n\n` +
+//         `Your transaction has been recorded on Sepolia Testnet.`
+//     );
+//
+//     // Close modal and reset
+//     closeTransactionModal();
+//
+//     // Save price for next transaction
+//     localStorage.setItem('lastMarketPrice', document.getElementById('price').value);
+// }
+
 function showSuccess(result) {
     alert(
-        `✅ Transaction Created Successfully!\n\n` +
-        `Transaction ID: ${result.transaction?.id || 'N/A'}\n` +
-        `Ledger Entry ID: ${result.ledger_entry_id}\n` +
-        `Hash: ${result.hash?.substring(0, 16)}...\n\n` +
-        `🔗 Blockchain Status:\n` +
-        `Tx Hash: ${result.transaction?.blockchain_tx_hash || 'Pending'}\n\n` +
-        `Your transaction has been recorded on Sepolia Testnet.`
+        'Transaction Created Successfully!\n\n' +
+        'Transaction ID: ' + (result.transaction?.id || 'N/A') + '\n' +
+        'Ledger Entry ID: ' + result.ledger_entry_id + '\n' +
+        'Hash: ' + result.hash?.substring(0, 16) + '...\n\n' +
+        'Your transaction has been recorded in the ledger.'
     );
-    
-    // Close modal and reset
+
+    // Save to history
+    saveTransactionToHistory(result);
+
     closeTransactionModal();
-    
-    // Save price for next transaction
     localStorage.setItem('lastMarketPrice', document.getElementById('price').value);
+}
+
+function saveTransactionToHistory(result) {
+    const history = JSON.parse(localStorage.getItem('vegegrade_history') || '[]');
+
+    const historyEntry = {
+        date: new Date().toISOString(),
+        item: document.getElementById('produceName').value,
+        quantity: document.getElementById('quantity').value + ' kg',
+        price: parseFloat(document.getElementById('price').value),
+        buyer: result.transaction?.buyer_name || 'Market Sale',
+        total: parseFloat(document.getElementById('quantity').value) * parseFloat(document.getElementById('price').value),
+        transactionId: result.transaction?.id || 'N/A',
+        grade: document.getElementById('aiGrade').value,
+        blockchainHash: result.hash?.substring(0, 16) + '...' || 'N/A'
+    };
+
+    history.unshift(historyEntry);
+    localStorage.setItem('vegegrade_history', JSON.stringify(history));
+    console.log('Transaction saved to history:', historyEntry);
 }
