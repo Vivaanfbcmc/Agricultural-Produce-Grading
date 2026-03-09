@@ -1,37 +1,39 @@
-import express from "express";
-import cors from "cors";
-import bodyParser from "body-parser";
+import express    from "express";
+import cors        from "cors";
+import bodyParser  from "body-parser";
 import { AgmarknetPriceFetcher } from "./priceapi.js";
 
-const app = express();
+const app  = express();
+const PORT = 3001;
+
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-const PORT = 3001;
-
+// ── Health check ──────────────────────────────────────────────────────────────
 app.get("/", (req, res) => {
     res.json({
-        service: "Agmarknet Price API",
+        service: "Agmarknet Smart Price API",
         status:  "running",
+        season:  "May 2025 – October 2025",
+        method:  "Weighted average with outlier removal (IQR)",
+        grades:  { A: "max_price (premium)", B: "modal_price (average)", C: "min_price (lower)" },
         usage: {
-            POST: "/price → body: { state, district, commodity, grade }",
-            GET:  "/price → query: ?state=Maharashtra&district=Sholapur&commodity=Tomato&grade=A"
-        },
-        example: {
-            state:     "Maharashtra",
-            district:  "Sholapur",
-            commodity: "Tomato",
-            grade:     "A  (A=max price, B=modal price, C=min price)"
+            POST: "POST /price  →  body: { state, district, commodity, grade }",
+            GET:  "GET  /price  →  query: ?state=Maharashtra&district=Solapur&commodity=Tomato&grade=A"
         }
     });
 });
 
-app.post("/price", async (req, res) => {
-    const { state, district, commodity, grade } = req.body || {};
+// ── Shared handler ────────────────────────────────────────────────────────────
+async function handlePrice(params, res) {
+    const { state, district, commodity, grade } = params;
 
     if (!state || !district || !commodity || !grade) {
-        return res.status(400).json({ success: false, message: "Missing parameters: state, district, commodity, grade" });
+        return res.status(400).json({
+            success: false,
+            message: "Missing parameters: state, district, commodity, grade"
+        });
     }
 
     try {
@@ -39,100 +41,56 @@ app.post("/price", async (req, res) => {
         const result  = await fetcher.getPrice(state, district, commodity, grade);
 
         if (!result.success || !result.data) {
-            return res.status(404).json({ success: false, message: result.message || "No price data found" });
+            return res.status(result.error === "No data found" ? 404 : 500).json({
+                success: false,
+                message: result.message || "No price data found"
+            });
         }
 
         const data  = result.data;
-        const g     = grade.toString().toUpperCase();
-        const min   = Number(data.minPrice)   || 0;
-        const modal = Number(data.modalPrice) || 0;
-        const max   = Number(data.maxPrice)   || 0;
-
-        const selected =
-            g === "A" ? max :
-            g === "B" ? modal :
-            g === "C" ? min : modal;
+        const price = Number(data.selectedPrice) || 0;
 
         return res.json({
-            success:       true,
-            grade:         g,
-            // ✅ Main price
-            price:         selected,
-            price_type:    g === "A" ? "max_price" : g === "B" ? "modal_price" : "min_price",
-            price_display: `₹${selected.toLocaleString('en-IN')} per quintal`,
-            // All prices
-            min_price:     min,
-            modal_price:   modal,
-            max_price:     max,
+            success:          true,
+            grade:            data.inputGrade,
+            // ✅ Smart estimated price
+            price,
+            price_type:       data.selectedPriceType,
+            price_display:    `₹${price.toLocaleString('en-IN')} per quintal`,
+            // All 3 prices
+            min_price:        Number(data.minPrice)   || 0,
+            modal_price:      Number(data.modalPrice) || 0,
+            max_price:        Number(data.maxPrice)   || 0,
+            // Simple averages for comparison
+            simple_avg_min:   Number(data.simpleAvgMin)   || 0,
+            simple_avg_modal: Number(data.simpleAvgModal) || 0,
+            simple_avg_max:   Number(data.simpleAvgMax)   || 0,
             // Details
-            commodity:     data.commodity  || commodity,
-            market:        data.market     || '',
-            district:      data.district   || district,
-            state:         data.state      || state,
-            arrival_date:  data.arrivalDate || '',
-            timestamp:     new Date().toISOString()
+            commodity:        data.commodity || commodity,
+            market:           data.market    || '',
+            district:         data.district  || district,
+            state:            data.state     || state,
+            records_used:     data.recordsUsed    || 0,
+            total_fetched:    data.totalFetched   || 0,
+            season:           data.season         || '',
+            used_season_data: data.usedSeasonData ?? false,
+            message:          result.message,
+            timestamp:        new Date().toISOString()
         });
 
     } catch (err) {
         console.error("Price server error:", err);
         return res.status(500).json({ success: false, message: err.message });
     }
-});
+}
 
-app.get("/price", async (req, res) => {
-    const { state, district, commodity, grade } = req.query || {};
+app.post("/price", (req, res) => handlePrice(req.body  || {}, res));
+app.get("/price",  (req, res) => handlePrice(req.query || {}, res));
 
-    if (!state || !district || !commodity || !grade) {
-        return res.status(400).json({ success: false, message: "Missing parameters: state, district, commodity, grade" });
-    }
-
-    try {
-        const fetcher = new AgmarknetPriceFetcher();
-        const result  = await fetcher.getPrice(state, district, commodity, grade);
-
-        if (!result.success || !result.data) {
-            return res.status(404).json({ success: false, message: result.message || "No price data found" });
-        }
-
-        const data  = result.data;
-        const g     = grade.toString().toUpperCase();
-        const min   = Number(data.minPrice)   || 0;
-        const modal = Number(data.modalPrice) || 0;
-        const max   = Number(data.maxPrice)   || 0;
-
-        const selected =
-            g === "A" ? max :
-            g === "B" ? modal :
-            g === "C" ? min : modal;
-
-        return res.json({
-            success:       true,
-            grade:         g,
-            // ✅ Main price
-            price:         selected,
-            price_type:    g === "A" ? "max_price" : g === "B" ? "modal_price" : "min_price",
-            price_display: `₹${selected.toLocaleString('en-IN')} per quintal`,
-            // All prices
-            min_price:     min,
-            modal_price:   modal,
-            max_price:     max,
-            // Details
-            commodity:     data.commodity  || commodity,
-            market:        data.market     || '',
-            district:      data.district   || district,
-            state:         data.state      || state,
-            arrival_date:  data.arrivalDate || '',
-            timestamp:     new Date().toISOString()
-        });
-
-    } catch (err) {
-        console.error("Price GET server error:", err);
-        return res.status(500).json({ success: false, message: err.message });
-    }
-});
-
+// ── Start ─────────────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
-    console.log(`✅ Price API running on http://localhost:${PORT}`);
+    console.log(`✅ Smart Price API running on http://localhost:${PORT}`);
+    console.log(`   Season: May 2025 – October 2025`);
     console.log(`   POST http://localhost:${PORT}/price`);
-    console.log(`   GET  http://localhost:${PORT}/price?state=Maharashtra&district=Sholapur&commodity=Tomato&grade=A`);
+    console.log(`   GET  http://localhost:${PORT}/price?state=Maharashtra&district=Solapur&commodity=Tomato&grade=A`);
 });
