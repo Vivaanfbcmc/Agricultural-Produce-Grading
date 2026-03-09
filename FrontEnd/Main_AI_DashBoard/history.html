@@ -3,7 +3,7 @@
 <head>
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>VEGEGRADE - History</title>
+	<title>VEGEGRADE - Transaction History</title>
 	<link rel="stylesheet" href="AIIndex.css">
 	<style>
 		.header { display:flex; justify-content:space-between; align-items:center; padding:18px 0; }
@@ -15,189 +15,292 @@
 		.history-card { background: rgba(255,255,255,0.04); padding:18px; border-radius:10px; margin-top:22px; }
 		table.history { width:100%; border-collapse:collapse; margin-top:12px; }
 		table.history th, table.history td { padding:10px 8px; text-align:left; border-bottom:1px solid rgba(255,255,255,0.06); }
-		.controls { display:flex; gap:10px; margin-top:12px; }
+		table.history th { background: rgba(255,255,255,0.05); font-weight:600; }
+		.controls { display:flex; gap:10px; margin-top:12px; justify-content:space-between; align-items:center; }
 		.muted { color: rgba(255,255,255,0.7); }
+		.grade-badge {
+			display:inline-block;
+			padding:4px 8px;
+			border-radius:4px;
+			font-size:12px;
+			font-weight:600;
+		}
+		.grade-A { background:#059669; color:#fff; }
+		.grade-B { background:#f59e0b; color:#fff; }
+		.grade-C { background:#f97316; color:#fff; }
+		.grade-ROTTEN { background:#dc2626; color:#fff; }
+		.loading-spinner { text-align:center; padding:40px; }
+		.spinner { width:40px; height:40px; border:4px solid rgba(255,255,255,0.1); border-top-color:#059669; border-radius:50%; animation:spin 1s linear infinite; margin:0 auto; }
+		@keyframes spin { to { transform:rotate(360deg); } }
+		.sync-status { font-size:14px; color:#059669; }
+		.error-message { color:#dc2626; padding:12px; background:rgba(220,38,38,0.1); border-radius:6px; margin-top:12px; }
+		.transaction-id { font-family:monospace; font-size:12px; color:#6b7280; }
 	</style>
 </head>
 <body>
-	<div class="bg-gradient"></div>
+<div class="bg-gradient"></div>
 
-	<div class="container">
-		<!-- Header (shared) -->
-		<header class="header">
-			<div>
-				<div class="logo">VEGE<span>GRADE</span></div>
-				<div class="tagline">AI-Powered Vegetable Quality & Pricing</div>
-			</div>
-			<nav class="nav-links">
-				<a href="AIIndex.html">VEGEGRADE AI</a>
-				<a href="AIIndex.html">Dashboard</a>
-				<a href="history.html">History</a>
-				<a href="profile.html" class="profile-link" title="Profile">
-					<div class="profile-circle">P</div>
-				</a>
-			</nav>
-		</header>
+<div class="container">
+	<!-- Header (shared) -->
+	<header class="header">
+		<div>
+			<div class="logo">VEGE<span>GRADE</span></div>
+			<div class="tagline">AI-Powered Vegetable Quality & Pricing</div>
+		</div>
+		<nav class="nav-links">
+			<a href="AIIndex.html">VEGEGRADE AI</a>
+			<a href="AIIndex.html">Dashboard</a>
+			<a href="history.html">History</a>
+			<a href="profile.html" class="profile-link" title="Profile">
+				<div class="profile-circle">P</div>
+			</a>
+		</nav>
+	</header>
 
-		<main>
-			<section class="hero">
-				<h1>Sales History</h1>
-				<p class="muted">View the records of vegetables you've sold. Entries are stored locally in your browser.</p>
+	<main>
+		<section class="hero">
+			<h1>Transaction History</h1>
+			<p class="muted">View all your vegetable sales and transactions recorded on the blockchain.</p>
 
-				<div class="history-card">
-					<div class="controls">
-						<!-- <button onclick="addDemoEntry()" class="analyze-btn">Add Demo Entry</button> -->
-						<!-- <button onclick="clearHistory()" class="try-again-btn">Clear History</button> -->
+			<div class="history-card">
+				<div class="controls">
+					<div>
+						<button onclick="syncHistory()" class="analyze-btn">🔄 Refresh</button>
+						<span id="syncStatus" class="sync-status"></span>
 					</div>
-
-					<table class="history" id="historyTable">
-						<thead>
-							<tr>
-								<th>Date</th>
-								<th>Item</th>
-								<th>Quantity</th>
-								<th>Price / unit</th>
-								<th>Buyer</th>
-								<th>Total</th>
-							</tr>
-						</thead>
-						<tbody id="historyBody">
-							<!-- rows inserted by JS -->
-						</tbody>
-					</table>
-
-					<p id="emptyState" class="muted" style="display:none; margin-top:12px;">No history yet. Use the <strong>Add Demo Entry</strong> button to add a sample record.</p>
+					<div>
+						<button onclick="clearLocalHistory()" class="try-again-btn">Clear Local Cache</button>
+					</div>
 				</div>
-			</section>
-		</main>
 
-		<footer class="footer">
-			<p>VEGEGRADE &copy; 2023. AI-Powered Vegetable Quality Assessment System.</p>
-		</footer>
-	</div>
+				<div id="loadingSpinner" class="loading-spinner" style="display:none;">
+					<div class="spinner"></div>
+					<p class="muted">Loading transaction history...</p>
+				</div>
 
-	<script>
-		/* ==========================
-							 History integration notes
-							 - This page should fetch history for a specific farmer from the backend.
-							 - Decide how to provide farmerId to this page:
-								 1) Server-rendered: inject a JS variable like window.FARMER_ID = 'F-0001' into the page.
-								 2) Query parameter: open /history.html?farmerId=F-0001 and use getFarmerId() below.
-							 - Backend endpoint convention (example): GET /api/farmers/{farmerId}/history
-								 Response shape expected: JSON array of objects with keys: date, item, quantity, price, buyer, total
-							 - Authentication: set an Authorization header (Bearer token) in fetch() if needed.
-							 - Replace the URL and headers in fetchHistoryFromBackend() with your actual backend details.
-							 ========================== */
+				<div id="errorMessage" class="error-message" style="display:none;"></div>
 
-		function formatDate(iso){ const d = new Date(iso); return d.toLocaleString(); }
+				<table class="history" id="historyTable" style="display:none;">
+					<thead>
+					<tr>
+						<th>Date</th>
+						<th>Transaction ID</th>
+						<th>Item</th>
+						<th>Grade</th>
+						<th>Quantity</th>
+						<th>Price/kg</th>
+						<th>Total</th>
+						<th>Status</th>
+					</tr>
+					</thead>
+					<tbody id="historyBody">
+					<!-- rows inserted by JS -->
+					</tbody>
+				</table>
 
-		// Utility: try to read farmerId from window variable or query param
-		function getFarmerId(){
-			// Option A: server inserts window.FARMER_ID before this script runs
-			if(window.FARMER_ID) return window.FARMER_ID;
-			// Option B: read from query param ?farmerId=
-			const params = new URLSearchParams(window.location.search);
-			if(params.has('farmerId')) return params.get('farmerId');
-			// Fallback: null (no farmer id provided)
-			return null;
-		}
+				<p id="emptyState" class="muted" style="display:none; margin-top:12px; text-align:center;">
+					No transaction history found. Create your first transaction from the dashboard!
+				</p>
+			</div>
+		</section>
+	</main>
 
-		// Fetch history from backend for a given farmerId.
-		// TODO: replace the URL and headers with your real backend endpoint and auth.
-		async function fetchHistoryFromBackend(farmerId){
-			if(!farmerId) return [];
-			try{
-				const url = '/api/farmers/' + encodeURIComponent(farmerId) + '/history'; // example endpoint
-				const res = await fetch(url, {
-					method: 'GET',
-					headers: {
-						'Content-Type': 'application/json',
-						// 'Authorization': 'Bearer <TOKEN>', // add auth if required
-					}
-				});
-				if(!res.ok) throw new Error('Network response was not ok');
-				const data = await res.json();
-				// Expecting an array; validate minimally
-				if(Array.isArray(data)) return data;
-				return [];
-			}catch(err){
-				console.error('Failed to fetch history from backend:', err);
-				return [];
-			}
-		}
+	<footer class="footer">
+		<p>VEGEGRADE &copy; 2023. AI-Powered Vegetable Quality Assessment System.</p>
+	</footer>
+</div>
 
-		// Render list of history entries into the table body
-		function renderHistory(list){
-			const body = document.getElementById('historyBody');
-			const empty = document.getElementById('emptyState');
-			body.innerHTML = '';
-			if(!list || !list.length){ empty.style.display = 'block'; return; }
-			empty.style.display = 'none';
-			list.forEach(entry => {
-				const tr = document.createElement('tr');
-				var row = '';
-				row += '<td>' + formatDate(entry.date) + '</td>';
-				row += '<td>' + (entry.item || '') + '</td>';
-				row += '<td>' + (entry.quantity || '') + '</td>';
-				row += '<td>₹' + (entry.price || '') + '</td>';
-				row += '<td>' + (entry.buyer || '-') + '</td>';
-				row += '<td>₹' + (entry.total || '') + '</td>';
-				tr.innerHTML = row;
-				body.appendChild(tr);
+<script>
+	// Format date to readable format
+	function formatDate(iso) {
+		const d = new Date(iso);
+		return d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
+	}
+
+	// Format currency
+	function formatCurrency(amount) {
+		return new Intl.NumberFormat('en-IN', {
+			style: 'currency',
+			currency: 'INR'
+		}).format(amount);
+	}
+
+	// Get grade badge HTML
+	function getGradeBadge(grade) {
+		const gradeUpper = (grade || 'N/A').toUpperCase();
+		return `<span class="grade-badge grade-${gradeUpper}">${gradeUpper}</span>`;
+	}
+
+	// Fetch history from backend blockchain API
+	async function fetchHistoryFromBackend() {
+		try {
+			const response = await fetch('/api/blockchain/history', {
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json'
+				}
 			});
-		}
 
-		// Keep demo/local helpers for offline testing
-		function addDemoEntry(){
-			const list = JSON.parse(localStorage.getItem('vegegrade_history') || '[]');
-			const demo = { date: new Date().toISOString(), item: 'Tomato', quantity: '10 kg', price: 40, buyer: 'Local Market', total: 400 };
-			list.unshift(demo);
-			localStorage.setItem('vegegrade_history', JSON.stringify(list));
-			renderHistory(list);
-		}
-
-		function clearHistory(){
-			if(!confirm('Clear local demo history?')) return;
-			localStorage.removeItem('vegegrade_history');
-			renderHistory([]);
-		}
-
-		// Public: synchronize with backend and render results.
-		async function syncHistory(){
-			const farmerId = getFarmerId();
-			if(!farmerId){
-				// If no farmerId available, show local demo history as fallback
-				const local = JSON.parse(localStorage.getItem('vegegrade_history') || '[]');
-				renderHistory(local);
-				console.warn('No farmerId supplied. Provide farmerId via window.FARMER_ID or ?farmerId=');
-				return;
+			if (!response.ok) {
+				if (response.status === 401) {
+					throw new Error('Not authenticated. Please log in.');
+				}
+				throw new Error('Failed to fetch transaction history');
 			}
-			// Fetch from backend and render. Replace endpoint/auth as required.
-			const remoteList = await fetchHistoryFromBackend(farmerId);
-			if(remoteList && remoteList.length){
-				renderHistory(remoteList);
-			}else{
-				// Optional: fallback to local cache
-				const local = JSON.parse(localStorage.getItem('vegegrade_history') || '[]');
-				renderHistory(local);
-			}
+
+			const data = await response.json();
+			return data.transactions || data || [];
+		} catch (err) {
+			console.error('Backend fetch error:', err);
+			throw err;
+		}
+	}
+
+	// Get local history from localStorage (fallback)
+	function getLocalHistory() {
+		return JSON.parse(localStorage.getItem('vegegrade_history') || '[]');
+	}
+
+	// Render history entries into the table
+	function renderHistory(list) {
+		const table = document.getElementById('historyTable');
+		const body = document.getElementById('historyBody');
+		const empty = document.getElementById('emptyState');
+		const spinner = document.getElementById('loadingSpinner');
+
+		spinner.style.display = 'none';
+		body.innerHTML = '';
+
+		if (!list || !list.length) {
+			table.style.display = 'none';
+			empty.style.display = 'block';
+			return;
 		}
 
-		// Wire UI control buttons (if present) to actions
-		document.addEventListener('DOMContentLoaded', ()=>{
-			// If you want server-side rendering to inject FARMER_ID, set window.FARMER_ID before this script.
-			// Example server-side injection (Node/Express EJS/Pug):
-			// <script>window.FARMER_ID = '<%= farmer.id %>';</script>
+		empty.style.display = 'none';
+		table.style.display = 'table';
 
-			// Attach optional control buttons if you uncomment them in the markup
-			const addBtn = document.querySelector('.controls .analyze-btn');
-			if(addBtn) addBtn.addEventListener('click', addDemoEntry);
-			const clearBtn = document.querySelector('.controls .try-again-btn');
-			if(clearBtn) clearBtn.addEventListener('click', clearHistory);
+		list.forEach(entry => {
+			const tr = document.createElement('tr');
 
-			// Primary action: sync from backend for the current farmer
-			syncHistory();
+			// Handle both backend format and local storage format
+			const date = entry.created_at || entry.date || new Date().toISOString();
+			const txId = entry.id || entry.transactionId || 'N/A';
+			const item = entry.produce_name || entry.item || 'N/A';
+			const grade = entry.ai_grade || entry.grade || 'N/A';
+			const quantity = entry.quantity || entry.quantity || '0';
+			const price = entry.price || entry.price || 0;
+			const total = entry.total || (parseFloat(quantity) * parseFloat(price)) || 0;
+			const status = entry.status || 'completed';
+
+			// Handle txId - could be number or string
+			const txIdDisplay = txId ? String(txId).substring(0, 8) + '...' : 'N/A';
+
+			tr.innerHTML = `
+					<td>${formatDate(date)}</td>
+					<td class="transaction-id">${txIdDisplay}</td>
+					<td>${item}</td>
+					<td>${getGradeBadge(grade)}</td>
+					<td>${quantity} kg</td>
+					<td>${formatCurrency(price)}</td>
+					<td><strong>${formatCurrency(total)}</strong></td>
+					<td><span class="grade-badge grade-${status === 'verified' ? 'A' : 'B'}">${status}</span></td>
+				`;
+
+			body.appendChild(tr);
 		});
-	</script>
+	}
+
+	// Show error message
+	function showError(message) {
+		const errorDiv = document.getElementById('errorMessage');
+		errorDiv.textContent = '❌ ' + message;
+		errorDiv.style.display = 'block';
+		document.getElementById('loadingSpinner').style.display = 'none';
+	}
+
+	// Hide error message
+	function hideError() {
+		document.getElementById('errorMessage').style.display = 'none';
+	}
+
+	// Sync history from backend (primary) or localStorage (fallback)
+	async function syncHistory() {
+		hideError();
+		document.getElementById('loadingSpinner').style.display = 'block';
+		document.getElementById('syncStatus').textContent = '';
+
+		try {
+			// Try to fetch from backend first
+			const backendHistory = await fetchHistoryFromBackend();
+
+			if (backendHistory && backendHistory.length > 0) {
+				renderHistory(backendHistory);
+				document.getElementById('syncStatus').textContent = '✓ Synced from blockchain';
+
+				// Also update localStorage with backend data for offline access
+				localStorage.setItem('vegegrade_history', JSON.stringify(backendHistory));
+			} else {
+				// Fallback to localStorage if backend returns empty
+				const localHistory = getLocalHistory();
+				renderHistory(localHistory);
+
+				if (localHistory.length > 0) {
+					document.getElementById('syncStatus').textContent = '⚠ Showing local cache (offline)';
+				}
+			}
+		} catch (err) {
+			console.error('Sync error:', err);
+
+			// Show error but also try to display local cache
+			showError(err.message);
+
+			const localHistory = getLocalHistory();
+			if (localHistory.length > 0) {
+				renderHistory(localHistory);
+				document.getElementById('syncStatus').textContent = '⚠ Showing local cache (error fetching from server)';
+			}
+		}
+	}
+
+	// Clear local history cache
+	function clearLocalHistory() {
+		if (!confirm('Clear local transaction cache? This will not delete blockchain records.')) {
+			return;
+		}
+
+		localStorage.removeItem('vegegrade_history');
+		document.getElementById('syncStatus').textContent = '✓ Local cache cleared';
+
+		// Refresh from backend
+		syncHistory();
+	}
+
+	// Initialize on page load
+	document.addEventListener('DOMContentLoaded', () => {
+		// Check if user is authenticated
+		fetch('/api/auth/profile')
+				.then(res => {
+					if (!res.ok) {
+						// Not authenticated, redirect to login
+						window.location.href = '/';
+						return;
+					}
+					return res.json();
+				})
+				.then(data => {
+					if (data && data.user) {
+						// User authenticated, sync history
+						syncHistory();
+					}
+				})
+				.catch(err => {
+					console.error('Auth check error:', err);
+					// Fallback to local history
+					const localHistory = getLocalHistory();
+					renderHistory(localHistory);
+				});
+	});
+</script>
 </body>
 </html>
