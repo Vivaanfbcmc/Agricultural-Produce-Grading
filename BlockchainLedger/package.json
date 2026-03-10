@@ -1,0 +1,19 @@
+{
+  "name": "blockchainledger",
+  "version": "1.0.0",
+  "description": "This is an **isolated blockchain ledger system** added alongside your existing project. Your original files remain **completely untouched**.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "body-parser": "^2.2.2",
+    "cors": "^2.8.6",
+    "ethers": "^6.16.0",
+    "express": "^5.2.1"
+  }
+}
