@@ -1,306 +1,256 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>VEGEGRADE - Transaction History</title>
-	<link rel="stylesheet" href="AIIndex.css">
-	<style>
-		.header { display:flex; justify-content:space-between; align-items:center; padding:18px 0; }
-		.nav-links { display:flex; gap:14px; align-items:center; }
-		.nav-links a { color: #ffffff; text-decoration:none; padding:8px 12px; border-radius:6px; font-weight:600; }
-		.nav-links a:hover { background: rgba(255,255,255,0.06); }
-		.profile-link { display:inline-flex; align-items:center; }
-		.profile-circle { width:40px; height:40px; border-radius:50%; background:#fff; color:#1a1a1a; display:flex; align-items:center; justify-content:center; font-weight:700; }
-		.history-card { background: rgba(255,255,255,0.04); padding:18px; border-radius:10px; margin-top:22px; }
-		table.history { width:100%; border-collapse:collapse; margin-top:12px; }
-		table.history th, table.history td { padding:10px 8px; text-align:left; border-bottom:1px solid rgba(255,255,255,0.06); }
-		table.history th { background: rgba(255,255,255,0.05); font-weight:600; }
-		.controls { display:flex; gap:10px; margin-top:12px; justify-content:space-between; align-items:center; }
-		.muted { color: rgba(255,255,255,0.7); }
-		.grade-badge {
-			display:inline-block;
-			padding:4px 8px;
-			border-radius:4px;
-			font-size:12px;
-			font-weight:600;
-		}
-		.grade-A { background:#059669; color:#fff; }
-		.grade-B { background:#f59e0b; color:#fff; }
-		.grade-C { background:#f97316; color:#fff; }
-		.grade-ROTTEN { background:#dc2626; color:#fff; }
-		.loading-spinner { text-align:center; padding:40px; }
-		.spinner { width:40px; height:40px; border:4px solid rgba(255,255,255,0.1); border-top-color:#059669; border-radius:50%; animation:spin 1s linear infinite; margin:0 auto; }
-		@keyframes spin { to { transform:rotate(360deg); } }
-		.sync-status { font-size:14px; color:#059669; }
-		.error-message { color:#dc2626; padding:12px; background:rgba(220,38,38,0.1); border-radius:6px; margin-top:12px; }
-		.transaction-id { font-family:monospace; font-size:12px; color:#6b7280; }
-	</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VEGEGRADE — Transaction History</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700&family=Source+Serif+Pro:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="AIIndex.css">
+  <link rel="stylesheet" href="history.css">
 </head>
 <body>
-<div class="bg-gradient"></div>
 
-<div class="container">
-	<!-- Header (shared) -->
-	<header class="header">
-		<div>
-			<div class="logo">VEGE<span>GRADE</span></div>
-			<div class="tagline">AI-Powered Vegetable Quality & Pricing</div>
-		</div>
-		<nav class="nav-links">
-			<a href="AIIndex.html">VEGEGRADE AI</a>
-			<a href="AIIndex.html">Dashboard</a>
-			<a href="history.html">History</a>
-			<a href="profile.html" class="profile-link" title="Profile">
-				<div class="profile-circle">P</div>
-			</a>
-		</nav>
-	</header>
-
-	<main>
-		<section class="hero">
-			<h1>Transaction History</h1>
-			<p class="muted">View all your vegetable sales and transactions recorded on the blockchain.</p>
-
-			<div class="history-card">
-				<div class="controls">
-					<div>
-						<button onclick="syncHistory()" class="analyze-btn">🔄 Refresh</button>
-						<span id="syncStatus" class="sync-status"></span>
-					</div>
-					<div>
-						<button onclick="clearLocalHistory()" class="try-again-btn">Clear Local Cache</button>
-					</div>
-				</div>
-
-				<div id="loadingSpinner" class="loading-spinner" style="display:none;">
-					<div class="spinner"></div>
-					<p class="muted">Loading transaction history...</p>
-				</div>
-
-				<div id="errorMessage" class="error-message" style="display:none;"></div>
-
-				<table class="history" id="historyTable" style="display:none;">
-					<thead>
-					<tr>
-						<th>Date</th>
-						<th>Transaction ID</th>
-						<th>Item</th>
-						<th>Grade</th>
-						<th>Quantity</th>
-						<th>Price/kg</th>
-						<th>Total</th>
-						<th>Status</th>
-					</tr>
-					</thead>
-					<tbody id="historyBody">
-					<!-- rows inserted by JS -->
-					</tbody>
-				</table>
-
-				<p id="emptyState" class="muted" style="display:none; margin-top:12px; text-align:center;">
-					No transaction history found. Create your first transaction from the dashboard!
-				</p>
-			</div>
-		</section>
-	</main>
-
-	<footer class="footer">
-		<p>VEGEGRADE &copy; 2023. AI-Powered Vegetable Quality Assessment System.</p>
-	</footer>
+<!-- ── TOP STRIP ──────────────────────────────────── -->
+<div class="top-strip">
+  Government of India &nbsp;|&nbsp; Ministry of Agriculture &amp; Farmers Welfare &nbsp;|&nbsp; VEGEGRADE Portal
 </div>
 
-<script>
-	// Format date to readable format
-	function formatDate(iso) {
-		const d = new Date(iso);
-		return d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
-	}
+<!-- ── HEADER ─────────────────────────────────────── -->
+<header class="site-header">
+  <div class="header-inner">
+    <div class="emblem">🌿</div>
+    <div class="site-title-block">
+      <h1>VEGE<span>GRADE</span></h1>
+      <p>National AI-Powered Vegetable Quality Assessment &amp; Price Estimation System</p>
+    </div>
+    <div class="header-right">
+      <div class="helpline">1800-180-1551 (Toll Free)</div>
+      <div>Kisan Call Centre &nbsp;|&nbsp; Mon–Sat, 6 AM–10 PM</div>
+    </div>
+  </div>
+</header>
 
-	// Format currency
-	function formatCurrency(amount) {
-		return new Intl.NumberFormat('en-IN', {
-			style: 'currency',
-			currency: 'INR'
-		}).format(amount);
-	}
+<!-- ── NAV BAR ────────────────────────────────────── -->
+<nav class="nav-bar">
+  <div class="nav-inner">
+    <a href="AIIndex.html">Home</a>
+    <a href="AIIndex.html">AI Assessment</a>
+    <a href="history.html" class="active">Transaction History</a>
+    <a href="#">Market Prices</a>
+    <a href="#">Guidelines</a>
+    <a href="profile.html">My Profile</a>
+    <a href="#" style="margin-left:auto; border-left:1px solid rgba(255,255,255,0.1);">📋 Dashboard</a>
+  </div>
+</nav>
 
-	// Get grade badge HTML
-	function getGradeBadge(grade) {
-		const gradeUpper = (grade || 'N/A').toUpperCase();
-		return `<span class="grade-badge grade-${gradeUpper}">${gradeUpper}</span>`;
-	}
+<!-- ── BREADCRUMB ──────────────────────────────────── -->
+<div class="breadcrumb-bar">
+  <div class="inner">
+    <a href="#">Home</a><span>›</span>
+    <a href="#">Transactions</a><span>›</span>
+    History Ledger
+  </div>
+</div>
 
-	// Fetch history from backend blockchain API
-	async function fetchHistoryFromBackend() {
-		try {
-			const response = await fetch('/api/blockchain/history', {
-				method: 'GET',
-				headers: {
-					'Content-Type': 'application/json'
-				}
-			});
+<!-- ── PAGE BODY ───────────────────────────────────── -->
+<div class="page-body">
 
-			if (!response.ok) {
-				if (response.status === 401) {
-					throw new Error('Not authenticated. Please log in.');
-				}
-				throw new Error('Failed to fetch transaction history');
-			}
+  <!-- MAIN COLUMN -->
+  <div class="main-col">
 
-			const data = await response.json();
-			return data.transactions || data || [];
-		} catch (err) {
-			console.error('Backend fetch error:', err);
-			throw err;
-		}
-	}
+    <!-- Page Title -->
+    <div class="page-title-strip">
+      <h2>Transaction History Ledger</h2>
+      <p>All vegetable sales and blockchain-recorded transactions associated with your Farmer ID.</p>
+    </div>
 
-	// Get local history from localStorage (fallback)
-	function getLocalHistory() {
-		return JSON.parse(localStorage.getItem('vegegrade_history') || '[]');
-	}
+    <div class="content-card">
+      <div class="content-card-body">
 
-	// Render history entries into the table
-	function renderHistory(list) {
-		const table = document.getElementById('historyTable');
-		const body = document.getElementById('historyBody');
-		const empty = document.getElementById('emptyState');
-		const spinner = document.getElementById('loadingSpinner');
+        <!-- Controls Bar -->
+        <div class="controls-bar">
+          <div class="controls-left">
+            <button class="btn-primary" onclick="syncHistory()">🔄 Refresh from Blockchain</button>
+            <span id="syncStatus" class="sync-status"></span>
+          </div>
+          <div class="controls-right">
+            <button class="btn-secondary" onclick="clearLocalHistory()">🗑 Clear Local Cache</button>
+          </div>
+        </div>
 
-		spinner.style.display = 'none';
-		body.innerHTML = '';
+        <!-- Error Box -->
+        <div class="err-box" id="errorMessage"></div>
 
-		if (!list || !list.length) {
-			table.style.display = 'none';
-			empty.style.display = 'block';
-			return;
-		}
+        <!-- Loading -->
+        <div class="loading-block" id="loadingSpinner" style="display:none;">
+          <div class="spinner"></div>
+          <p>Loading transaction history from blockchain…</p>
+        </div>
 
-		empty.style.display = 'none';
-		table.style.display = 'table';
+        <!-- Summary Stats -->
+        <div class="stats-row" id="statsRow" style="display:none;">
+          <div class="stat-box">
+            <div class="stat-val" id="statTotal">0</div>
+            <div class="stat-lbl">Total Transactions</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-val" id="statRevenue">₹0</div>
+            <div class="stat-lbl">Total Revenue</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-val" id="statGradeA">0</div>
+            <div class="stat-lbl">Grade A Sales</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-val" id="statQuantity">0 kg</div>
+            <div class="stat-lbl">Total Quantity Sold</div>
+          </div>
+        </div>
 
-		list.forEach(entry => {
-			const tr = document.createElement('tr');
+        <!-- History Table -->
+        <div class="table-wrap" id="tableWrap" style="display:none;">
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Date &amp; Time</th>
+                <th>Transaction ID</th>
+                <th>Produce</th>
+                <th>AI Grade</th>
+                <th>Quantity</th>
+                <th>Price / kg</th>
+                <th>Total Amount</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="historyBody">
+              <!-- Rows inserted by history.js -->
+            </tbody>
+          </table>
+        </div>
 
-			// Handle both backend format and local storage format
-			const date = entry.created_at || entry.date || new Date().toISOString();
-			const txId = entry.id || entry.transactionId || 'N/A';
-			const item = entry.produce_name || entry.item || 'N/A';
-			const grade = entry.ai_grade || entry.grade || 'N/A';
-			const quantity = entry.quantity || entry.quantity || '0';
-			const price = entry.price || entry.price || 0;
-			const total = entry.total || (parseFloat(quantity) * parseFloat(price)) || 0;
-			const status = entry.status || 'completed';
+        <!-- Empty State -->
+        <div class="empty-state" id="emptyState" style="display:none;">
+          <div class="empty-icon">📋</div>
+          <h3>No Transactions Found</h3>
+          <p>No transaction history found. Create your first transaction from the AI Assessment page.</p>
+          <a href="AIIndex.html" class="btn-primary" style="display:inline-block; margin-top:14px; text-decoration:none;">
+            Go to AI Assessment →
+          </a>
+        </div>
 
-			// Handle txId - could be number or string
-			const txIdDisplay = txId ? String(txId).substring(0, 8) + '...' : 'N/A';
+      </div><!-- /content-card-body -->
+    </div><!-- /content-card -->
 
-			tr.innerHTML = `
-					<td>${formatDate(date)}</td>
-					<td class="transaction-id">${txIdDisplay}</td>
-					<td>${item}</td>
-					<td>${getGradeBadge(grade)}</td>
-					<td>${quantity} kg</td>
-					<td>${formatCurrency(price)}</td>
-					<td><strong>${formatCurrency(total)}</strong></td>
-					<td><span class="grade-badge grade-${status === 'verified' ? 'A' : 'B'}">${status}</span></td>
-				`;
+  </div><!-- /main-col -->
 
-			body.appendChild(tr);
-		});
-	}
+  <!-- ── SIDEBAR ──────────────────────────────────── -->
+  <aside class="side-col">
 
-	// Show error message
-	function showError(message) {
-		const errorDiv = document.getElementById('errorMessage');
-		errorDiv.textContent = '❌ ' + message;
-		errorDiv.style.display = 'block';
-		document.getElementById('loadingSpinner').style.display = 'none';
-	}
+    <div class="sidebar-box">
+      <div class="sb-head">Quick Links</div>
+      <div class="sb-body">
+        <ul>
+          <li><a href="AIIndex.html">New AI Assessment</a></li>
+          <li><a href="#">Download Report (PDF)</a></li>
+          <li><a href="#">Blockchain Explorer</a></li>
+          <li><a href="#">Market Price Board</a></li>
+          <li><a href="#">Contact Support</a></li>
+        </ul>
+      </div>
+    </div>
 
-	// Hide error message
-	function hideError() {
-		document.getElementById('errorMessage').style.display = 'none';
-	}
+    <div class="sidebar-box">
+      <div class="sb-head">Grade Legend</div>
+      <div class="sb-body">
+        <div class="info-row">
+          <span class="lbl">Grade A</span>
+          <span class="hist-pill pill-grade-a">Excellent</span>
+        </div>
+        <div class="info-row">
+          <span class="lbl">Grade B</span>
+          <span class="hist-pill pill-grade-b">Good</span>
+        </div>
+        <div class="info-row">
+          <span class="lbl">Grade C</span>
+          <span class="hist-pill pill-grade-c">Average</span>
+        </div>
+        <div class="info-row">
+          <span class="lbl">Rotten</span>
+          <span class="hist-pill pill-grade-r">Rejected</span>
+        </div>
+      </div>
+    </div>
 
-	// Sync history from backend (primary) or localStorage (fallback)
-	async function syncHistory() {
-		hideError();
-		document.getElementById('loadingSpinner').style.display = 'block';
-		document.getElementById('syncStatus').textContent = '';
+    <div class="sidebar-box">
+      <div class="sb-head">Data Source</div>
+      <div class="sb-body" style="font-size:13px; color:var(--muted); line-height:1.7;">
+        <p>Primary source: <strong style="color:var(--gov-navy)">Sepolia Testnet</strong></p>
+        <p>Fallback: Local browser cache</p>
+        <p style="margin-top:8px; font-size:12px;">Blockchain records are immutable and legally valid under the Digital Agriculture Mission.</p>
+      </div>
+    </div>
 
-		try {
-			// Try to fetch from backend first
-			const backendHistory = await fetchHistoryFromBackend();
+    <div class="sidebar-box">
+      <div class="sb-head">Help &amp; Support</div>
+      <div class="sb-body" style="font-size:13px; color:var(--muted);">
+        For transaction disputes:<br>
+        <strong style="color:var(--gov-navy)">support@vegegrade.gov.in</strong><br><br>
+        Helpline: <strong style="color:var(--gov-navy)">1800-180-1551</strong><br>
+        (Mon–Sat, 6 AM to 10 PM)
+      </div>
+    </div>
 
-			if (backendHistory && backendHistory.length > 0) {
-				renderHistory(backendHistory);
-				document.getElementById('syncStatus').textContent = '✓ Synced from blockchain';
+  </aside>
 
-				// Also update localStorage with backend data for offline access
-				localStorage.setItem('vegegrade_history', JSON.stringify(backendHistory));
-			} else {
-				// Fallback to localStorage if backend returns empty
-				const localHistory = getLocalHistory();
-				renderHistory(localHistory);
+</div><!-- /page-body -->
 
-				if (localHistory.length > 0) {
-					document.getElementById('syncStatus').textContent = '⚠ Showing local cache (offline)';
-				}
-			}
-		} catch (err) {
-			console.error('Sync error:', err);
+<!-- ── FOOTER ──────────────────────────────────────── -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-col">
+      <h4>VEGEGRADE Portal</h4>
+      <ul>
+        <li><a href="#">About the Portal</a></li>
+        <li><a href="#">How It Works</a></li>
+        <li><a href="#">API Access</a></li>
+        <li><a href="#">Open Data</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Related Services</h4>
+      <ul>
+        <li><a href="#">PM-KISAN Portal</a></li>
+        <li><a href="#">eNAM Market</a></li>
+        <li><a href="#">Soil Health Card</a></li>
+        <li><a href="#">Krishi Vigyan Kendras</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Legal</h4>
+      <ul>
+        <li><a href="#">Terms &amp; Conditions</a></li>
+        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="#">Copyright Policy</a></li>
+        <li><a href="#">Accessibility Statement</a></li>
+      </ul>
+    </div>
+    <div class="footer-col" style="flex:1; min-width:200px;">
+      <h4>About</h4>
+      <p style="font-size:13px; line-height:1.6;">
+        VEGEGRADE is an initiative under the Digital Agriculture Mission,
+        Ministry of Agriculture &amp; Farmers Welfare, Government of India.
+      </p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    © 2023 VEGEGRADE. A Government of India Initiative.
+    &nbsp;|&nbsp; Last Updated: April 2023
+    &nbsp;|&nbsp; Site Version 2.1.0
+  </div>
+</footer>
 
-			// Show error but also try to display local cache
-			showError(err.message);
-
-			const localHistory = getLocalHistory();
-			if (localHistory.length > 0) {
-				renderHistory(localHistory);
-				document.getElementById('syncStatus').textContent = '⚠ Showing local cache (error fetching from server)';
-			}
-		}
-	}
-
-	// Clear local history cache
-	function clearLocalHistory() {
-		if (!confirm('Clear local transaction cache? This will not delete blockchain records.')) {
-			return;
-		}
-
-		localStorage.removeItem('vegegrade_history');
-		document.getElementById('syncStatus').textContent = '✓ Local cache cleared';
-
-		// Refresh from backend
-		syncHistory();
-	}
-
-	// Initialize on page load
-	document.addEventListener('DOMContentLoaded', () => {
-		// Check if user is authenticated
-		fetch('/api/auth/profile')
-				.then(res => {
-					if (!res.ok) {
-						// Not authenticated, redirect to login
-						window.location.href = '/';
-						return;
-					}
-					return res.json();
-				})
-				.then(data => {
-					if (data && data.user) {
-						// User authenticated, sync history
-						syncHistory();
-					}
-				})
-				.catch(err => {
-					console.error('Auth check error:', err);
-					// Fallback to local history
-					const localHistory = getLocalHistory();
-					renderHistory(localHistory);
-				});
-	});
-</script>
+<script src="history.js"></script>
 </body>
 </html>

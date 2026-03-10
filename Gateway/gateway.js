@@ -1,4 +1,4 @@
-// gateway.js - API Gateway (God Server)
+// gateway.js - API Gateway (God Server) - WITH DEBUG LOGGING
 import express from 'express';
 import session from 'express-session';
 import path from 'path';
@@ -24,6 +24,12 @@ const upload = multer({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Request logging middleware
+app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    next();
+});
+
 // Session configuration
 app.use(
     session({
@@ -38,11 +44,22 @@ app.use(
     })
 );
 
-// Serve static files (Frontend) - Multiple directories for different assets
-app.use(express.static(path.join(__dirname, '../FrontEnd')));
-app.use(express.static(path.join(__dirname, '../FrontEnd/SIGN_in_Page')));
-app.use(express.static(path.join(__dirname, '../FrontEnd/Main_AI_DashBoard')));
-app.use('/images', express.static(path.join(__dirname, '../FrontEnd/images')));
+// Serve static files (Frontend) - Multiple directories
+const frontendPath = path.join(__dirname, '../FrontEnd');
+const signinPath = path.join(__dirname, '../FrontEnd/SIGN_in_Page');
+const dashboardPath = path.join(__dirname, '../FrontEnd/Main_AI_DashBoard');
+const imagesPath = path.join(__dirname, '../FrontEnd/images');
+
+console.log('Static file paths:');
+console.log('  Frontend:', frontendPath);
+console.log('  Sign-in:', signinPath);
+console.log('  Dashboard:', dashboardPath);
+console.log('  Images:', imagesPath);
+
+app.use(express.static(frontendPath));
+app.use(express.static(signinPath));
+app.use(express.static(dashboardPath));
+app.use('/images', express.static(imagesPath));
 
 // Service URLs - Internal server-to-server communication
 const SERVICES = {
@@ -52,11 +69,18 @@ const SERVICES = {
     BLOCKCHAIN: process.env.BLOCKCHAIN_SERVICE_URL || 'http://localhost:3000'
 };
 
+console.log('Service configuration:');
+Object.entries(SERVICES).forEach(([name, url]) => {
+    console.log(`  ${name}: ${url}`);
+});
+
 // ==================== UTILITY FUNCTIONS ====================
 
 async function forwardRequest(serviceUrl, path, options = {}) {
     try {
         const url = `${serviceUrl}${path}`;
+        console.log(`→ Forwarding to: ${url}`);
+
         const response = await fetch(url, {
             ...options,
             headers: {
@@ -74,13 +98,15 @@ async function forwardRequest(serviceUrl, path, options = {}) {
             data = await response.text();
         }
 
+        console.log(`← Response from ${serviceUrl}: ${response.status}`);
+
         return {
             status: response.status,
             ok: response.ok,
             data
         };
     } catch (error) {
-        console.error(`Error forwarding request to ${serviceUrl}${path}:`, error.message);
+        console.error(`✗ Error forwarding to ${serviceUrl}${path}:`, error.message);
         return {
             status: 503,
             ok: false,
@@ -93,16 +119,24 @@ async function forwardRequest(serviceUrl, path, options = {}) {
 
 // Register
 app.post('/api/auth/register', async (req, res) => {
+    console.log('📝 Registration request:', req.body.phone);
     const result = await forwardRequest(SERVICES.AUTH, '/api/auth/register', {
         method: 'POST',
         body: JSON.stringify(req.body)
     });
+
+    if (result.ok) {
+        console.log('✓ Registration successful');
+    } else {
+        console.log('✗ Registration failed:', result.data);
+    }
 
     res.status(result.status).json(result.data);
 });
 
 // Login
 app.post('/api/auth/login', async (req, res) => {
+    console.log('🔐 Login request:', req.body.phone);
     const result = await forwardRequest(SERVICES.AUTH, '/api/auth/login', {
         method: 'POST',
         body: JSON.stringify(req.body)
@@ -112,6 +146,9 @@ app.post('/api/auth/login', async (req, res) => {
     if (result.ok && result.data.user) {
         req.session.isAuth = true;
         req.session.user = result.data.user;
+        console.log('✓ Login successful, session created for:', req.session.user.fullName);
+    } else {
+        console.log('✗ Login failed:', result.data);
     }
 
     res.status(result.status).json(result.data);
@@ -119,6 +156,8 @@ app.post('/api/auth/login', async (req, res) => {
 
 // Get Profile
 app.get('/api/auth/profile', async (req, res) => {
+    console.log('👤 Profile request, session auth:', req.session.isAuth);
+
     if (!req.session.isAuth || !req.session.user) {
         return res.status(401).json({ error: 'Not authenticated' });
     }
@@ -128,6 +167,7 @@ app.get('/api/auth/profile', async (req, res) => {
 
 // Logout
 app.post('/api/auth/logout', (req, res) => {
+    console.log('👋 Logout request');
     req.session.destroy((err) => {
         if (err) {
             return res.status(500).json({ error: 'Logout failed' });
@@ -140,9 +180,13 @@ app.post('/api/auth/logout', (req, res) => {
 
 // Analyze Image
 app.post('/api/ml/analyze', upload.single('image'), async (req, res) => {
+    console.log('🔬 ML Analysis request');
+
     if (!req.file) {
         return res.status(400).json({ success: false, message: 'No image uploaded' });
     }
+
+    console.log('  File:', req.file.originalname, `(${req.file.size} bytes)`);
 
     try {
         // Create form data for forwarding to ML service
@@ -159,10 +203,12 @@ app.post('/api/ml/analyze', upload.single('image'), async (req, res) => {
         });
 
         const data = await response.json();
+        console.log('  Result:', data);
+
         res.status(response.status).json(data);
 
     } catch (error) {
-        console.error('ML service error:', error.message);
+        console.error('✗ ML service error:', error.message);
         res.status(500).json({
             success: false,
             message: 'ML service unavailable'
@@ -174,6 +220,7 @@ app.post('/api/ml/analyze', upload.single('image'), async (req, res) => {
 
 // Get Price
 app.post('/api/price', async (req, res) => {
+    console.log('💰 Price request:', req.body);
     const result = await forwardRequest(SERVICES.PRICE, '/price', {
         method: 'POST',
         body: JSON.stringify(req.body)
@@ -186,22 +233,18 @@ app.post('/api/price', async (req, res) => {
 
 // Create Transaction
 app.post('/api/blockchain/transactions', async (req, res) => {
-    // Support both session-based auth and direct farmerId in request body
-    let transactionData = { ...req.body };
-    
-    if (req.session.isAuth && req.session.user) {
-        // If authenticated via session, add verified session info
-        transactionData = {
-            ...transactionData,
-            farmer_id: req.session.user.farmerId,
-            farmerName: req.session.user.fullName
-        };
-    } else {
-        // Direct request with farmer_id provided
-        if (!transactionData.farmer_id) {
-            return res.status(400).json({ error: 'farmer_id is required' });
-        }
+    console.log('⛓️  Blockchain transaction request');
+
+    if (!req.session.isAuth || !req.session.user) {
+        return res.status(401).json({ error: 'Not authenticated' });
     }
+
+    // Add user info to transaction
+    const transactionData = {
+        ...req.body,
+        farmerId: req.session.user.farmerId,
+        farmerName: req.session.user.fullName
+    };
 
     const result = await forwardRequest(SERVICES.BLOCKCHAIN, '/api/transactions', {
         method: 'POST',
@@ -213,6 +256,7 @@ app.post('/api/blockchain/transactions', async (req, res) => {
 
 // Get Ledger
 app.get('/api/blockchain/ledger', async (req, res) => {
+    console.log('📖 Ledger request');
     const result = await forwardRequest(SERVICES.BLOCKCHAIN, '/api/ledger', {
         method: 'GET'
     });
@@ -222,6 +266,7 @@ app.get('/api/blockchain/ledger', async (req, res) => {
 
 // Verify Ledger
 app.get('/api/blockchain/verify', async (req, res) => {
+    console.log('✓ Verify ledger request');
     const result = await forwardRequest(SERVICES.BLOCKCHAIN, '/api/ledger/verify', {
         method: 'GET'
     });
@@ -231,24 +276,34 @@ app.get('/api/blockchain/verify', async (req, res) => {
 
 // Get Transaction History (for logged-in user)
 app.get('/api/blockchain/history', async (req, res) => {
+    console.log('[GET] Transaction history request');
+
     if (!req.session.isAuth || !req.session.user) {
         return res.status(401).json({ error: 'Not authenticated' });
     }
 
-    // Forward request with farmer ID filter
     const farmerId = req.session.user.farmerId;
+    console.log('  Farmer ID:', farmerId);
+
     const result = await forwardRequest(
         SERVICES.BLOCKCHAIN,
-        `/api/transactions?farmerId=${farmerId}`,
+        `/api/history?farmerId=${farmerId}`,
         { method: 'GET' }
     );
 
-    res.status(result.status).json(result.data);
+    if (result.ok && result.data) {
+        const transactions = result.data.transactions || result.data;
+        res.status(result.status).json({ transactions });
+    } else {
+        res.status(result.status).json(result.data);
+    }
 });
 
 // ==================== HEALTH CHECK ====================
 
 app.get('/api/health', async (req, res) => {
+    console.log('❤️  Health check');
+
     const health = {
         gateway: 'healthy',
         timestamp: new Date().toISOString(),
@@ -280,38 +335,46 @@ app.get('/api/health', async (req, res) => {
 
 // Serve main pages
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../FrontEnd/SIGN_in_Page/Index.html'));
+    console.log('🏠 Serving home page');
+    res.sendFile(path.join(signinPath, 'Index.html'));
 });
 
 app.get('/dashboard', (req, res) => {
+    console.log('📊 Dashboard request, authenticated:', req.session.isAuth);
+
     if (!req.session.isAuth) {
         return res.redirect('/');
     }
-    res.sendFile(path.join(__dirname, '../FrontEnd/Main_AI_DashBoard/AIIndex.html'));
+    res.sendFile(path.join(dashboardPath, 'AIIndex.html'));
 });
 
 app.get('/profile', (req, res) => {
+    console.log('👤 Profile page request, authenticated:', req.session.isAuth);
+
     if (!req.session.isAuth) {
         return res.redirect('/');
     }
-    res.sendFile(path.join(__dirname, '../FrontEnd/Main_AI_DashBoard/profile.html'));
+    res.sendFile(path.join(dashboardPath, 'profile.html'));
 });
 
 app.get('/history', (req, res) => {
+    console.log('📜 History page request, authenticated:', req.session.isAuth);
+
     if (!req.session.isAuth) {
         return res.redirect('/');
     }
-    res.sendFile(path.join(__dirname, '../FrontEnd/Main_AI_DashBoard/history.html'));
+    res.sendFile(path.join(dashboardPath, 'history.html'));
 });
 
 // ==================== ERROR HANDLING ====================
 
 app.use((req, res) => {
+    console.log('⚠️  404 Not Found:', req.url);
     res.status(404).json({ error: 'Route not found' });
 });
 
 app.use((err, req, res, next) => {
-    console.error('Gateway error:', err);
+    console.error('❌ Gateway error:', err);
     res.status(500).json({
         error: 'Internal server error',
         message: process.env.NODE_ENV === 'development' ? err.message : undefined
@@ -323,13 +386,18 @@ app.use((err, req, res, next) => {
 const PORT = process.env.GATEWAY_PORT || 4000;
 
 app.listen(PORT, () => {
+    console.log('='.repeat(60));
+    console.log('🚀 API GATEWAY RUNNING');
+    console.log('='.repeat(60));
+    console.log(`Gateway URL: http://localhost:${PORT}`);
     console.log('\nForwarding to services:');
     console.log(`  Auth:       ${SERVICES.AUTH}`);
     console.log(`  ML:         ${SERVICES.ML}`);
     console.log(`  Price:      ${SERVICES.PRICE}`);
     console.log(`  Blockchain: ${SERVICES.BLOCKCHAIN}`);
-    console.log(`GOD SERVER (Gateway URL): http://localhost:${PORT}`);
-    console.log(`One Server to rule them all`)
+    console.log('='.repeat(60));
+    console.log('\n📝 Debug logging enabled');
+    console.log('All requests will be logged to console\n');
 });
 
 export default app;
