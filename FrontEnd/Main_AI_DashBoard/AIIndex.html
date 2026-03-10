@@ -3,205 +3,383 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VEGEGRADE - AI Vegetable Grading</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
-  <link rel="stylesheet" href="AIIndex.css" />
-  
-  <style>
-    .header { display:flex; justify-content:space-between; align-items:center; padding:18px 0; }
-    .nav-links { display:flex; gap:14px; align-items:center; }
-    .nav-links a { color: #ffffff; text-decoration:none; padding:8px 12px; border-radius:6px; font-weight:600; }
-    .nav-links a:hover { background: rgba(255,255,255,0.06); }
-    .profile-link { display:inline-flex; align-items:center; }
-    .profile-circle { width:40px; height:40px; border-radius:50%; background:#fff; color:#1a1a1a; display:flex; align-items:center; justify-content:center; font-weight:700; }
-  </style>
-
+  <title>VEGEGRADE — AI Vegetable Quality Assessment</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700&family=Source+Serif+Pro:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="AIIndex.css">
 </head>
 <body>
-  <div class="bg-gradient"></div>
 
-  <div class="container">
-    <!-- Header -->
-    <header class="header">
+<!-- ── TOP STRIP ──────────────────────────────────── -->
+<div class="top-strip">
+  Government of India &nbsp;|&nbsp; Ministry of Agriculture &amp; Farmers Welfare &nbsp;|&nbsp; VEGEGRADE Portal
+</div>
+
+<!-- ── HEADER ─────────────────────────────────────── -->
+<header class="site-header">
+  <div class="header-inner">
+    <div class="emblem" title="VEGEGRADE">🌿</div>
+    <div class="site-title-block">
+      <h1>VEGE<span>GRADE</span></h1>
+      <p>National AI-Powered Vegetable Quality Assessment &amp; Price Estimation System</p>
+    </div>
+    <div class="header-right">
+      <div class="helpline">1800-180-1551 (Toll Free)</div>
+      <div>Kisan Call Centre &nbsp;|&nbsp; Mon–Sat, 6 AM–10 PM</div>
+    </div>
+  </div>
+</header>
+
+<!-- ── NAV BAR ────────────────────────────────────── -->
+<nav class="nav-bar">
+  <div class="nav-inner">
+    <a href="AIIndex.html" class="active">Home</a>
+    <a href="AIIndex.html">AI Assessment</a>
+    <a href="history.html">Transaction History</a>
+    <a href="#">Market Prices</a>
+    <a href="#">Guidelines</a>
+    <a href="profile.html">My Profile</a>
+    <a href="#" style="margin-left:auto; border-left:1px solid rgba(255,255,255,0.1);">📋 Dashboard</a>
+  </div>
+</nav>
+
+<!-- ── BREADCRUMB ──────────────────────────────────── -->
+<div class="breadcrumb-bar">
+  <div class="inner">
+    <a href="#">Home</a><span>›</span>
+    <a href="#">AI Assessment</a><span>›</span>
+    Upload &amp; Analyze
+  </div>
+</div>
+
+<!-- ── PAGE BODY ───────────────────────────────────── -->
+<div class="page-body">
+
+  <!-- MAIN COLUMN -->
+  <div class="main-col">
+
+    <!-- Notice Banner -->
+    <div class="notice-banner">
+      <div class="notice-icon">ℹ️</div>
       <div>
-        <div class="logo">VEGE<span>GRADE</span></div>
-        <div class="tagline">AI-Powered Vegetable Quality & Pricing</div>
-      </div>
-      <nav class="nav-links">
-        <a href="AIIndex.html">VEGEGRADE AI</a>
-        <a href="AIIndex.html">Dashboard</a>
-        <a href="history.html">History</a>
-        <a href="profile.html" class="profile-link" title="Profile">
-          <div class="profile-circle">P</div>
-        </a>
-      </nav>
-    </header>
-
-    <!-- Hero Section -->
-    <section class="hero">
-      <h1>AI Vegetable Quality Assessment</h1>
-      <p>Upload a photo of your vegetables and get instant AI-powered quality grading and price estimation.</p>
-
-      <div class="main-card">
-        <h2 class="card-title">Upload Vegetable Image</h2>
-        <p class="card-subtitle">Our AI will analyze the quality, freshness, and grade of your vegetables.</p>
-
-        <!-- Upload Area -->
-        <div class="upload-area" id="uploadArea">
-          <div class="upload-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-            </svg>
-          </div>
-          <h3>Drag & Drop or Click to Upload</h3>
-          <p>Supported formats: JPG, PNG, WebP (Max 5MB)</p>
-          <button class="upload-btn" onclick="document.getElementById('fileInput').click()">Choose File</button>
-          <input type="file" id="fileInput" class="file-input" accept="image/*" onchange="handleFileSelect(event)">
-        </div>
-
-        <!-- Preview Area -->
-        <div class="preview-container" id="previewContainer">
-          <h3 class="preview-title">Selected Image</h3>
-          <div class="preview-area">
-            <img id="previewImage" class="preview-img" src="" alt="Preview">
-            <div class="preview-info">
-              <p><strong>File Name:</strong> <span id="fileName"></span></p>
-              <p><strong>File Size:</strong> <span id="fileSize"></span></p>
-              <p><strong>Dimensions:</strong> <span id="fileDimensions"></span></p>
-              <p><strong>Uploaded:</strong> Just now</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Loading Animation -->
-        <div class="loading" id="loading">
-          <div class="spinner"></div>
-          <p>AI is analyzing your vegetable image...</p>
-        </div>
-
-        <!-- Analyze Button -->
-        <button class="analyze-btn" id="analyzeBtn" onclick="analyzeImage()" disabled>Analyze with AI</button>
-      </div>
-    </section>
-
-    <!-- Result Section -->
-    <section class="result-section" id="resultSection">
-      <h2 class="result-title">AI Assessment Result</h2>
-      
-      <div class="result-card">
-        <img id="resultImage" class="result-img" src="" alt="Analyzed Vegetable">
-        
-        <div class="ai-assessment">
-          <h3>Vegetable Quality Analysis</h3>
-          
-          <div class="grade-badge">
-            Grade: <span id="gradeValue">A</span>
-          </div>
-          
-          <div class="price-range">
-            Price: <span id="priceValue">₹40–₹60 / kg</span>
-          </div>
-          
-          <div class="analysis-details">
-            <h4>Detailed Analysis</h4>
-            <ul class="details-list" id="analysisDetails">
-              <!-- Filled by JavaScript -->
-            </ul>
-          </div>
-          
-          <div class="button-group">
-            <button class="try-again-btn" onclick="resetApp()">Analyze Another Vegetable</button>
-            <button class="create-transaction-btn" onclick="openTransactionModal()">Create Transaction</button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Transaction Modal -->
-    <div class="modal" id="transactionModal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2>Create Blockchain Transaction</h2>
-          <button class="modal-close" onclick="closeTransactionModal()">×</button>
-        </div>
-        
-        <div class="modal-body">
-          <form id="transactionForm">
-            <div class="form-group">
-              <label for="farmerId">Farmer ID *</label>
-              <input type="text" id="farmerId" name="farmerId" readonly class="form-control">
-              <small>Auto-filled from your profile</small>
-            </div>
-
-            <div class="form-group">
-              <label for="produceName">Produce Name *</label>
-              <input type="text" id="produceName" name="produceName" readonly class="form-control">
-              <small>Auto-detected from image analysis</small>
-            </div>
-
-            <div class="form-group">
-              <label for="aiGrade">AI Grade *</label>
-              <input type="text" id="aiGrade" name="aiGrade" readonly class="form-control">
-              <small>Auto-filled from analysis result</small>
-            </div>
-
-            <div class="form-group">
-              <label for="quantity">Quantity (in kg) *</label>
-              <input type="number" id="quantity" name="quantity" placeholder="Enter quantity" step="0.01" min="0" class="form-control" required>
-            </div>
-
-            <div class="form-group">
-              <label for="price">Price (per kg in ₹) *</label>
-              <input type="number" id="price" name="price" placeholder="Enter price" step="0.01" min="0" class="form-control" required>
-              <small>Current market price will be auto-filled if available</small>
-            </div>
-
-            <div class="form-group">
-              <label for="status">Status</label>
-              <select id="status" name="status" class="form-control">
-                <option value="pending">Pending</option>
-                <option value="verified" selected>Verified</option>
-                <option value="completed">Completed</option>
-              </select>
-            </div>
-
-            <div class="form-group info-box">
-              <strong>Total Amount:</strong> <span id="totalAmount">₹0.00</span>
-            </div>
-
-            <div class="form-group info-box blockchain-info">
-              <strong>⛓️ Blockchain Integration:</strong>
-              <p>This transaction will be recorded on Sepolia Testnet and stored in the ledger.</p>
-            </div>
-          </form>
-        </div>
-
-        <div class="modal-footer">
-          <button class="btn-cancel" onclick="closeTransactionModal()">Cancel</button>
-          <button class="btn-submit" id="submitTransactionBtn" onclick="submitTransaction()">Create Transaction</button>
-        </div>
-
-        <div class="loading-modal" id="loadingModal" style="display:none;">
-          <div class="spinner"></div>
-          <p>Creating transaction and anchoring to blockchain...</p>
-        </div>
-
-        <div class="error-message" id="errorMessage" style="display:none;"></div>
+        <strong>Important Notice:</strong> This portal uses AI to provide grade estimations for tomatoes.
+        Results are advisory in nature. For official grading, contact your nearest APMC Market Committee.
+        Currently operational for <strong>Tomato (Commodity ID: 23)</strong>.
       </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="footer">
-      <p>VEGEGRADE &copy; 2023. AI-Powered Vegetable Quality Assessment System.</p>
-      <div class="api-note">
-        <strong>API Integration:</strong> Our system can be integrated into your applications using our API. 
-        Register for API access to get real-time vegetable grading and pricing data.
-      </div>
-    </footer>
-  </div>
+    <!-- ── UPLOAD CARD ──────────────────────────────── -->
+    <div class="page-title-strip">
+      <h2>Step 1: Upload Vegetable Image</h2>
+      <p>Upload a clear photograph of your vegetables for AI-based quality assessment.</p>
+    </div>
 
-  <script src = "AIIndex.js">
-    
-  </script>
+    <div class="content-card">
+      <div class="content-card-body">
+
+        <!-- Upload Zone -->
+        <div class="upload-zone" id="uploadArea"
+             onclick="document.getElementById('fileInput').click()">
+          <div class="uz-icon">📷</div>
+          <h3>Drag &amp; Drop Image Here or Click to Browse</h3>
+          <p>Accepted formats: JPG, PNG, WebP &nbsp;|&nbsp; Maximum file size: 5 MB</p>
+          <button class="btn-primary" type="button"
+                  onclick="event.stopPropagation(); document.getElementById('fileInput').click()">
+            Browse Files
+          </button>
+          <input type="file" id="fileInput" accept="image/*" onchange="handleFileSelect(event)">
+        </div>
+
+        <!-- Preview Section -->
+        <div class="preview-section" id="previewContainer">
+          <div class="section-label">Selected Image Details</div>
+          <div class="preview-flex">
+            <img id="previewImage" class="preview-img" src="" alt="Preview">
+            <table class="meta-table">
+              <tr><td>File Name</td>  <td id="fileName">—</td></tr>
+              <tr><td>File Size</td>  <td id="fileSize">—</td></tr>
+              <tr><td>Dimensions</td> <td id="fileDimensions">—</td></tr>
+              <tr><td>Uploaded</td>   <td>Just now</td></tr>
+              <tr><td>Status</td>
+                  <td><span class="status-pill pill-green">Ready for Analysis</span></td></tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- Loading Block -->
+        <div class="loading-block" id="loading">
+          <div class="spinner"></div>
+          <p>Processing image through AI model. Please wait…</p>
+        </div>
+
+      </div><!-- /content-card-body -->
+
+      <!-- Analyze Strip -->
+      <div class="analyze-strip">
+        <button class="btn-primary" id="analyzeBtn"
+                onclick="analyzeImage()" disabled
+                style="padding:12px 40px; font-size:15px; min-width:200px;">
+          ▶ Analyze with AI
+        </button>
+        <div style="font-size:12px; color:var(--muted); margin-top:8px;">
+          Powered by VEGEGRADE ML Engine v2.1
+        </div>
+      </div>
+    </div><!-- /content-card -->
+
+    <!-- ── RESULT SECTION ──────────────────────────── -->
+    <div class="result-section" id="resultSection">
+      <div class="result-header">
+        <span style="font-size:22px">✔</span>
+        <h2>AI Assessment Result</h2>
+      </div>
+      <div class="result-body">
+        <div class="result-flex">
+
+          <!-- Image -->
+          <div class="result-img-wrap">
+            <img id="resultImage" class="result-img" src="" alt="Analyzed">
+            <div style="font-size:12px; color:var(--muted); margin-top:6px; text-align:center;">
+              Analyzed Image
+            </div>
+          </div>
+
+          <!-- Details -->
+          <div class="result-details">
+            <div class="section-label">Grade &amp; Price Estimate</div>
+            <div class="badge-row">
+              <div class="grade-badge" id="gradeBadge">
+                Grade: <span id="gradeValue">—</span>
+              </div>
+              <div class="price-badge">
+                💰 <span id="priceValue">Fetching…</span>
+              </div>
+            </div>
+
+            <div class="section-label" style="margin-top:16px;">Quality Parameters</div>
+            <table class="analysis-table">
+              <thead>
+                <tr>
+                  <td>Parameter</td>
+                  <td>Assessment</td>
+                  <td>Status</td>
+                </tr>
+              </thead>
+              <tbody id="analysisDetails">
+                <!-- Filled by AIIndex.js -->
+              </tbody>
+            </table>
+
+            <div class="btn-row">
+              <button class="btn-secondary" onclick="resetApp()">↺ Analyze Another</button>
+              <button class="btn-amber"     onclick="openTransactionModal()">📄 Create Transaction</button>
+            </div>
+          </div><!-- /result-details -->
+
+        </div><!-- /result-flex -->
+      </div><!-- /result-body -->
+    </div><!-- /result-section -->
+
+  </div><!-- /main-col -->
+
+  <!-- ── SIDEBAR ──────────────────────────────────── -->
+  <aside class="side-col">
+
+    <div class="sidebar-box">
+      <div class="sb-head">Quick Links</div>
+      <div class="sb-body">
+        <ul>
+          <li><a href="#">Grading Standards (AGMARK)</a></li>
+          <li><a href="#">Upload Guidelines</a></li>
+          <li><a href="#">Market Price Board</a></li>
+          <li><a href="#">Download Mobile App</a></li>
+          <li><a href="#">Contact Support</a></li>
+          <li><a href="#">FAQs</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="sidebar-box">
+      <div class="sb-head">Today's Rates (Tomato)</div>
+      <div class="sb-body">
+        <div class="info-row">
+          <span class="lbl">Grade A</span>
+          <span class="val" style="color:var(--gov-green)">₹2,400/qtl</span>
+        </div>
+        <div class="info-row">
+          <span class="lbl">Grade B</span>
+          <span class="val" style="color:#0077AA">₹1,800/qtl</span>
+        </div>
+        <div class="info-row">
+          <span class="lbl">Grade C</span>
+          <span class="val" style="color:var(--gov-orange)">₹1,100/qtl</span>
+        </div>
+        <div class="info-row">
+          <span class="lbl">Rotten</span>
+          <span class="val" style="color:var(--gov-red)">Rejected</span>
+        </div>
+        <div style="font-size:11.5px; color:var(--muted); margin-top:8px;">
+          Source: CEDA — Updated daily
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-box">
+      <div class="sb-head">Grading Criteria</div>
+      <div class="sb-body">
+        <div class="info-row"><span class="lbl">Grade A</span><span class="val">Excellent</span></div>
+        <div class="info-row"><span class="lbl">Grade B</span><span class="val">Good</span></div>
+        <div class="info-row"><span class="lbl">Grade C</span><span class="val">Average</span></div>
+        <div class="info-row"><span class="lbl">Rotten</span><span class="val">Rejected</span></div>
+        <div style="font-size:11.5px; color:var(--muted); margin-top:8px;">
+          As per AGMARK / FSSAI standards
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-box">
+      <div class="sb-head">Help &amp; Support</div>
+      <div class="sb-body" style="color:var(--muted);">
+        For technical issues contact:<br>
+        <strong style="color:var(--gov-navy)">support@vegegrade.gov.in</strong><br><br>
+        Helpline: <strong style="color:var(--gov-navy)">1800-180-1551</strong><br>
+        (Mon–Sat, 6 AM to 10 PM)
+      </div>
+    </div>
+
+  </aside><!-- /side-col -->
+
+</div><!-- /page-body -->
+
+<!-- ── TRANSACTION MODAL ─────────────────────────── -->
+<div class="modal-overlay" id="transactionModal">
+  <div class="modal-box">
+
+    <div class="modal-title-bar">
+      <h3>⛓ Create Blockchain Transaction</h3>
+      <button class="modal-close" onclick="closeTransactionModal()">×</button>
+    </div>
+
+    <div class="modal-inner">
+
+      <div class="err-box" id="errorMessage"></div>
+
+      <div class="modal-loading" id="loadingModal">
+        <div class="spinner"></div>
+        <p>Creating transaction and anchoring to Sepolia Testnet…</p>
+      </div>
+
+      <div id="transactionFormWrap">
+
+        <div class="form-row">
+          <label>Farmer ID <span class="req">*</span></label>
+          <input type="text" id="farmerId" readonly>
+          <div class="hint">Auto-filled from your profile</div>
+        </div>
+
+        <div class="form-row">
+          <label>Produce Name <span class="req">*</span></label>
+          <input type="text" id="produceName" readonly>
+          <div class="hint">Auto-detected from image analysis</div>
+        </div>
+
+        <div class="form-row">
+          <label>AI Grade <span class="req">*</span></label>
+          <input type="text" id="aiGrade" readonly>
+          <div class="hint">Auto-filled from analysis result</div>
+        </div>
+
+        <div class="form-row">
+          <label>Quantity (kg) <span class="req">*</span></label>
+          <input type="number" id="quantity" placeholder="Enter quantity in kilograms"
+                 step="0.01" min="0" oninput="calculateTotal()">
+        </div>
+
+        <div class="form-row">
+          <label>Price (₹ per kg) <span class="req">*</span></label>
+          <input type="number" id="price" placeholder="Enter price per kg"
+                 step="0.01" min="0" oninput="calculateTotal()">
+          <div class="hint">Market price auto-filled if available</div>
+        </div>
+
+        <div class="form-row">
+          <label>Transaction Status</label>
+          <select id="status">
+            <option value="pending">Pending</option>
+            <option value="verified" selected>Verified</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
+
+        <div class="total-box">
+          <span>Total Amount:</span>
+          <span class="total-val" id="totalAmount">₹ 0.00</span>
+        </div>
+
+        <div class="blockchain-note">
+          <strong>⛓ Blockchain Record:</strong> This transaction will be permanently recorded
+          on the <em>Sepolia Testnet</em> and stored in the national ledger.
+        </div>
+
+      </div><!-- /transactionFormWrap -->
+
+    </div><!-- /modal-inner -->
+
+    <div class="modal-footer-bar">
+      <button class="btn-secondary" onclick="closeTransactionModal()">Cancel</button>
+      <button class="btn-primary"   id="submitTransactionBtn" onclick="submitTransaction()">
+        Submit Transaction
+      </button>
+    </div>
+
+  </div><!-- /modal-box -->
+</div><!-- /modal-overlay -->
+
+<!-- ── FOOTER ──────────────────────────────────────── -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-col">
+      <h4>VEGEGRADE Portal</h4>
+      <ul>
+        <li><a href="#">About the Portal</a></li>
+        <li><a href="#">How It Works</a></li>
+        <li><a href="#">API Access</a></li>
+        <li><a href="#">Open Data</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Related Services</h4>
+      <ul>
+        <li><a href="#">PM-KISAN Portal</a></li>
+        <li><a href="#">eNAM Market</a></li>
+        <li><a href="#">Soil Health Card</a></li>
+        <li><a href="#">Krishi Vigyan Kendras</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Legal</h4>
+      <ul>
+        <li><a href="#">Terms &amp; Conditions</a></li>
+        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="#">Copyright Policy</a></li>
+        <li><a href="#">Accessibility Statement</a></li>
+      </ul>
+    </div>
+    <div class="footer-col" style="flex:1; min-width:200px;">
+      <h4>About</h4>
+      <p style="font-size:13px; line-height:1.6;">
+        VEGEGRADE is an initiative under the Digital Agriculture Mission,
+        Ministry of Agriculture &amp; Farmers Welfare, Government of India.
+      </p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    © 2023 VEGEGRADE. A Government of India Initiative.
+    &nbsp;|&nbsp; Last Updated: April 2023
+    &nbsp;|&nbsp; Site Version 2.1.0
+  </div>
+</footer>
+
+<script src="AIIndex.js"></script>
 </body>
 </html>
