@@ -1,115 +1,103 @@
-// BlockchainLedger/backend/src/controllers/transaction.controller.js
-import db from '../config/database.js';
-import HashService from '../services/hash.service.js';
+import pool from '../config/database.js';
 import LedgerService from '../services/ledger.service.js';
 
 class TransactionController {
   static async createTransaction(req, res) {
-    const { farmer_id, produce_name, quantity, ai_grade, price, status = 'verified' } = req.body;
+    const { farmer_id, produce_name, quantity, ai_grade, price, farmerName } = req.body;
 
-    if (!farmer_id || !produce_name || !quantity || !price) {
-      return res.status(400).json({
-        error: 'Missing required fields: farmer_id, produce_name, quantity, price'
-      });
+    if (!farmer_id || !produce_name || !quantity || !ai_grade || !price) {
+      return res.status(400).json({ error: 'Missing required fields' });
     }
 
+    const client = await pool.connect();
+
     try {
-      const total_amount = parseFloat(quantity) * parseFloat(price);
-      const client = await db.connect();
+      await client.query('BEGIN');
 
-      try {
-        await client.query('BEGIN');
+      const transactionData = {
+        farmer_id,
+        produce_name,
+        quantity: parseFloat(quantity),
+        ai_grade,
+        price: parseFloat(price),
+        farmerName: farmerName || farmer_id,
+        timestamp: new Date().toISOString()
+      };
 
-        // Insert transaction
-        const txResult = await client.query(
-            `INSERT INTO transactions (farmer_id, produce_name, quantity, ai_grade, price, status)
-               VALUES ($1, $2, $3, $4, $5, $6)
-                 RETURNING *`,
-            [farmer_id, produce_name, quantity, ai_grade, price, status]
-        );
+      const ledgerEntry = await LedgerService.createLedgerEntry(transactionData);
 
-        const transaction = txResult.rows[0];
+      const txResult = await client.query(
+          `INSERT INTO transactions
+             (farmer_id, produce_name, quantity, ai_grade, price, ledger_entry_id)
+             VALUES ($1, $2, $3, $4, $5, $6)
+               RETURNING *`,
+          [farmer_id, produce_name, quantity, ai_grade, price, ledgerEntry.id]
+      );
 
-        // Get previous ledger hash
-        const prevHashResult = await client.query(
-            'SELECT hash FROM ledger ORDER BY id DESC LIMIT 1'
-        );
-        const prevHash = prevHashResult.rows.length > 0
-            ? prevHashResult.rows[0].hash
-            : null;
+      await client.query('COMMIT');
 
-        // Create ledger data
-        const ledgerData = {
-          transaction_id: transaction.id,
-          farmer_id: transaction.farmer_id,
-          produce_name: transaction.produce_name,
-          quantity: parseFloat(transaction.quantity),
-          ai_grade: transaction.ai_grade,
-          price: parseFloat(transaction.price),
-          total_amount: total_amount,
-          status: transaction.status,
-          timestamp: transaction.created_at
-        };
-
-        // Calculate current hash
-        const dataString = JSON.stringify(ledgerData) + (prevHash || '');
-        const crypto = await import('crypto');
-        const currentHash = crypto.createHash('sha256').update(dataString).digest('hex');
-
-        // Insert into ledger with JSONB data
-        const ledgerResult = await client.query(
-            `INSERT INTO ledger (previous_hash, hash, data)
-                     VALUES ($1, $2, $3)
-                     RETURNING id, hash`,
-            [prevHash, currentHash, JSON.stringify(ledgerData)]
-        );
-
-        // Update transaction with ledger_entry_id if column exists
-        try {
-          await client.query(
-              `UPDATE transactions SET ledger_entry_id = $1 WHERE id = $2`,
-              [ledgerResult.rows[0].id, transaction.id]
-          );
-        } catch (updateErr) {
-          console.log('Note: ledger_entry_id column may not exist in transactions table');
-        }
-
-        await client.query('COMMIT');
-
-        res.status(201).json({
-          success: true,
-          message: 'Transaction created and added to ledger',
-          transaction: {
-            ...transaction,
-            total_amount: total_amount
-          },
-          ledger_entry_id: ledgerResult.rows[0].id,
-          hash: ledgerResult.rows[0].hash
-        });
-
-      } catch (err) {
-        await client.query('ROLLBACK');
-        throw err;
-      } finally {
-        client.release();
-      }
+      res.status(201).json({
+        transaction: txResult.rows[0],
+        ledger_entry_id: ledgerEntry.id,
+        hash: ledgerEntry.hash,
+        blockchain_tx_hash: ledgerEntry.blockchain_tx_hash,
+        block_number: ledgerEntry.block_number
+      });
 
     } catch (error) {
-      console.error('Create transaction error:', error);
-      res.status(500).json({
-        error: 'Failed to create transaction',
-        message: error.message
-      });
+      await client.query('ROLLBACK');
+      console.error('Transaction creation error:', error);
+      res.status(500).json({ error: error.message });
+    } finally {
+      client.release();
     }
   }
 
-  static async getTransactions(req, res) {
-    try {
-      const { farmerId } = req.query;
+  static async getTransactionsByFarmer(req, res) {
+    const { farmer_id } = req.params;
 
-      // Query transactions and join with ledger using JSONB query
+    try {
+      const result = await pool.query(
+          `SELECT * FROM transactions
+           WHERE farmer_id = $1
+           ORDER BY created_at DESC`,
+          [farmer_id]
+      );
+
+      res.json({ transactions: result.rows });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  static async getAllTransactions(req, res) {
+    const limit = parseInt(req.query.limit) || 50;
+    const offset = parseInt(req.query.offset) || 0;
+
+    try {
+      const result = await pool.query(
+          `SELECT t.*, l.hash as ledger_hash
+           FROM transactions t
+                  JOIN ledger l ON t.ledger_entry_id = l.id
+           ORDER BY t.created_at DESC
+           LIMIT $1 OFFSET $2`,
+          [limit, offset]
+      );
+
+      res.json({ transactions: result.rows });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  // ============ NEW FUNCTIONS FOR HISTORY PAGE ============
+
+  static async getTransactionHistory(req, res) {
+    const { farmerId } = req.query;
+
+    try {
       let query = `
-        SELECT
+        SELECT 
           t.id,
           t.farmer_id,
           t.produce_name,
@@ -117,13 +105,11 @@ class TransactionController {
           t.ai_grade,
           t.price,
           t.quantity * t.price as total_amount,
-          t.status,
           t.created_at,
           l.hash as blockchain_hash,
-          l.previous_hash,
-          l.created_at as ledger_timestamp
+          l.previous_hash
         FROM transactions t
-               LEFT JOIN ledger l ON (l.data->>'transaction_id')::integer = t.id
+        LEFT JOIN ledger l ON t.ledger_entry_id = l.id
       `;
 
       let params = [];
@@ -135,7 +121,7 @@ class TransactionController {
 
       query += ' ORDER BY t.created_at DESC';
 
-      const result = await db.query(query, params);
+      const result = await pool.query(query, params);
 
       res.json({
         success: true,
@@ -144,36 +130,35 @@ class TransactionController {
       });
 
     } catch (error) {
-      console.error('Get transactions error:', error);
+      console.error('Get transaction history error:', error);
       res.status(500).json({
-        error: 'Failed to fetch transactions',
+        success: false,
+        error: 'Failed to fetch transaction history',
         message: error.message
       });
     }
   }
 
   static async getTransactionById(req, res) {
-    try {
-      const { id } = req.params;
+    const { id } = req.params;
 
-      const result = await db.query(
-          `SELECT
-             t.id,
-             t.farmer_id,
-             t.produce_name,
-             t.quantity,
-             t.ai_grade,
-             t.price,
-             t.quantity * t.price as total_amount,
-             t.status,
-             t.created_at,
-             l.hash as blockchain_hash,
-             l.previous_hash,
-             l.created_at as ledger_timestamp,
-             l.data as ledger_data
-           FROM transactions t
-                  LEFT JOIN ledger l ON (l.data->>'transaction_id')::integer = t.id
-           WHERE t.id = $1`,
+    try {
+      const result = await pool.query(
+          `SELECT 
+          t.id,
+          t.farmer_id,
+          t.produce_name,
+          t.quantity,
+          t.ai_grade,
+          t.price,
+          t.quantity * t.price as total_amount,
+          t.created_at,
+          l.hash as blockchain_hash,
+          l.previous_hash,
+          l.data as ledger_data
+        FROM transactions t
+        LEFT JOIN ledger l ON t.ledger_entry_id = l.id
+        WHERE t.id = $1`,
           [id]
       );
 
@@ -187,7 +172,7 @@ class TransactionController {
       });
 
     } catch (error) {
-      console.error('Get transaction error:', error);
+      console.error('Get transaction by ID error:', error);
       res.status(500).json({
         error: 'Failed to fetch transaction',
         message: error.message
@@ -196,37 +181,37 @@ class TransactionController {
   }
 
   static async getFarmerStats(req, res) {
-    try {
-      const { farmerId } = req.params;
+    const { farmerId } = req.params;
 
-      const result = await db.query(
-          `SELECT
-             COUNT(*) as total_transactions,
-             SUM(quantity * price) as total_revenue,
-             AVG(price) as average_price,
-             SUM(quantity) as total_quantity,
-             COUNT(DISTINCT produce_name) as produce_types
-           FROM transactions
-           WHERE farmer_id = $1`,
+    try {
+      const statsResult = await pool.query(
+          `SELECT 
+          COUNT(*) as total_transactions,
+          SUM(quantity * price) as total_revenue,
+          AVG(price) as average_price,
+          SUM(quantity) as total_quantity,
+          COUNT(DISTINCT produce_name) as produce_types
+        FROM transactions
+        WHERE farmer_id = $1`,
           [farmerId]
       );
 
-      const gradeDistribution = await db.query(
-          `SELECT
-             ai_grade,
-             COUNT(*) as count
-           FROM transactions
-           WHERE farmer_id = $1
-           GROUP BY ai_grade
-           ORDER BY count DESC`,
+      const gradeResult = await pool.query(
+          `SELECT 
+          ai_grade,
+          COUNT(*) as count
+        FROM transactions
+        WHERE farmer_id = $1
+        GROUP BY ai_grade
+        ORDER BY count DESC`,
           [farmerId]
       );
 
       res.json({
         success: true,
         farmer_id: farmerId,
-        stats: result.rows[0],
-        grade_distribution: gradeDistribution.rows
+        stats: statsResult.rows[0],
+        grade_distribution: gradeResult.rows
       });
 
     } catch (error) {

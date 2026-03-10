@@ -225,43 +225,58 @@
 	}
 
 	// Sync history from backend (primary) or localStorage (fallback)
+	// Replace syncHistory() in history.html with this:
 	async function syncHistory() {
 		hideError();
 		document.getElementById('loadingSpinner').style.display = 'block';
+		document.getElementById('historyTable').style.display = 'none';
+		document.getElementById('emptyState').style.display = 'none';
 		document.getElementById('syncStatus').textContent = '';
 
+		const localHistory = getLocalHistory();
+
 		try {
-			// Try to fetch from backend first
 			const backendHistory = await fetchHistoryFromBackend();
 
-			if (backendHistory && backendHistory.length > 0) {
-				renderHistory(backendHistory);
-				document.getElementById('syncStatus').textContent = '✓ Synced from blockchain';
+			// Build a set of known backend IDs
+			const backendIds = new Set(
+					(backendHistory || []).map(t => String(t.id || t.transactionId || ''))
+							.filter(id => id && id !== 'N/A')
+			);
 
-				// Also update localStorage with backend data for offline access
-				localStorage.setItem('vegegrade_history', JSON.stringify(backendHistory));
+			// Merge: backend first, then any local entries not already in backend
+			const localOnly = localHistory.filter(entry => {
+				const id = String(entry.transactionId || entry.id || '');
+				return !id || !backendIds.has(id);
+			});
+
+			const merged = [...(backendHistory || []), ...localOnly];
+
+			if (merged.length > 0) {
+				renderHistory(merged);
+				document.getElementById('syncStatus').textContent =
+						backendHistory && backendHistory.length > 0
+								? '✓ Synced from blockchain'
+								: '⚠ Showing local cache (offline)';
+				// Update localStorage with merged data
+				localStorage.setItem('vegegrade_history', JSON.stringify(merged));
 			} else {
-				// Fallback to localStorage if backend returns empty
-				const localHistory = getLocalHistory();
-				renderHistory(localHistory);
-
-				if (localHistory.length > 0) {
-					document.getElementById('syncStatus').textContent = '⚠ Showing local cache (offline)';
-				}
+				renderHistory([]);
 			}
 		} catch (err) {
 			console.error('Sync error:', err);
-
-			// Show error but also try to display local cache
 			showError(err.message);
 
-			const localHistory = getLocalHistory();
 			if (localHistory.length > 0) {
 				renderHistory(localHistory);
-				document.getElementById('syncStatus').textContent = '⚠ Showing local cache (error fetching from server)';
+				document.getElementById('syncStatus').textContent =
+						'⚠ Showing local cache (error fetching from server)';
+			} else {
+				renderHistory([]);
 			}
 		}
 	}
+
 
 	// Clear local history cache
 	function clearLocalHistory() {

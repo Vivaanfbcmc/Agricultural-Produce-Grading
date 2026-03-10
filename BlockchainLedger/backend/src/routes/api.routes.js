@@ -1,29 +1,26 @@
-// BlockchainLedger/backend/src/routes/api.routes.js
 import express from 'express';
 import TransactionController from '../controllers/transaction.controller.js';
 import VerificationController from '../controllers/verification.controller.js';
 
 const router = express.Router();
 
-// Transaction routes
+// Existing routes - UNCHANGED
 router.post('/transactions', TransactionController.createTransaction);
-router.get('/transactions', TransactionController.getTransactions); // Supports ?farmerId=X
-router.get('/transactions/:id', TransactionController.getTransactionById);
+router.get('/transactions', TransactionController.getAllTransactions);
+router.get('/transactions/farmer/:farmer_id', TransactionController.getTransactionsByFarmer);
 
-// Farmer statistics
-router.get('/farmers/:farmerId/stats', TransactionController.getFarmerStats);
-
-// Ledger routes
-router.get('/ledger', VerificationController.getLedger);
 router.get('/ledger/verify', VerificationController.verifyLedger);
+router.get('/ledger', VerificationController.getLedger);
 
-// Health check
-router.get('/health', (req, res) => {
-    res.json({
-        status: 'healthy',
-        service: 'blockchain-ledger',
-        timestamp: new Date().toISOString()
-    });
-});
+// ============ NEW ROUTES FOR HISTORY PAGE ============
+
+// Get transaction history (supports ?farmerId=X query parameter)
+router.get('/history', TransactionController.getTransactionHistory);
+
+// Get single transaction details
+router.get('/transaction/:id', TransactionController.getTransactionById);
+
+// Get farmer statistics
+router.get('/farmer/:farmerId/stats', TransactionController.getFarmerStats);
 
 export default router;
