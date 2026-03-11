@@ -6,109 +6,464 @@
 	<title>VEGEGRADE - Transaction History</title>
 	<link rel="stylesheet" href="history.css">
 	<style>
-		.header { display:flex; justify-content:space-between; align-items:center; padding:18px 0; }
-		.nav-links { display:flex; gap:14px; align-items:center; }
-		.nav-links a { color: #ffffff; text-decoration:none; padding:8px 12px; border-radius:6px; font-weight:600; }
-		.nav-links a:hover { background: rgba(255,255,255,0.06); }
-		.profile-link { display:inline-flex; align-items:center; }
-		.profile-circle { width:40px; height:40px; border-radius:50%; background:#fff; color:#1a1a1a; display:flex; align-items:center; justify-content:center; font-weight:700; }
-		.history-card { background: rgba(255,255,255,0.04); padding:18px; border-radius:10px; margin-top:22px; }
-		table.history { width:100%; border-collapse:collapse; margin-top:12px; }
-		table.history th, table.history td { padding:10px 8px; text-align:left; border-bottom:1px solid rgba(255,255,255,0.06); }
-		table.history th { background: rgba(255,255,255,0.05); font-weight:600; }
-		.controls { display:flex; gap:10px; margin-top:12px; justify-content:space-between; align-items:center; }
-		.muted { color: rgba(255,255,255,0.7); }
-		.grade-badge {
-			display:inline-block;
-			padding:4px 8px;
-			border-radius:4px;
-			font-size:12px;
-			font-weight:600;
+		/* ── CSS VARIABLES (gov theme) ─────────────────── */
+		:root {
+			--gov-navy:   #0b2545;
+			--gov-blue:   #1a56db;
+			--gov-green:  #059669;
+			--gov-sky:    #f0f6ff;
+			--border:     #c9d8ee;
+			--muted:      #6b7a99;
+			--bg:         #f4f8ff;
+			--white:      #ffffff;
 		}
-		.grade-A { background:#059669; color:#fff; }
-		.grade-B { background:#f59e0b; color:#fff; }
-		.grade-C { background:#f97316; color:#fff; }
-		.grade-ROTTEN { background:#dc2626; color:#fff; }
-		.loading-spinner { text-align:center; padding:40px; }
-		.spinner { width:40px; height:40px; border:4px solid rgba(255,255,255,0.1); border-top-color:#059669; border-radius:50%; animation:spin 1s linear infinite; margin:0 auto; }
-		@keyframes spin { to { transform:rotate(360deg); } }
-		.sync-status { font-size:14px; color:#059669; }
-		.error-message { color:#dc2626; padding:12px; background:rgba(220,38,38,0.1); border-radius:6px; margin-top:12px; }
-		.transaction-id { font-family:monospace; font-size:12px; color:#6b7280; }
+
+		* { box-sizing: border-box; margin: 0; padding: 0; }
+
+		body {
+			font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+			background: var(--bg);
+			color: var(--gov-navy);
+			min-height: 100vh;
+		}
+
+		/* ── HEADER ───────────────────────────────────── */
+		.site-header {
+			background: var(--gov-navy);
+			border-bottom: 3px solid var(--gov-blue);
+			padding: 0 24px;
+		}
+
+		.header-inner {
+			max-width: 1200px;
+			margin: 0 auto;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			padding: 14px 0;
+		}
+
+		.logo {
+			font-size: 22px;
+			font-weight: 900;
+			color: #fff;
+			letter-spacing: 1px;
+		}
+
+		.logo span { color: var(--gov-green); }
+
+		.tagline {
+			font-size: 11px;
+			color: rgba(255,255,255,0.55);
+			letter-spacing: 0.5px;
+			margin-top: 2px;
+			text-transform: uppercase;
+		}
+
+		.nav-links {
+			display: flex;
+			gap: 4px;
+			align-items: center;
+		}
+
+		.nav-links a {
+			color: rgba(255,255,255,0.85);
+			text-decoration: none;
+			padding: 7px 13px;
+			border-radius: 4px;
+			font-size: 13.5px;
+			font-weight: 600;
+			transition: background 0.15s;
+		}
+
+		.nav-links a:hover { background: rgba(255,255,255,0.1); }
+		.nav-links a.active { background: var(--gov-blue); color: #fff; }
+
+		.profile-circle {
+			width: 36px;
+			height: 36px;
+			border-radius: 50%;
+			background: var(--gov-green);
+			color: #fff;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-weight: 800;
+			font-size: 15px;
+		}
+
+		/* ── PAGE WRAPPER ─────────────────────────────── */
+		.container {
+			max-width: 1200px;
+			margin: 0 auto;
+			padding: 28px 24px 60px;
+		}
+
+		/* ── PAGE TITLE ───────────────────────────────── */
+		.page-title-row {
+			display: flex;
+			align-items: flex-end;
+			justify-content: space-between;
+			flex-wrap: wrap;
+			gap: 12px;
+			margin-bottom: 24px;
+			padding-bottom: 18px;
+			border-bottom: 2px solid var(--border);
+		}
+
+		.page-title-row h1 {
+			font-size: 26px;
+			font-weight: 800;
+			color: var(--gov-navy);
+			line-height: 1.1;
+		}
+
+		.page-title-row p {
+			font-size: 13.5px;
+			color: var(--muted);
+			margin-top: 4px;
+		}
+
+		/* ── BUTTONS ──────────────────────────────────── */
+		.btn {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+			padding: 8px 16px;
+			border-radius: 4px;
+			font-size: 13.5px;
+			font-weight: 700;
+			cursor: pointer;
+			border: none;
+			transition: opacity 0.15s, transform 0.1s;
+		}
+
+		.btn:active { transform: translateY(1px); }
+
+		.btn-primary {
+			background: var(--gov-blue);
+			color: #fff;
+		}
+
+		.btn-primary:hover { opacity: 0.88; }
+
+		.btn-ghost {
+			background: transparent;
+			color: var(--muted);
+			border: 1px solid var(--border);
+		}
+
+		.btn-ghost:hover { background: var(--gov-sky); color: var(--gov-navy); }
+
+		/* ── STATS ROW ────────────────────────────────── */
+		.stats-row {
+			display: flex;
+			gap: 16px;
+			flex-wrap: wrap;
+			margin-bottom: 24px;
+		}
+
+		.stat-box {
+			flex: 1;
+			min-width: 120px;
+			background: var(--white);
+			border: 1px solid var(--border);
+			border-top: 3px solid var(--gov-blue);
+			border-radius: 3px;
+			padding: 14px 16px;
+			text-align: center;
+		}
+
+		.stat-val {
+			font-size: 22px;
+			font-weight: 700;
+			color: var(--gov-navy);
+			line-height: 1.2;
+		}
+
+		.stat-lbl {
+			font-size: 12px;
+			color: var(--muted);
+			margin-top: 4px;
+			text-transform: uppercase;
+			letter-spacing: 0.4px;
+		}
+
+		/* ── CONTROLS BAR ─────────────────────────────── */
+		.controls-bar {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			flex-wrap: wrap;
+			gap: 12px;
+			margin-bottom: 16px;
+			padding-bottom: 14px;
+			border-bottom: 1px solid var(--border);
+		}
+
+		.controls-left {
+			display: flex;
+			align-items: center;
+			gap: 14px;
+			flex-wrap: wrap;
+		}
+
+		.sync-status {
+			font-size: 13px;
+			color: var(--gov-green);
+			font-weight: 600;
+		}
+
+		/* ── TABLE ────────────────────────────────────── */
+		.table-wrap {
+			overflow-x: auto;
+			border: 1px solid var(--border);
+			border-radius: 3px;
+		}
+
+		.history-table {
+			width: 100%;
+			border-collapse: collapse;
+			font-size: 13.5px;
+			min-width: 820px;
+		}
+
+		.history-table thead tr {
+			background: var(--gov-navy);
+			color: white;
+		}
+
+		.history-table thead th {
+			padding: 10px 14px;
+			font-weight: 700;
+			font-size: 12px;
+			text-transform: uppercase;
+			letter-spacing: 0.5px;
+			text-align: left;
+			white-space: nowrap;
+		}
+
+		.history-table tbody tr:nth-child(odd)  { background: var(--gov-sky); }
+		.history-table tbody tr:nth-child(even) { background: white; }
+		.history-table tbody tr:hover { background: #d6e8ff; }
+
+		.history-table tbody td {
+			padding: 10px 14px;
+			border-bottom: 1px solid var(--border);
+			vertical-align: middle;
+		}
+
+		.tx-id {
+			font-family: 'Courier New', monospace;
+			font-size: 12px;
+			color: var(--muted);
+			white-space: nowrap;
+		}
+
+		.row-num {
+			color: var(--muted);
+			font-size: 12px;
+			text-align: center;
+		}
+
+		.amount-strong {
+			font-weight: 700;
+			color: var(--gov-navy);
+		}
+
+		/* ── GRADE PILLS ──────────────────────────────── */
+		.hist-pill {
+			display: inline-block;
+			padding: 3px 10px;
+			border-radius: 20px;
+			font-size: 12px;
+			font-weight: 700;
+			letter-spacing: 0.3px;
+		}
+
+		.pill-grade-a { background: #d4f0e0; color: #005522; }
+		.pill-grade-b { background: #dbeeff; color: #004488; }
+		.pill-grade-c { background: #ffe0cc; color: #7a3000; }
+		.pill-grade-r { background: #ffd6d6; color: #7a0000; }
+		.pill-status-verified  { background: #d4f0e0; color: #005522; }
+		.pill-status-pending   { background: #fff3cd; color: #7a5000; }
+		.pill-status-completed { background: #dbeeff; color: #004488; }
+
+		/* ── LOADING / ERROR / EMPTY ──────────────────── */
+		.loading-spinner {
+			text-align: center;
+			padding: 60px 20px;
+		}
+
+		.spinner {
+			width: 36px;
+			height: 36px;
+			border: 4px solid var(--border);
+			border-top-color: var(--gov-blue);
+			border-radius: 50%;
+			animation: spin 0.8s linear infinite;
+			margin: 0 auto 14px;
+		}
+
+		@keyframes spin { to { transform: rotate(360deg); } }
+
+		.error-message {
+			color: #b91c1c;
+			padding: 12px 16px;
+			background: #fef2f2;
+			border: 1px solid #fca5a5;
+			border-left: 4px solid #b91c1c;
+			border-radius: 3px;
+			margin-top: 12px;
+			font-size: 13.5px;
+		}
+
+		.empty-state {
+			text-align: center;
+			padding: 60px 20px;
+			color: var(--muted);
+		}
+
+		.empty-icon { font-size: 48px; margin-bottom: 16px; }
+
+		.empty-state h3 {
+			font-size: 20px;
+			font-weight: 700;
+			color: var(--gov-navy);
+			margin-bottom: 8px;
+		}
+
+		.empty-state p {
+			font-size: 14px;
+			max-width: 400px;
+			margin: 0 auto;
+		}
+
+		/* ── FOOTER ───────────────────────────────────── */
+		.site-footer {
+			background: var(--gov-navy);
+			color: rgba(255,255,255,0.5);
+			text-align: center;
+			font-size: 12px;
+			padding: 16px 24px;
+			margin-top: 40px;
+		}
+
+		/* ── RESPONSIVE ───────────────────────────────── */
+		@media (max-width: 760px) {
+			.controls-bar { flex-direction: column; align-items: flex-start; }
+			.stats-row { flex-direction: column; }
+			.stat-box { min-width: unset; }
+			.page-title-row { flex-direction: column; align-items: flex-start; }
+		}
 	</style>
 </head>
 <body>
-<div class="bg-gradient"></div>
 
-<div class="container">
-	<!-- Header (shared) -->
-	<header class="header">
+<!-- ── HEADER ──────────────────────────────────────── -->
+<header class="site-header">
+	<div class="header-inner">
 		<div>
 			<div class="logo">VEGE<span>GRADE</span></div>
-			<div class="tagline">AI-Powered Vegetable Quality & Pricing</div>
+			<div class="tagline">AI-Powered Vegetable Quality &amp; Pricing</div>
 		</div>
 		<nav class="nav-links">
 			<a href="AIIndex.html">VEGEGRADE AI</a>
 			<a href="AIIndex.html">Dashboard</a>
-			<a href="history.html">History</a>
-			<a href="profile.html" class="profile-link" title="Profile">
+			<a href="history.html" class="active">History</a>
+			<a href="profile.html" title="Profile">
 				<div class="profile-circle">P</div>
 			</a>
 		</nav>
-	</header>
+	</div>
+</header>
 
-	<main>
-		<section class="hero">
+<!-- ── MAIN ────────────────────────────────────────── -->
+<div class="container">
+
+	<!-- Page Title -->
+	<div class="page-title-row">
+		<div>
 			<h1>Transaction History</h1>
-			<p class="muted">View all your vegetable sales and transactions recorded on the blockchain.</p>
+			<p>View all your vegetable sales and transactions recorded on the blockchain.</p>
+		</div>
+	</div>
 
-			<div class="history-card">
-				<div class="controls">
-					<div>
-						<button onclick="syncHistory()" class="analyze-btn">🔄 Refresh</button>
-						<span id="syncStatus" class="sync-status"></span>
-					</div>
-					<div>
-						<button onclick="clearLocalHistory()" class="try-again-btn">Clear Local Cache</button>
-					</div>
-				</div>
+	<!-- Summary Stats -->
+	<div class="stats-row" id="statsRow" style="display:none;">
+		<div class="stat-box">
+			<div class="stat-val" id="statTotal">—</div>
+			<div class="stat-lbl">Total Transactions</div>
+		</div>
+		<div class="stat-box">
+			<div class="stat-val" id="statRevenue">—</div>
+			<div class="stat-lbl">Total Revenue</div>
+		</div>
+		<div class="stat-box">
+			<div class="stat-val" id="statGradeA">—</div>
+			<div class="stat-lbl">Grade A Items</div>
+		</div>
+		<div class="stat-box">
+			<div class="stat-val" id="statVerified">—</div>
+			<div class="stat-lbl">Verified on Chain</div>
+		</div>
+	</div>
 
-				<div id="loadingSpinner" class="loading-spinner" style="display:none;">
-					<div class="spinner"></div>
-					<p class="muted">Loading transaction history...</p>
-				</div>
+	<!-- Controls Bar -->
+	<div class="controls-bar">
+		<div class="controls-left">
+			<button onclick="syncHistory()" class="btn btn-primary">🔄 Refresh</button>
+			<span id="syncStatus" class="sync-status"></span>
+		</div>
+		<div>
+			<button onclick="clearLocalHistory()" class="btn btn-ghost">Clear Local Cache</button>
+		</div>
+	</div>
 
-				<div id="errorMessage" class="error-message" style="display:none;"></div>
+	<!-- Loading -->
+	<div id="loadingSpinner" class="loading-spinner" style="display:none;">
+		<div class="spinner"></div>
+		<p style="color:var(--muted); font-size:14px;">Loading transaction history…</p>
+	</div>
 
-				<table class="history" id="historyTable" style="display:none;">
-					<thead>
-					<tr>
-						<th>Date</th>
-						<th>Transaction ID</th>
-						<th>Item</th>
-						<th>Grade</th>
-						<th>Quantity</th>
-						<th>Price/kg</th>
-						<th>Total</th>
-						<th>Status</th>
-					</tr>
-					</thead>
-					<tbody id="historyBody">
-					<!-- rows inserted by JS -->
-					</tbody>
-				</table>
+	<!-- Error -->
+	<div id="errorMessage" class="error-message" style="display:none;"></div>
 
-				<p id="emptyState" class="muted" style="display:none; margin-top:12px; text-align:center;">
-					No transaction history found. Create your first transaction from the dashboard!
-				</p>
-			</div>
-		</section>
-	</main>
+	<!-- Table -->
+	<div class="table-wrap" id="tableWrap" style="display:none;">
+		<table class="history-table" id="historyTable">
+			<thead>
+				<tr>
+					<th>#</th>
+					<th>Date</th>
+					<th>Transaction ID</th>
+					<th>Item</th>
+					<th>Grade</th>
+					<th>Quantity</th>
+					<th>Price / kg</th>
+					<th>Total</th>
+					<th>Status</th>
+				</tr>
+			</thead>
+			<tbody id="historyBody">
+				<!-- rows inserted by JS -->
+			</tbody>
+		</table>
+	</div>
 
-	<footer class="footer">
-		<p>VEGEGRADE &copy; 2023. AI-Powered Vegetable Quality Assessment System.</p>
-	</footer>
+	<!-- Empty State -->
+	<div id="emptyState" class="empty-state" style="display:none;">
+		<div class="empty-icon">📋</div>
+		<h3>No Transactions Yet</h3>
+		<p>No transaction history found. Create your first transaction from the dashboard!</p>
+	</div>
+
 </div>
+
+<!-- ── FOOTER ───────────────────────────────────────── -->
+<footer class="site-footer">
+	VEGEGRADE &copy; 2023. AI-Powered Vegetable Quality Assessment System.
+</footer>
 
 <script>
 	// Format date to readable format
@@ -128,7 +483,15 @@
 	// Get grade badge HTML
 	function getGradeBadge(grade) {
 		const gradeUpper = (grade || 'N/A').toUpperCase();
-		return `<span class="grade-badge grade-${gradeUpper}">${gradeUpper}</span>`;
+		const map = { A: 'a', B: 'b', C: 'c', ROTTEN: 'r' };
+		const cls = map[gradeUpper] || 'b';
+		return `<span class="hist-pill pill-grade-${cls}">${gradeUpper}</span>`;
+	}
+
+	// Get status badge HTML
+	function getStatusBadge(status) {
+		const s = (status || 'completed').toLowerCase();
+		return `<span class="hist-pill pill-status-${s}">${s}</span>`;
 	}
 
 	// Fetch history from backend blockchain API
@@ -161,9 +524,32 @@
 		return JSON.parse(localStorage.getItem('vegegrade_history') || '[]');
 	}
 
+	// Update summary stats
+	function updateStats(list) {
+		if (!list || !list.length) {
+			document.getElementById('statsRow').style.display = 'none';
+			return;
+		}
+		document.getElementById('statsRow').style.display = 'flex';
+
+		const total = list.length;
+		const revenue = list.reduce((sum, e) => {
+			const qty = parseFloat(e.quantity || 0);
+			const price = parseFloat(e.price || 0);
+			return sum + (e.total || qty * price || 0);
+		}, 0);
+		const gradeA = list.filter(e => (e.ai_grade || e.grade || '').toUpperCase() === 'A').length;
+		const verified = list.filter(e => (e.status || '').toLowerCase() === 'verified').length;
+
+		document.getElementById('statTotal').textContent = total;
+		document.getElementById('statRevenue').textContent = formatCurrency(revenue);
+		document.getElementById('statGradeA').textContent = gradeA;
+		document.getElementById('statVerified').textContent = verified;
+	}
+
 	// Render history entries into the table
 	function renderHistory(list) {
-		const table = document.getElementById('historyTable');
+		const tableWrap = document.getElementById('tableWrap');
 		const body = document.getElementById('historyBody');
 		const empty = document.getElementById('emptyState');
 		const spinner = document.getElementById('loadingSpinner');
@@ -172,15 +558,17 @@
 		body.innerHTML = '';
 
 		if (!list || !list.length) {
-			table.style.display = 'none';
+			tableWrap.style.display = 'none';
 			empty.style.display = 'block';
+			updateStats([]);
 			return;
 		}
 
 		empty.style.display = 'none';
-		table.style.display = 'table';
+		tableWrap.style.display = 'block';
+		updateStats(list);
 
-		list.forEach(entry => {
+		list.forEach((entry, idx) => {
 			const tr = document.createElement('tr');
 
 			// Handle both backend format and local storage format
@@ -197,15 +585,16 @@
 			const txIdDisplay = txId ? String(txId).substring(0, 8) + '...' : 'N/A';
 
 			tr.innerHTML = `
-					<td>${formatDate(date)}</td>
-					<td class="transaction-id">${txIdDisplay}</td>
-					<td>${item}</td>
-					<td>${getGradeBadge(grade)}</td>
-					<td>${quantity} kg</td>
-					<td>${formatCurrency(price)}</td>
-					<td><strong>${formatCurrency(total)}</strong></td>
-					<td><span class="grade-badge grade-${status === 'verified' ? 'A' : 'B'}">${status}</span></td>
-				`;
+				<td class="row-num">${idx + 1}</td>
+				<td>${formatDate(date)}</td>
+				<td class="tx-id">${txIdDisplay}</td>
+				<td><strong>${item}</strong></td>
+				<td>${getGradeBadge(grade)}</td>
+				<td>${quantity} kg</td>
+				<td>${formatCurrency(price)}</td>
+				<td class="amount-strong">${formatCurrency(total)}</td>
+				<td>${getStatusBadge(status)}</td>
+			`;
 
 			body.appendChild(tr);
 		});
@@ -229,7 +618,7 @@
 	async function syncHistory() {
 		hideError();
 		document.getElementById('loadingSpinner').style.display = 'block';
-		document.getElementById('historyTable').style.display = 'none';
+		document.getElementById('tableWrap').style.display = 'none';
 		document.getElementById('emptyState').style.display = 'none';
 		document.getElementById('syncStatus').textContent = '';
 

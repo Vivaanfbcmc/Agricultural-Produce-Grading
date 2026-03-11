@@ -90,10 +90,29 @@ const contract = new ethers.Contract(
 
 class BlockchainService {
 
+  // ── Check if a record ID already exists on-chain ──────────────────────
+  static async recordExists(id) {
+    try {
+      const record = await contract.records(id);
+      return record.exists === true;
+    } catch (err) {
+      console.warn(`⚠️  Could not check record existence for ID ${id}:`, err.message);
+      return false;
+    }
+  }
+
+  // ── Anchor ledger entry to Sepolia ────────────────────────────────────
   static async anchorLedger(id, hash, farmerName) {
     try {
+      // Guard: skip if this ID is already anchored on-chain
+      const exists = await BlockchainService.recordExists(id);
+      if (exists) {
+        console.warn(`⚠️  Record ID ${id} already exists on-chain. Skipping anchor.`);
+        return { skipped: true, reason: 'already_anchored' };
+      }
+
       console.log(`⛓️  Anchoring to Sepolia: ID=${id}, Farmer=${farmerName}`);
-      
+
       const tx = await contract.storeHash(id, hash, farmerName);
       console.log(`📝 Transaction sent: ${tx.hash}`);
 
@@ -101,6 +120,7 @@ class BlockchainService {
       console.log(`✅ Confirmed in block: ${receipt.blockNumber}`);
 
       return {
+        skipped: false,
         txHash: receipt.hash,
         blockNumber: receipt.blockNumber,
         from: receipt.from,

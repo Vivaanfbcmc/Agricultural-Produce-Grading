@@ -28,17 +28,59 @@ class LedgerService {
     const insertedEntry = insertResult.rows[0];
     const farmerName = transactionData.farmerName || "system";
 
-    // 3. Anchor to Sepolia blockchain
+    // 3. Check if this ledger ID is already anchored in our proof table
+    const existingProofResult = await client.query(
+      'SELECT * FROM ledger_blockchain_proof WHERE ledger_id = $1',
+      [insertedEntry.id]
+    );
+
+    if (existingProofResult.rows.length > 0) {
+      // Already anchored — reuse existing proof, skip blockchain write
+      console.warn(`⚠️  Ledger ID ${insertedEntry.id} already has a proof record. Reusing.`);
+      const existingProof = existingProofResult.rows[0];
+      return {
+        entry: insertedEntry,
+        blockchainProof: {
+          skipped: true,
+          txHash: existingProof.blockchain_tx_hash,
+          blockNumber: existingProof.block_number
+        }
+      };
+    }
+
+    // 4. Anchor to Sepolia blockchain (blockchain.service guards against on-chain duplicates)
     const blockchainProof = await BlockchainService.anchorLedger(
       insertedEntry.id,
       insertedEntry.hash,
       farmerName
     );
 
-    // 4. Store proof in separate table (no immutability conflict)
+    // 5. If anchor was skipped (already on-chain), fetch existing proof from DB or chain
+    if (blockchainProof.skipped) {
+      console.warn(`⚠️  Anchor skipped for ledger ID ${insertedEntry.id} — already on-chain.`);
+
+      // Store a placeholder proof row so future calls don't retry
+      await client.query(
+        `INSERT INTO ledger_blockchain_proof (ledger_id, blockchain_tx_hash, block_number)
+         VALUES ($1, $2, $3)
+         ON CONFLICT (ledger_id) DO NOTHING`,
+        [insertedEntry.id, 'already_anchored', 0]
+      );
+
+      return {
+        entry: insertedEntry,
+        blockchainProof: {
+          txHash: 'already_anchored',
+          blockNumber: 0
+        }
+      };
+    }
+
+    // 6. Store fresh blockchain proof
     await client.query(
       `INSERT INTO ledger_blockchain_proof (ledger_id, blockchain_tx_hash, block_number)
-       VALUES ($1, $2, $3)`,
+       VALUES ($1, $2, $3)
+       ON CONFLICT (ledger_id) DO NOTHING`,
       [insertedEntry.id, blockchainProof.txHash, blockchainProof.blockNumber]
     );
 
@@ -52,7 +94,7 @@ class LedgerService {
     try {
       await client.query('BEGIN');
 
-      const { entry, blockchainProof } = 
+      const { entry, blockchainProof } =
         await LedgerService.#buildLedgerEntry(client, transactionData);
 
       await client.query('COMMIT');

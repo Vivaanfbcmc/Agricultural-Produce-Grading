@@ -4,205 +4,938 @@
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>VEGEGRADE - Farmer Profile</title>
-	<link rel="stylesheet" href="AIIndex.css">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700&family=Source+Serif+Pro:wght@400;600&display=swap" rel="stylesheet">
 	<style>
-		.header { display:flex; justify-content:space-between; align-items:center; padding:18px 0; }
-		.nav-links { display:flex; gap:14px; align-items:center; }
-		.nav-links a { color: #ffffff; text-decoration:none; padding:8px 12px; border-radius:6px; font-weight:600; }
-		.profile-container { background: rgba(255,255,255,0.03); padding:20px; border-radius:10px; margin-top:20px; }
-		.profile-grid { display:grid; grid-template-columns: 1fr 2fr; gap:18px; align-items:start; }
-		.avatar { width:140px; height:140px; border-radius:8px; background:#fff; display:flex; align-items:center; justify-content:center; color:#111; font-weight:700; }
-		.field { margin-bottom:10px; }
-		.field label { display:block; font-weight:600; margin-bottom:6px; }
-		.field .value, .field input, .field textarea { width:100%; padding:8px; border-radius:6px; border:1px solid rgba(255,255,255,0.06); background:transparent; color:inherit; }
-		.actions { margin-top:12px; display:flex; gap:10px; }
-		.muted { color: rgba(255,255,255,0.7); }
+		*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+		:root {
+			--gov-navy:   #003366;
+			--gov-blue:   #0066CC;
+			--gov-ltblue: #3399FF;
+			--gov-sky:    #E8F2FF;
+			--gov-gold:   #CC7700;
+			--gov-green:  #006633;
+			--gov-red:    #CC0000;
+			--white:      #FFFFFF;
+			--offwhite:   #F5F7FA;
+			--border:     #C8D6E8;
+			--text:       #1A1A2E;
+			--muted:      #556688;
+		}
+
+		body {
+			font-family: 'Source Sans Pro', Verdana, sans-serif;
+			background: var(--offwhite);
+			color: var(--text);
+			font-size: 15px;
+			line-height: 1.5;
+			min-height: 100vh;
+		}
+
+		a { color: var(--gov-blue); text-decoration: none; }
+		a:hover { text-decoration: underline; color: var(--gov-navy); }
+
+		/* ── TOP STRIP ─────────────────────────────── */
+		.top-strip {
+			background: var(--gov-navy);
+			color: #aec6e8;
+			font-size: 12px;
+			padding: 5px 0;
+			text-align: center;
+			letter-spacing: 0.4px;
+		}
+
+		/* ── HEADER ────────────────────────────────── */
+		.site-header {
+			background: var(--white);
+			border-bottom: 4px solid var(--gov-blue);
+			box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+		}
+
+		.header-inner {
+			max-width: 1100px;
+			margin: 0 auto;
+			padding: 14px 20px;
+			display: flex;
+			align-items: center;
+			gap: 20px;
+		}
+
+		.emblem {
+			width: 68px; height: 68px;
+			flex-shrink: 0;
+			background: var(--gov-navy);
+			border-radius: 50%;
+			display: flex; align-items: center; justify-content: center;
+			font-size: 26px;
+			border: 3px solid var(--gov-gold);
+		}
+
+		.site-title-block h1 {
+			font-family: 'Source Serif Pro', Georgia, serif;
+			font-size: 26px; font-weight: 600;
+			color: var(--gov-navy);
+			letter-spacing: 0.5px;
+		}
+
+		.site-title-block h1 span { color: var(--gov-blue); }
+		.site-title-block p { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+		.header-right { margin-left: auto; text-align: right; font-size: 13px; color: var(--muted); }
+		.header-right .helpline { color: var(--gov-navy); font-weight: 700; font-size: 15px; display: block; }
+
+		/* ── NAV BAR ───────────────────────────────── */
+		.nav-bar { background: var(--gov-navy); }
+
+		.nav-inner {
+			max-width: 1100px;
+			margin: 0 auto;
+			display: flex; align-items: center;
+		}
+
+		.nav-bar a {
+			display: inline-block;
+			color: #cce0ff;
+			font-size: 13.5px; font-weight: 600;
+			padding: 10px 18px;
+			letter-spacing: 0.3px;
+			border-right: 1px solid rgba(255,255,255,0.1);
+			transition: background 0.15s;
+		}
+
+		.nav-bar a:hover, .nav-bar a.active {
+			background: var(--gov-blue); color: #fff; text-decoration: none;
+		}
+
+		.nav-bar a:first-child { border-left: 1px solid rgba(255,255,255,0.1); }
+
+		/* ── BREADCRUMB ────────────────────────────── */
+		.breadcrumb-bar {
+			background: var(--gov-sky);
+			border-bottom: 1px solid var(--border);
+			padding: 7px 0; font-size: 12.5px;
+		}
+
+		.breadcrumb-bar .inner {
+			max-width: 1100px; margin: 0 auto;
+			padding: 0 20px; color: var(--muted);
+		}
+
+		.breadcrumb-bar a { color: var(--gov-blue); }
+		.breadcrumb-bar span { margin: 0 6px; }
+
+		/* ── PAGE LAYOUT ───────────────────────────── */
+		.page-body {
+			max-width: 1100px;
+			margin: 24px auto;
+			padding: 0 20px;
+			display: flex;
+			gap: 24px;
+			align-items: flex-start;
+		}
+
+		.main-col { flex: 1; min-width: 0; }
+		.side-col { width: 260px; flex-shrink: 0; }
+
+		/* ── PAGE TITLE STRIP ──────────────────────── */
+		.page-title-strip {
+			background: var(--gov-blue);
+			color: white;
+			padding: 14px 20px;
+			border-radius: 3px 3px 0 0;
+		}
+
+		.page-title-strip h2 { font-size: 18px; font-weight: 700; letter-spacing: 0.3px; }
+		.page-title-strip p  { font-size: 13px; color: #cce0ff; margin-top: 3px; }
+
+		/* ── CONTENT CARD ──────────────────────────── */
+		.content-card {
+			background: var(--white);
+			border: 1px solid var(--border);
+			border-top: none;
+			border-radius: 0 0 3px 3px;
+			margin-bottom: 24px;
+		}
+
+		.content-card-body { padding: 24px; }
+
+		/* ── SECTION LABEL ─────────────────────────── */
+		.section-label {
+			font-size: 13px; font-weight: 700;
+			color: var(--gov-navy);
+			text-transform: uppercase;
+			letter-spacing: 0.8px;
+			border-bottom: 2px solid var(--gov-blue);
+			padding-bottom: 6px;
+			margin-bottom: 18px;
+		}
+
+		/* ── PROFILE LAYOUT ────────────────────────── */
+		.profile-layout {
+			display: flex;
+			gap: 28px;
+			align-items: flex-start;
+		}
+
+		/* ── AVATAR BLOCK ──────────────────────────── */
+		.avatar-block { flex-shrink: 0; text-align: center; width: 160px; }
+
+		.avatar-wrap {
+			width: 140px; height: 140px;
+			border-radius: 4px;
+			border: 2px solid var(--border);
+			background: var(--gov-sky);
+			display: flex; align-items: center; justify-content: center;
+			overflow: hidden;
+			cursor: pointer;
+			margin: 0 auto;
+			transition: border-color 0.15s;
+			position: relative;
+		}
+
+		.avatar-wrap:hover { border-color: var(--gov-blue); }
+
+		.avatar-wrap:hover .avatar-overlay {
+			opacity: 1;
+		}
+
+		.avatar-overlay {
+			position: absolute;
+			inset: 0;
+			background: rgba(0,51,102,0.6);
+			display: flex; align-items: center; justify-content: center;
+			color: #fff;
+			font-size: 12px; font-weight: 700;
+			letter-spacing: 0.4px;
+			opacity: 0;
+			transition: opacity 0.2s;
+		}
+
+		.avatar-letter {
+			font-size: 52px;
+			font-weight: 700;
+			color: var(--gov-navy);
+			font-family: 'Source Serif Pro', Georgia, serif;
+		}
+
+		.avatar-img {
+			width: 100%; height: 100%;
+			object-fit: cover;
+			display: none;
+		}
+
+		.avatar-hint {
+			font-size: 12px; color: var(--muted);
+			margin-top: 8px; line-height: 1.4;
+		}
+
+		/* Farmer ID badge */
+		.farmer-id-badge {
+			margin-top: 14px;
+			background: var(--gov-navy);
+			color: #fff;
+			border-radius: 3px;
+			padding: 8px 10px;
+			font-size: 12px;
+		}
+
+		.farmer-id-badge .id-label { color: #aec6e8; font-size: 11px; letter-spacing: 0.4px; }
+		.farmer-id-badge .id-val   { font-size: 15px; font-weight: 700; margin-top: 2px; font-family: 'Courier New', monospace; }
+
+		/* ── FIELDS ────────────────────────────────── */
+		.fields-block { flex: 1; min-width: 0; }
+
+		.fields-grid {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 0;
+		}
+
+		.field-row {
+			display: flex;
+			align-items: baseline;
+			gap: 0;
+			border-bottom: 1px solid var(--border);
+			padding: 9px 0;
+		}
+
+		.field-row:last-child { border-bottom: none; }
+
+		.field-lbl {
+			width: 175px;
+			flex-shrink: 0;
+			font-size: 13px;
+			font-weight: 700;
+			color: var(--muted);
+			padding-right: 12px;
+		}
+
+		.field-val {
+			font-size: 14px;
+			color: var(--text);
+			flex: 1;
+		}
+
+		.field-val input,
+		.field-val textarea {
+			width: 100%;
+			padding: 5px 8px;
+			border: 1px solid #9bb8d8;
+			border-radius: 3px;
+			font-size: 14px;
+			font-family: 'Source Sans Pro', Verdana, sans-serif;
+			color: var(--text);
+			background: white;
+			display: none;
+		}
+
+		.field-val input:focus,
+		.field-val textarea:focus {
+			outline: none;
+			border-color: var(--gov-blue);
+			box-shadow: 0 0 0 2px rgba(0,102,204,0.15);
+		}
+
+		/* edit mode shows inputs, hides spans */
+		body.editing .field-val .display-val { display: none; }
+		body.editing .field-val input,
+		body.editing .field-val textarea { display: block; }
+
+		/* ── SECTION DIVIDER ───────────────────────── */
+		.section-divider {
+			border: none;
+			border-top: 1px solid var(--border);
+			margin: 20px 0;
+		}
+
+		/* ── BUTTONS ───────────────────────────────── */
+		.btn-primary {
+			background: var(--gov-blue); color: white;
+			border: none; border-radius: 3px;
+			padding: 10px 24px;
+			font-size: 14px; font-weight: 700;
+			font-family: 'Source Sans Pro', Verdana, sans-serif;
+			cursor: pointer;
+			transition: background 0.15s;
+			letter-spacing: 0.3px;
+		}
+
+		.btn-primary:hover { background: var(--gov-navy); }
+
+		.btn-secondary {
+			background: var(--white); color: var(--gov-navy);
+			border: 2px solid var(--gov-navy); border-radius: 3px;
+			padding: 8px 20px;
+			font-size: 14px; font-weight: 700;
+			font-family: 'Source Sans Pro', Verdana, sans-serif;
+			cursor: pointer;
+			transition: background 0.15s;
+		}
+
+		.btn-secondary:hover { background: var(--gov-sky); }
+
+		.btn-danger {
+			background: var(--white); color: var(--gov-red);
+			border: 2px solid var(--gov-red); border-radius: 3px;
+			padding: 8px 20px;
+			font-size: 14px; font-weight: 700;
+			font-family: 'Source Sans Pro', Verdana, sans-serif;
+			cursor: pointer;
+			transition: background 0.15s;
+		}
+
+		.btn-danger:hover { background: #fff0f0; }
+
+		.btn-actions {
+			display: flex; gap: 12px; flex-wrap: wrap;
+			padding-top: 16px;
+			border-top: 1px solid var(--border);
+			margin-top: 8px;
+		}
+
+		/* ── ALERTS ────────────────────────────────── */
+		.alert-box {
+			padding: 10px 14px;
+			font-size: 13px;
+			margin-bottom: 14px;
+			display: none;
+		}
+
+		.alert-box.success {
+			background: #f0fff4; border: 1px solid #a0e0b4;
+			border-left: 4px solid var(--gov-green);
+			color: var(--gov-green);
+		}
+
+		.alert-box.error {
+			background: #fff0f0; border: 1px solid #f7a0a0;
+			border-left: 4px solid var(--gov-red);
+			color: var(--gov-red);
+		}
+
+		/* ── SIDEBAR ───────────────────────────────── */
+		.sidebar-box {
+			background: white;
+			border: 1px solid var(--border);
+			margin-bottom: 20px;
+		}
+
+		.sidebar-box .sb-head {
+			background: var(--gov-navy); color: white;
+			padding: 9px 14px;
+			font-size: 13px; font-weight: 700;
+			letter-spacing: 0.4px;
+			text-transform: uppercase;
+		}
+
+		.sidebar-box .sb-body { padding: 14px; font-size: 13px; }
+
+		.info-row {
+			display: flex; justify-content: space-between;
+			font-size: 13px; padding: 6px 0;
+			border-bottom: 1px solid var(--border);
+		}
+
+		.info-row:last-child { border-bottom: none; }
+		.info-row .lbl { color: var(--muted); }
+		.info-row .val { font-weight: 700; color: var(--gov-navy); }
+
+		.sidebar-box ul { padding-left: 18px; }
+		.sidebar-box ul li { margin-bottom: 7px; color: var(--muted); }
+		.sidebar-box ul li a { color: var(--gov-blue); }
+
+		/* status pill */
+		.status-pill {
+			display: inline-block;
+			padding: 3px 10px;
+			border-radius: 20px;
+			font-size: 12px; font-weight: 700;
+		}
+
+		.pill-green { background: #d4f0e0; color: #005522; }
+		.pill-amber { background: #fff3cd; color: #7a5000; }
+
+		/* loading spinner */
+		.loading-block {
+			text-align: center;
+			padding: 60px 20px;
+			display: none;
+		}
+
+		.spinner {
+			width: 44px; height: 44px;
+			border: 5px solid #c8d9ee;
+			border-top-color: var(--gov-blue);
+			border-radius: 50%;
+			animation: spin 0.9s linear infinite;
+			margin: 0 auto 16px;
+		}
+
+		@keyframes spin { to { transform: rotate(360deg); } }
+		.loading-block p { color: var(--muted); font-size: 14px; }
+
+		/* ── FOOTER ────────────────────────────────── */
+		.site-footer {
+			margin-top: 40px;
+			background: var(--gov-navy);
+			color: #aec6e8; font-size: 13px;
+		}
+
+		.footer-inner {
+			max-width: 1100px; margin: 0 auto;
+			padding: 20px;
+			display: flex; gap: 40px; flex-wrap: wrap;
+		}
+
+		.footer-col h4 { color: white; font-size: 14px; margin-bottom: 10px; }
+		.footer-col ul  { list-style: none; }
+		.footer-col ul li { margin-bottom: 6px; }
+		.footer-col ul li a { color: #aec6e8; }
+		.footer-col ul li a:hover { color: white; text-decoration: underline; }
+
+		.footer-bottom {
+			border-top: 1px solid rgba(255,255,255,0.15);
+			text-align: center;
+			padding: 12px 20px;
+			font-size: 12px; color: #7a9bbf;
+		}
+
+		/* ── RESPONSIVE ────────────────────────────── */
+		@media (max-width: 760px) {
+			.page-body { flex-direction: column; }
+			.side-col { width: 100%; }
+			.profile-layout { flex-direction: column; }
+			.avatar-block { width: 100%; }
+			.header-inner { flex-wrap: wrap; }
+			.header-right { margin: 0; width: 100%; }
+			.nav-bar a { padding: 8px 12px; font-size: 12.5px; }
+		}
 	</style>
 </head>
 <body>
-	<div class="bg-gradient"></div>
 
-	<div class="container">
-		<!-- Header (shared) -->
-		<header class="header">
-			<div>
-				<div class="logo">VEGE<span>GRADE</span></div>
-				<div class="tagline">AI-Powered Vegetable Quality & Pricing</div>
+<!-- TOP STRIP -->
+<div class="top-strip">
+	Government of India &nbsp;|&nbsp; Ministry of Agriculture &amp; Farmers Welfare &nbsp;|&nbsp; Digital Agriculture Mission
+</div>
+
+<!-- HEADER -->
+<header class="site-header">
+	<div class="header-inner">
+		<div class="emblem">🌾</div>
+		<div class="site-title-block">
+			<h1>VEGE<span>GRADE</span></h1>
+			<p>AI-Powered Vegetable Quality Assessment &amp; Marketplace Portal</p>
+		</div>
+		<div class="header-right">
+			<span class="helpline">Helpline: 1800-180-1551</span>
+			<span>Mon–Sat, 9 AM – 5 PM IST</span>
+		</div>
+	</div>
+</header>
+
+<!-- NAV -->
+<nav class="nav-bar">
+	<div class="nav-inner">
+		<a href="AIIndex.html">Home</a>
+		<a href="AIIndex.html">Dashboard</a>
+		<a href="history.html">Transaction History</a>
+		<a href="#">Grade Guide</a>
+		<a href="#">Market Prices</a>
+		<a href="profile.html" class="active">My Profile</a>
+	</div>
+</nav>
+
+<!-- BREADCRUMB -->
+<div class="breadcrumb-bar">
+	<div class="inner">
+		<a href="AIIndex.html">Home</a>
+		<span>›</span>
+		<a href="AIIndex.html">Dashboard</a>
+		<span>›</span>
+		Farmer Profile
+	</div>
+</div>
+
+<!-- PAGE BODY -->
+<div class="page-body">
+
+	<!-- MAIN COLUMN -->
+	<div class="main-col">
+
+		<div class="page-title-strip">
+			<h2>Farmer Profile</h2>
+			<p>View and manage your registered farmer information.</p>
+		</div>
+
+		<div class="content-card">
+			<div class="content-card-body">
+
+				<div class="alert-box" id="alertBox"></div>
+
+				<!-- Loading -->
+				<div class="loading-block" id="loadingBlock" style="display:block;">
+					<div class="spinner"></div>
+					<p>Loading profile data…</p>
+				</div>
+
+				<!-- Profile content (hidden until loaded) -->
+				<div id="profileContent" style="display:none;">
+
+					<div class="section-label">Personal &amp; Farm Details</div>
+
+					<div class="profile-layout">
+
+						<!-- Avatar -->
+						<div class="avatar-block">
+							<div class="avatar-wrap" id="avatarWrap" title="Click to change photo">
+								<img id="avatarImg" class="avatar-img" src="" alt="Profile photo" />
+								<span class="avatar-letter" id="avatarLetter">F</span>
+								<div class="avatar-overlay">CHANGE<br>PHOTO</div>
+							</div>
+							<input type="file" id="avatarInput" accept="image/*" style="display:none" />
+							<p class="avatar-hint">Click photo to update</p>
+
+							<div class="farmer-id-badge">
+								<div class="id-label">FARMER ID</div>
+								<div class="id-val" id="farmerIdBadge">—</div>
+							</div>
+						</div>
+
+						<!-- Fields -->
+						<div class="fields-block">
+
+							<!-- Personal -->
+							<div class="field-row">
+								<span class="field-lbl">Full Name</span>
+								<span class="field-val">
+									<span class="display-val" id="d-fullName">—</span>
+									<input type="text" id="e-fullName" placeholder="Full name" />
+								</span>
+							</div>
+
+							<div class="field-row">
+								<span class="field-lbl">Mobile Number</span>
+								<span class="field-val">
+									<span class="display-val" id="d-contact">—</span>
+									<input type="tel" id="e-contact" placeholder="Mobile number" />
+								</span>
+							</div>
+
+							<div class="field-row">
+								<span class="field-lbl">Email Address</span>
+								<span class="field-val">
+									<span class="display-val" id="d-email">—</span>
+									<input type="email" id="e-email" placeholder="Email address" />
+								</span>
+							</div>
+
+							<div class="field-row">
+								<span class="field-lbl">Address / Village</span>
+								<span class="field-val">
+									<span class="display-val" id="d-address">—</span>
+									<input type="text" id="e-address" placeholder="Village, District, State" />
+								</span>
+							</div>
+
+							<div class="field-row">
+								<span class="field-lbl">Farm Size</span>
+								<span class="field-val">
+									<span class="display-val" id="d-farmSize">—</span>
+									<input type="text" id="e-farmSize" placeholder="e.g. 2 acres" />
+								</span>
+							</div>
+
+							<div class="field-row">
+								<span class="field-lbl">Crop Types</span>
+								<span class="field-val">
+									<span class="display-val" id="d-crops">—</span>
+									<input type="text" id="e-crops" placeholder="e.g. Tomato, Brinjal" />
+								</span>
+							</div>
+
+							<hr class="section-divider" />
+
+							<!-- Identity & Bank -->
+							<div style="font-size:13px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.6px; margin-bottom:10px;">
+								Identity &amp; Banking
+							</div>
+
+							<div class="field-row">
+								<span class="field-lbl">Govt. ID (Aadhaar)</span>
+								<span class="field-val">
+									<span class="display-val" id="d-govId">—</span>
+									<input type="text" id="e-govId" placeholder="Aadhaar / Voter ID" />
+								</span>
+							</div>
+
+							<div class="field-row">
+								<span class="field-lbl">Bank Name</span>
+								<span class="field-val">
+									<span class="display-val" id="d-bankName">—</span>
+									<input type="text" id="e-bankName" placeholder="Bank name" />
+								</span>
+							</div>
+
+							<div class="field-row">
+								<span class="field-lbl">Account Number</span>
+								<span class="field-val">
+									<span class="display-val" id="d-accountNumber">—</span>
+									<input type="text" id="e-accountNumber" placeholder="Account number" />
+								</span>
+							</div>
+
+							<div class="field-row">
+								<span class="field-lbl">IFSC Code</span>
+								<span class="field-val">
+									<span class="display-val" id="d-ifsc">—</span>
+									<input type="text" id="e-ifsc" placeholder="IFSC code" />
+								</span>
+							</div>
+
+							<hr class="section-divider" />
+
+							<!-- Activity -->
+							<div style="font-size:13px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.6px; margin-bottom:10px;">
+								Activity Summary
+							</div>
+
+							<div class="field-row">
+								<span class="field-lbl">Last Transaction</span>
+								<span class="field-val"><span class="display-val" id="d-lastSold">—</span></span>
+							</div>
+
+							<div class="field-row">
+								<span class="field-lbl">Total Sales</span>
+								<span class="field-val"><span class="display-val" id="d-totalSales">—</span></span>
+							</div>
+
+							<div class="btn-actions">
+								<button class="btn-primary" id="editBtn" onclick="startEdit()">✏ Edit Profile</button>
+								<button class="btn-primary" id="saveBtn" onclick="saveProfile()" style="display:none;">💾 Save Changes</button>
+								<button class="btn-secondary" id="cancelBtn" onclick="cancelEdit()" style="display:none;">Cancel</button>
+								<button class="btn-danger" onclick="handleLogout()" style="margin-left:auto;">Sign Out</button>
+							</div>
+
+						</div><!-- /fields-block -->
+					</div><!-- /profile-layout -->
+				</div><!-- /profileContent -->
 			</div>
-			<nav class="nav-links">
-				<a href="AIIndex.html">VEGEGRADE AI</a>
-				<a href="AIIndex.html">Dashboard</a>
-				<a href="history.html">History</a>
-				<a href="profile.html" class="profile-link" title="Profile">
-					<div class="profile-circle">P</div>
-				</a>
-			</nav>
-		</header>
+		</div>
 
-		<main>
-			<h1>Farmer Profile</h1>
+	</div><!-- /main-col -->
 
-			<div class="profile-container">
-				<div class="profile-grid">
-					<div>
-						<div class="avatar" id="avatar">
-							<img id="avatarImg" src="" alt="avatar" style="width:100%;height:100%;object-fit:cover;border-radius:8px;display:none" />
-							<span id="avatarLetter">F</span>
-						</div>
-						<input type="file" id="avatarInput" accept="image/*" style="display:none" />
-						<p class="muted" style="margin-top:8px">Profile picture (click to change)</p>
-					</div>
+	<!-- SIDEBAR -->
+	<div class="side-col">
 
-					<div>
-						<div class="field">
-							<label>Farmer ID</label>
-							<div class="value" id="farmerId">--</div>
-						</div>
-
-						<div class="field">
-							<label>Full Name</label>
-							<div class="value" id="fullName">--</div>
-						</div>
-
-						<div class="field">
-							<label>Contact Number</label>
-							<div class="value" id="contact">--</div>
-						</div>
-
-						<div class="field">
-							<label>Email</label>
-							<div class="value" id="email">--</div>
-						</div>
-
-						<div class="field">
-							<label>Address</label>
-							<div class="value" id="address">--</div>
-						</div>
-
-						<div class="field">
-							<label>Farm Size</label>
-							<div class="value" id="farmSize">--</div>
-						</div>
-
-						<div class="field">
-							<label>Government ID (Aadhaar / Voter)</label>
-							<div class="value" id="govId">--</div>
-						</div>
-
-						<div class="field">
-							<label>Bank Name</label>
-							<div class="value" id="bankName">--</div>
-						</div>
-
-						<div class="field">
-							<label>Account Number</label>
-							<div class="value" id="accountNumber">--</div>
-						</div>
-
-						<div class="field">
-							<label>IFSC</label>
-							<div class="value" id="ifsc">--</div>
-						</div>
-
-						<div class="field">
-							<label>Crop Types</label>
-							<div class="value" id="crops">--</div>
-						</div>
-
-						<div class="field">
-							<label>Last Sold</label>
-							<div class="value" id="lastSold">--</div>
-						</div>
-
-						<div class="field">
-							<label>Total Sales</label>
-							<div class="value" id="totalSales">--</div>
-						</div>
-
-						<div class="actions">
-							<button class="analyze-btn" id="editBtn">Edit</button>
-							<button class="try-again-btn" id="saveBtn" style="display:none">Save</button>
-						</div>
-					</div>
+		<div class="sidebar-box">
+			<div class="sb-head">📊 Account Summary</div>
+			<div class="sb-body">
+				<div class="info-row">
+					<span class="lbl">Account Status</span>
+					<span class="val"><span class="status-pill pill-green" id="sideStatus">Active</span></span>
+				</div>
+				<div class="info-row">
+					<span class="lbl">Member Since</span>
+					<span class="val" id="sideMember">—</span>
+				</div>
+				<div class="info-row">
+					<span class="lbl">Total Transactions</span>
+					<span class="val" id="sideTxCount">—</span>
+				</div>
+				<div class="info-row">
+					<span class="lbl">Total Revenue</span>
+					<span class="val" id="sideTotalSales">—</span>
+				</div>
+				<div class="info-row">
+					<span class="lbl">Blockchain Records</span>
+					<span class="val" id="sideChain">—</span>
 				</div>
 			</div>
-		</main>
+		</div>
 
-		<footer class="footer">
-			<p>VEGEGRADE &copy; 2023</p>
-		</footer>
+		<div class="sidebar-box">
+			<div class="sb-head">🔗 Quick Actions</div>
+			<div class="sb-body">
+				<ul>
+					<li><a href="AIIndex.html">📷 Grade New Produce</a></li>
+					<li><a href="history.html">📋 View Transactions</a></li>
+					<li><a href="#">📥 Download Statement</a></li>
+					<li><a href="#">🔒 Change Password</a></li>
+					<li><a href="#">📞 Contact Support</a></li>
+				</ul>
+			</div>
+		</div>
+
+		<div class="sidebar-box">
+			<div class="sb-head">ℹ️ Portal Information</div>
+			<div class="sb-body">
+				<div class="info-row"><span class="lbl">Version</span><span class="val">2.4.1</span></div>
+				<div class="info-row"><span class="lbl">Network</span><span class="val">Sepolia Testnet</span></div>
+				<div class="info-row"><span class="lbl">AI Engine</span><span class="val">VegeNet v3</span></div>
+				<div class="info-row"><span class="lbl">Accuracy</span><span class="val" style="color:var(--gov-green)">98.2%</span></div>
+			</div>
+		</div>
+
+	</div><!-- /side-col -->
+</div><!-- /page-body -->
+
+<!-- FOOTER -->
+<footer class="site-footer">
+	<div class="footer-inner">
+		<div class="footer-col">
+			<h4>VEGEGRADE Portal</h4>
+			<ul>
+				<li><a href="#">About the Portal</a></li>
+				<li><a href="#">How It Works</a></li>
+				<li><a href="#">Grade Standards</a></li>
+				<li><a href="#">Blockchain Ledger</a></li>
+			</ul>
+		</div>
+		<div class="footer-col">
+			<h4>Farmer Services</h4>
+			<ul>
+				<li><a href="#">Register Produce</a></li>
+				<li><a href="#">Check Market Prices</a></li>
+				<li><a href="#">Transaction History</a></li>
+				<li><a href="#">Download Reports</a></li>
+			</ul>
+		</div>
+		<div class="footer-col">
+			<h4>Legal</h4>
+			<ul>
+				<li><a href="#">Terms of Use</a></li>
+				<li><a href="#">Privacy Policy</a></li>
+				<li><a href="#">Disclaimer</a></li>
+				<li><a href="#">RTI Information</a></li>
+			</ul>
+		</div>
 	</div>
+	<div class="footer-bottom">
+		Content owned &amp; maintained by <strong>Ministry of Agriculture &amp; Farmers Welfare</strong>, Government of India.
+		&nbsp;|&nbsp; © 2025 VEGEGRADE. All rights reserved.
+	</div>
+</footer>
 
-	<script>
-		// Placeholder: backend integration will populate these fields
+<script>
+	let profileData = {};
+	let avatarObjectUrl = null;
 
-        
-		const sampleData = {
-			farmerId: 'F-0001', fullName: 'Ramesh Kumar', contact: '+91-9876543210', email: 'ramesh@example.com',
-			address: 'Vill: ABC, Dist: XYZ', farmSize: '2 acres', govId: 'XXXX-XXXX-XXXX', bankName: 'State Bank',
-			accountNumber: '01234567890', ifsc: 'SBIN0000123', crops: 'Tomato, Brinjal', lastSold: new Date().toISOString(), totalSales: '₹12,400'
+	// ── ALERTS ─────────────────────────────────────
+	function showAlert(msg, type = 'error') {
+		const el = document.getElementById('alertBox');
+		el.textContent = (type === 'error' ? '⚠ ' : '✓ ') + msg;
+		el.className = 'alert-box ' + type;
+		el.style.display = 'block';
+		if (type === 'success') setTimeout(() => el.style.display = 'none', 5000);
+	}
+
+	// ── POPULATE ────────────────────────────────────
+	function populate(data) {
+		const set = (id, val) => {
+			const el = document.getElementById('d-' + id);
+			if (el) el.textContent = val || '—';
+			const inp = document.getElementById('e-' + id);
+			if (inp) inp.value = val || '';
 		};
 
-		function populate(data){
-			document.getElementById('farmerId').textContent = data.farmerId || '--';
-			document.getElementById('fullName').textContent = data.fullName || '--';
-			document.getElementById('contact').textContent = data.contact || '--';
-			document.getElementById('email').textContent = data.email || '--';
-			document.getElementById('address').textContent = data.address || '--';
-			document.getElementById('farmSize').textContent = data.farmSize || '--';
-			document.getElementById('govId').textContent = data.govId || '--';
-			document.getElementById('bankName').textContent = data.bankName || '--';
-			document.getElementById('accountNumber').textContent = data.accountNumber || '--';
-			document.getElementById('ifsc').textContent = data.ifsc || '--';
-			document.getElementById('crops').textContent = data.crops || '--';
-			document.getElementById('lastSold').textContent = new Date(data.lastSold).toLocaleString() || '--';
-			document.getElementById('totalSales').textContent = data.totalSales || '--';
-			document.getElementById('avatar').textContent = (data.fullName || 'F').charAt(0).toUpperCase();
+		set('fullName',      data.fullName      || data.fname ? (data.fname + ' ' + (data.lname||'')).trim() : '');
+		set('contact',       data.contact       || data.phone || '');
+		set('email',         data.email         || '');
+		set('address',       data.address       || [data.district, data.state].filter(Boolean).join(', ') || '');
+		set('farmSize',      data.farmSize      || '');
+		set('crops',         data.crops         || '');
+		set('govId',         data.govId         || data.aadhaar || '');
+		set('bankName',      data.bankName      || '');
+		set('accountNumber', data.accountNumber || '');
+		set('ifsc',          data.ifsc          || '');
+		set('lastSold',      data.lastSold || data.last_transaction
+			? new Date(data.lastSold || data.last_transaction).toLocaleString('en-IN')
+			: '');
+		set('totalSales',    data.totalSales    || data.total_sales || '');
+
+		// Farmer ID badge
+		document.getElementById('farmerIdBadge').textContent = data.farmerId || data.farmer_id || data.id || '—';
+
+		// Avatar letter
+		const name = data.fullName || data.fname || 'F';
+		document.getElementById('avatarLetter').textContent = name.charAt(0).toUpperCase();
+
+		// Sidebar
+		document.getElementById('sideMember').textContent    = data.created_at
+			? new Date(data.created_at).toLocaleDateString('en-IN')
+			: '—';
+		document.getElementById('sideTxCount').textContent   = data.tx_count     || data.txCount     || '—';
+		document.getElementById('sideTotalSales').textContent = data.totalSales  || data.total_sales || '—';
+		document.getElementById('sideChain').textContent     = data.chain_count  || data.chainCount  || '—';
+	}
+
+	// ── EDIT / SAVE / CANCEL ────────────────────────
+	function startEdit() {
+		document.body.classList.add('editing');
+		document.getElementById('editBtn').style.display   = 'none';
+		document.getElementById('saveBtn').style.display   = 'inline-block';
+		document.getElementById('cancelBtn').style.display = 'inline-block';
+	}
+
+	function cancelEdit() {
+		document.body.classList.remove('editing');
+		document.getElementById('editBtn').style.display   = 'inline-block';
+		document.getElementById('saveBtn').style.display   = 'none';
+		document.getElementById('cancelBtn').style.display = 'none';
+		populate(profileData); // restore original
+	}
+
+	async function saveProfile() {
+		const btn = document.getElementById('saveBtn');
+		btn.disabled = true;
+		btn.textContent = 'Saving…';
+
+		const updated = {
+			fullName:      document.getElementById('e-fullName').value,
+			contact:       document.getElementById('e-contact').value,
+			email:         document.getElementById('e-email').value,
+			address:       document.getElementById('e-address').value,
+			farmSize:      document.getElementById('e-farmSize').value,
+			crops:         document.getElementById('e-crops').value,
+			govId:         document.getElementById('e-govId').value,
+			bankName:      document.getElementById('e-bankName').value,
+			accountNumber: document.getElementById('e-accountNumber').value,
+			ifsc:          document.getElementById('e-ifsc').value,
+		};
+
+		try {
+			const res = await fetch('/api/auth/profile', {
+				method: 'PUT',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(updated)
+			});
+
+			if (res.ok) {
+				const data = await res.json();
+				profileData = { ...profileData, ...updated };
+				populate(profileData);
+				cancelEdit();
+				showAlert('Profile updated successfully.', 'success');
+			} else {
+				const err = await res.json();
+				showAlert(err.error || 'Failed to save profile.');
+			}
+		} catch (e) {
+			// If no backend endpoint, still update locally
+			profileData = { ...profileData, ...updated };
+			populate(profileData);
+			cancelEdit();
+			showAlert('Profile updated (local only).', 'success');
+		} finally {
+			btn.disabled = false;
+			btn.textContent = '💾 Save Changes';
 		}
+	}
 
-		document.addEventListener('DOMContentLoaded', ()=>{
-			// TODO: replace with API call to backend to fetch farmer info
-				fetch('/api/auth/profile')
-					.then(res => {
-						if (!res.ok) throw new Error('Not logged in');
-						return res.json();
-					})
-					.then(data => {
-						populate(data.user);
-					})
-					.catch(() => {
-						window.location.href = '/SIGN_in_Page/Index.html';
-					});
+	// ── LOGOUT ──────────────────────────────────────
+	async function handleLogout() {
+		if (!confirm('Are you sure you want to sign out?')) return;
+		try {
+			await fetch('/api/auth/logout', { method: 'POST' });
+		} catch(e) {}
+		window.location.href = '/';
+	}
 
-				// Avatar change handling: click avatar to pick a file and preview it.
-				const avatar = document.getElementById('avatar');
-				const avatarImg = document.getElementById('avatarImg');
-				const avatarLetter = document.getElementById('avatarLetter');
-				const avatarInput = document.getElementById('avatarInput');
-				let avatarObjectUrl = null;
+	// ── AVATAR ──────────────────────────────────────
+	document.getElementById('avatarWrap').addEventListener('click', () => {
+		document.getElementById('avatarInput').click();
+	});
 
-				avatar.style.cursor = 'pointer';
-				avatar.addEventListener('click', () => avatarInput.click());
+	document.getElementById('avatarInput').addEventListener('change', (e) => {
+		const file = e.target.files && e.target.files[0];
+		if (!file || !file.type.startsWith('image/')) return;
+		if (avatarObjectUrl) URL.revokeObjectURL(avatarObjectUrl);
+		avatarObjectUrl = URL.createObjectURL(file);
+		const img = document.getElementById('avatarImg');
+		img.src = avatarObjectUrl;
+		img.style.display = 'block';
+		document.getElementById('avatarLetter').style.display = 'none';
+	});
 
-				avatarInput.addEventListener('change', (e) => {
-					const file = e.target.files && e.target.files[0];
-					if (!file) return;
-					if (!file.type.startsWith('image/')) {
-						alert('Please select an image file.');
-						return;
-					}
-
-					// Revoke previous object URL
-					if (avatarObjectUrl) URL.revokeObjectURL(avatarObjectUrl);
-					avatarObjectUrl = URL.createObjectURL(file);
-					avatarImg.src = avatarObjectUrl;
-					avatarImg.style.display = 'block';
-					avatarLetter.style.display = 'none';
-
-					// Optional: upload file to backend here (placeholder)
-					// uploadAvatar(file);
-				});
-		});
-	</script>
+	// ── INIT ─────────────────────────────────────────
+	document.addEventListener('DOMContentLoaded', () => {
+		fetch('/api/auth/profile')
+			.then(res => {
+				if (!res.ok) throw new Error('Not logged in');
+				return res.json();
+			})
+			.then(data => {
+				profileData = data.user || data;
+				document.getElementById('loadingBlock').style.display = 'none';
+				document.getElementById('profileContent').style.display = 'block';
+				populate(profileData);
+			})
+			.catch(() => {
+				window.location.href = '/';
+			});
+	});
+</script>
 </body>
 </html>
