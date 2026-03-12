@@ -36,11 +36,11 @@ app.get('/health', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-  console.log(`🔒 Immutable ledger system active`);
-  console.log(`📊 Database: ${process.env.DB_NAME}`);
+  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Immutable ledger system active`);
+  console.log(`Database: ${process.env.DB_NAME}`);
 });
 
 process.on('uncaughtException', (error) => {
-  console.error('❌ Server Error:', error.message);
+  console.error('Server Error:', error.message);
 });

@@ -394,7 +394,9 @@ function showSuccess(result) {
 }
 
 function saveTransactionToHistory(result) {
-    const history = JSON.parse(localStorage.getItem('vegegrade_history') || '[]');
+    const farmerId = localStorage.getItem('farmerId') || 'guest';
+    const historyKey = 'vegegrade_history_' + farmerId;
+    const history = JSON.parse(localStorage.getItem(historyKey) || '[]');
 
     const qty = parseFloat(document.getElementById('quantity').value) || 0;
     const prc = parseFloat(document.getElementById('price').value) || 0;
@@ -413,6 +415,6 @@ function saveTransactionToHistory(result) {
     };
 
     history.unshift(historyEntry);
-    localStorage.setItem('vegegrade_history', JSON.stringify(history));
-    console.log('Transaction saved to history:', historyEntry);
+    localStorage.setItem(historyKey, JSON.stringify(history));
+    console.log('Transaction saved to history (key:', historyKey, '):', historyEntry);
 }

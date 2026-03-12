@@ -445,10 +445,10 @@
 </head>
 <body>
 
-<!-- TOP STRIP -->
-<div class="top-strip">
-	Government of India &nbsp;|&nbsp; Ministry of Agriculture &amp; Farmers Welfare &nbsp;|&nbsp; Agmarknet Daily Mandi Prices
-</div>
+<!--&lt;!&ndash; TOP STRIP &ndash;&gt;-->
+<!--<div class="top-strip">-->
+<!--	Government of India &nbsp;|&nbsp; Ministry of Agriculture &amp; Farmers Welfare &nbsp;|&nbsp; Agmarknet Daily Mandi Prices-->
+<!--</div>-->
 
 <!-- HEADER -->
 <header class="site-header">
@@ -458,10 +458,10 @@
 			<h1>VEGE<span>GRADE</span></h1>
 			<p>AI-Powered Vegetable Quality Assessment &amp; Marketplace Portal</p>
 		</div>
-		<div class="header-right">
-			<span class="helpline">Helpline: 1800-180-1551</span>
-			<span>Mon–Sat, 9 AM – 5 PM IST</span>
-		</div>
+<!--		<div class="header-right">-->
+<!--			<span class="helpline">Helpline: 1800-180-1551</span>-->
+<!--			<span>Mon–Sat, 9 AM – 5 PM IST</span>-->
+<!--		</div>-->
 	</div>
 </header>
 
@@ -469,10 +469,9 @@
 <nav class="nav-bar">
 	<div class="nav-inner">
 		<a href="AIIndex.html">Home</a>
-		<a href="AIIndex.html">Dashboard</a>
 		<a href="history.html">Transaction History</a>
-		<a href="#">Grade Guide</a>
 		<a href="market.html" class="active">Market Prices</a>
+		<a href="guidelines.html">Guidelines</a>
 		<a href="profile.html">My Profile</a>
 	</div>
 </nav>
@@ -493,7 +492,6 @@
 	<div class="main-col">
 
 		<div class="notice-banner">
-			<span>📢</span>
 			<div>
 				Prices sourced from <strong>Agmarknet / data.gov.in</strong> — India's official agricultural marketing information network. Wholesale modal prices in ₹/Quintal. Data refreshed daily.
 			</div>
@@ -545,8 +543,8 @@
 						<option value="100">100</option>
 					</select>
 				</div>
-				<button class="btn-primary" onclick="loadPrices()">🔍 Fetch Prices</button>
-				<button class="btn-primary" style="background:var(--gov-green);" onclick="refreshAll()">🔄 Refresh</button>
+				<button class="btn-primary" onclick="loadPrices()">Fetch Prices</button>
+				<button class="btn-primary" style="background:var(--gov-green);" onclick="refreshAll()">Refresh</button>
 			</div>
 
 			<!-- Summary stats -->
@@ -622,7 +620,7 @@
 
 		<!-- Quick Select -->
 		<div class="sidebar-box">
-			<div class="sb-head">🥦 Quick Select</div>
+			<div class="sb-head">Quick Select</div>
 			<div class="sb-body">
 				<div class="veg-btn-grid" id="quickBtns">
 					<button class="veg-quick-btn active" onclick="quickSelect(this,'Tomato')">🍅 Tomato</button>
@@ -641,7 +639,7 @@
 
 		<!-- Mini trend chart -->
 		<div class="sidebar-box">
-			<div class="sb-head">📈 7-Day Trend</div>
+			<div class="sb-head">7-Day Trend</div>
 			<div class="mini-chart-wrap">
 				<div class="mini-chart-title" id="miniChartTitle">Tomato — National Avg</div>
 				<div style="position:relative; width:100%; height:110px;">
@@ -652,7 +650,7 @@
 
 		<!-- Market info -->
 		<div class="sidebar-box">
-			<div class="sb-head">ℹ️ Data Source</div>
+			<div class="sb-head">Data Source</div>
 			<div class="sb-body">
 				<div class="info-row"><span class="lbl">Source</span><span class="val">Agmarknet</span></div>
 				<div class="info-row"><span class="lbl">Ministry</span><span class="val">MoA &amp; FW</span></div>
@@ -665,7 +663,7 @@
 
 		<!-- Top markets -->
 		<div class="sidebar-box">
-			<div class="sb-head">🏆 Highest Prices Today</div>
+			<div class="sb-head">Highest Prices Today</div>
 			<div class="sb-body" id="topMarkets" style="font-size:13px;">
 				<div style="color:var(--muted); font-size:12px;">Loading…</div>
 			</div>
@@ -680,31 +678,40 @@
 		<div class="footer-col">
 			<h4>VEGEGRADE Portal</h4>
 			<ul>
-				<li><a href="#">About the Portal</a></li>
-				<li><a href="#">Grade Standards</a></li>
-				<li><a href="#">Blockchain Ledger</a></li>
+				<li><a href="faq.html">FAQs</a></li>
+				<li><a href="#">How It Works</a></li>
+				<li><a href="#">API Access</a></li>
+				<li><a href="#">Open Data</a></li>
 			</ul>
 		</div>
 		<div class="footer-col">
-			<h4>Market Data</h4>
+			<h4>Related Services</h4>
 			<ul>
-				<li><a href="https://agmarknet.gov.in" target="_blank">Agmarknet Portal</a></li>
-				<li><a href="https://data.gov.in" target="_blank">data.gov.in</a></li>
-				<li><a href="#">Price Archive</a></li>
+				<li><a href="https://pmkisan.gov.in/">PM-KISAN Portal</a></li>
+				<li><a href="https://enam.gov.in/web/">eNAM Market</a></li>
+				<li><a href="https://www.soilhealth.dac.gov.in/home">Soil Health Card</a></li>
+				<li><a href="https://icar.org.in/en/krishi-vigyan-kendras">Krishi Vigyan Kendras</a></li>
 			</ul>
 		</div>
-		<div class="footer-col">
-			<h4>Legal</h4>
-			<ul>
-				<li><a href="#">Terms of Use</a></li>
-				<li><a href="#">Disclaimer</a></li>
-				<li><a href="#">RTI Information</a></li>
-			</ul>
+		<!--    <div class="footer-col">-->
+		<!--      <h4>Legal</h4>-->
+		<!--      <ul>-->
+		<!--        <li><a href="#">Terms &amp; Conditions</a></li>-->
+		<!--        <li><a href="#">Privacy Policy</a></li>-->
+		<!--        <li><a href="#">Copyright Policy</a></li>-->
+		<!--        <li><a href="#">Accessibility Statement</a></li>-->
+		<!--      </ul>-->
+		<!--    </div>-->
+		<div class="footer-col" style="flex:1; min-width:200px;">
+			<h4>About</h4>
+			<p style="font-size:13px; line-height:1.6;">
+				VEGEGRADE is a platform that uses AI to automatically grade vegetables based on visual quality. It records grading and trade data on blockchain to enable transparent and fair pricing.
+			</p>
 		</div>
 	</div>
 	<div class="footer-bottom">
-		Price data sourced from <strong>Agmarknet</strong>, Ministry of Agriculture &amp; Farmers Welfare, Government of India.
-		&nbsp;|&nbsp; © 2025 VEGEGRADE. All rights reserved.
+
+		&nbsp;|&nbsp; Site Version 0.4
 	</div>
 </footer>
 

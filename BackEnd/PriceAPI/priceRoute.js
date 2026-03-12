@@ -44,7 +44,7 @@ async function handlePriceRequest(params, res) {
     return res.json({
         success:             true,
         grade:               g,
-        // ✅ Main price output — this is what you want
+        // Main price output — this is what you want
         price:               selected,
         price_type:          type,
         price_display:       `₹${selected.toLocaleString('en-IN')} per quintal`,

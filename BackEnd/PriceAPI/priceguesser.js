@@ -226,7 +226,7 @@ app.get("/guess-price", async (req, res) => {
 // ── Start ──────────────────────────────────────────────────────────────────────
 
 app.listen(PORT, () => {
-    console.log(`✅ Price Guesser API running on http://localhost:${PORT}`);
+    console.log(` Price Guesser API running on http://localhost:${PORT}`);
     console.log(`   POST /guess-price  →  { commodity_id, state_id, district_id, market_id, grade }`);
     console.log(`   GET  /guess-price  →  ?commodity_id=1&state_id=8&district_id=194&market_id=255&grade=A`);
 });
