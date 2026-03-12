@@ -1,0 +1,63 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract VegetableHash {
+
+    // Store who deployed the contract
+    address public owner;
+
+    // Structure for vegetable record
+    struct VegetableRecord {
+        string hashValue;
+        uint256 timestamp;
+        string farmerName;
+        bool exists;
+    }
+
+    // Map record ID to vegetable record
+    mapping(uint => VegetableRecord) public records;
+
+    // Event so frontend can listen for new records
+    event HashStored(uint indexed id, string hashValue, uint256 timestamp);
+
+    constructor() {
+        owner = msg.sender;
+    }
+
+    // Store a hash with farmer name
+    function storeHash(uint id, string memory hashValue, string memory farmerName) public {
+        require(!records[id].exists, "Record ID already exists");
+
+        records[id] = VegetableRecord({
+            hashValue: hashValue,
+            timestamp: block.timestamp,
+            farmerName: farmerName,
+            exists: true
+        });
+
+        emit HashStored(id, hashValue, block.timestamp);
+    }
+
+    // Retrieve hash by ID
+    function getHash(uint id) public view returns (string memory) {
+        require(records[id].exists, "Record not found");
+        return records[id].hashValue;
+    }
+
+    // Get full record details
+    function getRecord(uint id) public view returns (
+        string memory hashValue,
+        uint256 timestamp,
+        string memory farmerName
+    ) {
+        require(records[id].exists, "Record not found");
+        VegetableRecord memory r = records[id];
+        return (r.hashValue, r.timestamp, r.farmerName);
+    }
+
+    // Verify: pass an id and a hash, returns true if it matches
+    function verifyHash(uint id, string memory hashToCheck) public view returns (bool) {
+        require(records[id].exists, "Record not found");
+        return keccak256(bytes(records[id].hashValue)) == keccak256(bytes(hashToCheck));
+    }
+}
