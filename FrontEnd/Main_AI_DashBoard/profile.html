@@ -476,9 +476,9 @@
 <body>
 
 <!-- TOP STRIP -->
-<div class="top-strip">
-	Government of India &nbsp;|&nbsp; Ministry of Agriculture &amp; Farmers Welfare &nbsp;|&nbsp; Digital Agriculture Mission
-</div>
+<!--<div class="top-strip">-->
+<!--	Government of India &nbsp;|&nbsp; Ministry of Agriculture &amp; Farmers Welfare &nbsp;|&nbsp; Digital Agriculture Mission-->
+<!--</div>-->
 
 <!-- HEADER -->
 <header class="site-header">
@@ -488,21 +488,21 @@
 			<h1>VEGE<span>GRADE</span></h1>
 			<p>AI-Powered Vegetable Quality Assessment &amp; Marketplace Portal</p>
 		</div>
-		<div class="header-right">
-			<span class="helpline">Helpline: 1800-180-1551</span>
-			<span>Mon–Sat, 9 AM – 5 PM IST</span>
-		</div>
+		<!--		<div class="header-right">-->
+		<!--			<span class="helpline">Helpline: 1800-180-1551</span>-->
+		<!--			<span>Mon–Sat, 9 AM – 5 PM IST</span>-->
+		<!--		</div>-->
 	</div>
 </header>
+
 
 <!-- NAV -->
 <nav class="nav-bar">
 	<div class="nav-inner">
 		<a href="AIIndex.html">Home</a>
-		<a href="AIIndex.html">Dashboard</a>
 		<a href="history.html">Transaction History</a>
-		<a href="#">Grade Guide</a>
-		<a href="#">Market Prices</a>
+		<a href="market.html">Market Prices</a>
+		<a href="guidelines.html">Guidelines</a>
 		<a href="profile.html" class="active">My Profile</a>
 	</div>
 </nav>
@@ -552,10 +552,10 @@
 							<div class="avatar-wrap" id="avatarWrap" title="Click to change photo">
 								<img id="avatarImg" class="avatar-img" src="" alt="Profile photo" />
 								<span class="avatar-letter" id="avatarLetter">F</span>
-								<div class="avatar-overlay">CHANGE<br>PHOTO</div>
+<!--								<div class="avatar-overlay">CHANGE<br>PHOTO</div>-->
 							</div>
-							<input type="file" id="avatarInput" accept="image/*" style="display:none" />
-							<p class="avatar-hint">Click photo to update</p>
+<!--							<input type="file" id="avatarInput" accept="image/*" style="display:none" />-->
+							<input id="avatarInput" style="display:none" />
 
 							<div class="farmer-id-badge">
 								<div class="id-label">FARMER ID</div>
@@ -673,7 +673,7 @@
 
 							<div class="btn-actions">
 								<button class="btn-primary" id="editBtn" onclick="startEdit()">✏ Edit Profile</button>
-								<button class="btn-primary" id="saveBtn" onclick="saveProfile()" style="display:none;">💾 Save Changes</button>
+								<button class="btn-primary" id="saveBtn" onclick="saveProfile()" style="display:none;"> Save Changes</button>
 								<button class="btn-secondary" id="cancelBtn" onclick="cancelEdit()" style="display:none;">Cancel</button>
 								<button class="btn-danger" onclick="handleLogout()" style="margin-left:auto;">Sign Out</button>
 							</div>
@@ -690,7 +690,7 @@
 	<div class="side-col">
 
 		<div class="sidebar-box">
-			<div class="sb-head">📊 Account Summary</div>
+			<div class="sb-head"> Account Summary</div>
 			<div class="sb-body">
 				<div class="info-row">
 					<span class="lbl">Account Status</span>
@@ -716,14 +716,13 @@
 		</div>
 
 		<div class="sidebar-box">
-			<div class="sb-head">🔗 Quick Actions</div>
+			<div class="sb-head">Quick Links</div>
 			<div class="sb-body">
 				<ul>
-					<li><a href="AIIndex.html">📷 Grade New Produce</a></li>
-					<li><a href="history.html">📋 View Transactions</a></li>
-					<li><a href="#">📥 Download Statement</a></li>
-					<li><a href="#">🔒 Change Password</a></li>
-					<li><a href="#">📞 Contact Support</a></li>
+					<li><a href="grading-standards.html">Grading Standards (AGMARK)</a></li>
+					<li><a href="guidelines.html">Upload Guidelines</a></li>
+					<li><a href="market.html">Market Price Board</a></li>
+					<li><a href="faq.html">FAQs</a></li>
 				</ul>
 			</div>
 		</div>
@@ -747,34 +746,40 @@
 		<div class="footer-col">
 			<h4>VEGEGRADE Portal</h4>
 			<ul>
-				<li><a href="#">About the Portal</a></li>
+				<li><a href="faq.html">FAQs</a></li>
 				<li><a href="#">How It Works</a></li>
-				<li><a href="#">Grade Standards</a></li>
-				<li><a href="#">Blockchain Ledger</a></li>
+				<li><a href="#">API Access</a></li>
+				<li><a href="#">Open Data</a></li>
 			</ul>
 		</div>
 		<div class="footer-col">
-			<h4>Farmer Services</h4>
+			<h4>Related Services</h4>
 			<ul>
-				<li><a href="#">Register Produce</a></li>
-				<li><a href="#">Check Market Prices</a></li>
-				<li><a href="#">Transaction History</a></li>
-				<li><a href="#">Download Reports</a></li>
+				<li><a href="https://pmkisan.gov.in/">PM-KISAN Portal</a></li>
+				<li><a href="https://enam.gov.in/web/">eNAM Market</a></li>
+				<li><a href="https://www.soilhealth.dac.gov.in/home">Soil Health Card</a></li>
+				<li><a href="https://icar.org.in/en/krishi-vigyan-kendras">Krishi Vigyan Kendras</a></li>
 			</ul>
 		</div>
-		<div class="footer-col">
-			<h4>Legal</h4>
-			<ul>
-				<li><a href="#">Terms of Use</a></li>
-				<li><a href="#">Privacy Policy</a></li>
-				<li><a href="#">Disclaimer</a></li>
-				<li><a href="#">RTI Information</a></li>
-			</ul>
+		<!--    <div class="footer-col">-->
+		<!--      <h4>Legal</h4>-->
+		<!--      <ul>-->
+		<!--        <li><a href="#">Terms &amp; Conditions</a></li>-->
+		<!--        <li><a href="#">Privacy Policy</a></li>-->
+		<!--        <li><a href="#">Copyright Policy</a></li>-->
+		<!--        <li><a href="#">Accessibility Statement</a></li>-->
+		<!--      </ul>-->
+		<!--    </div>-->
+		<div class="footer-col" style="flex:1; min-width:200px;">
+			<h4>About</h4>
+			<p style="font-size:13px; line-height:1.6;">
+				VEGEGRADE is a platform that uses AI to automatically grade vegetables based on visual quality. It records grading and trade data on blockchain to enable transparent and fair pricing.
+			</p>
 		</div>
 	</div>
 	<div class="footer-bottom">
-		Content owned &amp; maintained by <strong>Ministry of Agriculture &amp; Farmers Welfare</strong>, Government of India.
-		&nbsp;|&nbsp; © 2025 VEGEGRADE. All rights reserved.
+
+		&nbsp;|&nbsp; Site Version 0.4
 	</div>
 </footer>
 
@@ -800,7 +805,7 @@
 			if (inp) inp.value = val || '';
 		};
 
-		set('fullName',      data.fullName      || data.fname ? (data.fname + ' ' + (data.lname||'')).trim() : '');
+		set('fullName',      data.fullName      || (data.fname ? (data.fname + ' ' + (data.lname||'')).trim() : ''));
 		set('contact',       data.contact       || data.phone || '');
 		set('email',         data.email         || '');
 		set('address',       data.address       || [data.district, data.state].filter(Boolean).join(', ') || '');
@@ -890,7 +895,7 @@
 			showAlert('Profile updated (local only).', 'success');
 		} finally {
 			btn.disabled = false;
-			btn.textContent = '💾 Save Changes';
+			btn.textContent = ' Save Changes';
 		}
 	}
 

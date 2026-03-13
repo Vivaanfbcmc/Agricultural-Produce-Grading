@@ -11,22 +11,22 @@
 <body>
 
 <!-- ── TOP STRIP ──────────────────────────────────── -->
-<div class="top-strip">
-  Government of India &nbsp;|&nbsp; Ministry of Agriculture &amp; Farmers Welfare &nbsp;|&nbsp; VEGEGRADE Portal
-</div>
+<!--<div class="top-strip">-->
+<!--  Government of India &nbsp;|&nbsp; Ministry of Agriculture &amp; Farmers Welfare &nbsp;|&nbsp; VEGEGRADE Portal-->
+<!--</div>-->
 
 <!-- ── HEADER ─────────────────────────────────────── -->
 <header class="site-header">
   <div class="header-inner">
-    <div class="emblem" title="VEGEGRADE">🌿</div>
+    <div class="emblem">🌾</div>
     <div class="site-title-block">
       <h1>VEGE<span>GRADE</span></h1>
-      <p>National AI-Powered Vegetable Quality Assessment &amp; Price Estimation System</p>
+      <p>AI-Powered Vegetable Quality Assessment &amp; Marketplace Portal</p>
     </div>
-    <div class="header-right">
-      <div class="helpline">1800-180-1551 (Toll Free)</div>
-      <div>Kisan Call Centre &nbsp;|&nbsp; Mon–Sat, 6 AM–10 PM</div>
-    </div>
+    <!--		<div class="header-right">-->
+    <!--			<span class="helpline">Helpline: 1800-180-1551</span>-->
+    <!--			<span>Mon–Sat, 9 AM – 5 PM IST</span>-->
+    <!--		</div>-->
   </div>
 </header>
 
@@ -34,12 +34,10 @@
 <nav class="nav-bar">
   <div class="nav-inner">
     <a href="AIIndex.html" class="active">Home</a>
-    <a href="AIIndex.html">AI Assessment</a>
     <a href="history.html">Transaction History</a>
     <a href="market.html">Market Prices</a>
-    <a href="#">Guidelines</a>
+    <a href="guidelines.html">Guidelines</a>
     <a href="profile.html">My Profile</a>
-    <a href="#" style="margin-left:auto; border-left:1px solid rgba(255,255,255,0.1);">📋 Dashboard</a>
   </div>
 </nav>
 
@@ -60,7 +58,7 @@
 
     <!-- Notice Banner -->
     <div class="notice-banner">
-      <div class="notice-icon">ℹ️</div>
+
       <div>
         <strong>Important Notice:</strong> This portal uses AI to provide grade estimations for tomatoes.
         Results are advisory in nature. For official grading, contact your nearest APMC Market Committee.
@@ -152,7 +150,7 @@
                 Grade: <span id="gradeValue">—</span>
               </div>
               <div class="price-badge">
-                💰 <span id="priceValue">Fetching…</span>
+                <span id="priceValue">Fetching…</span>
               </div>
             </div>
 
@@ -162,7 +160,6 @@
                 <tr>
                   <td>Parameter</td>
                   <td>Assessment</td>
-                  <td>Status</td>
                 </tr>
               </thead>
               <tbody id="analysisDetails">
@@ -172,7 +169,7 @@
 
             <div class="btn-row">
               <button class="btn-secondary" onclick="resetApp()">↺ Analyze Another</button>
-              <button class="btn-amber"     onclick="openTransactionModal()">📄 Create Transaction</button>
+              <button class="btn-amber"     onclick="openTransactionModal()">Create Transaction</button>
             </div>
           </div><!-- /result-details -->
 
@@ -189,12 +186,10 @@
       <div class="sb-head">Quick Links</div>
       <div class="sb-body">
         <ul>
-          <li><a href="#">Grading Standards (AGMARK)</a></li>
-          <li><a href="#">Upload Guidelines</a></li>
-          <li><a href="#">Market Price Board</a></li>
-          <li><a href="#">Download Mobile App</a></li>
-          <li><a href="#">Contact Support</a></li>
-          <li><a href="#">FAQs</a></li>
+          <li><a href="grading-standards.html">Grading Standards (AGMARK)</a></li>
+          <li><a href="guidelines.html">Upload Guidelines</a></li>
+          <li><a href="market.html">Market Price Board</a></li>
+          <li><a href="faq.html">FAQs</a></li>
         </ul>
       </div>
     </div>
@@ -231,21 +226,21 @@
         <div class="info-row"><span class="lbl">Grade B</span><span class="val">Good</span></div>
         <div class="info-row"><span class="lbl">Grade C</span><span class="val">Average</span></div>
         <div class="info-row"><span class="lbl">Rotten</span><span class="val">Rejected</span></div>
-        <div style="font-size:11.5px; color:var(--muted); margin-top:8px;">
-          As per AGMARK / FSSAI standards
-        </div>
+<!--        <div style="font-size:11.5px; color:var(&#45;&#45;muted); margin-top:8px;">-->
+<!--          As per AGMARK / FSSAI standards-->
+<!--        </div>-->
       </div>
     </div>
 
-    <div class="sidebar-box">
-      <div class="sb-head">Help &amp; Support</div>
-      <div class="sb-body" style="color:var(--muted);">
-        For technical issues contact:<br>
-        <strong style="color:var(--gov-navy)">support@vegegrade.gov.in</strong><br><br>
-        Helpline: <strong style="color:var(--gov-navy)">1800-180-1551</strong><br>
-        (Mon–Sat, 6 AM to 10 PM)
-      </div>
-    </div>
+<!--    <div class="sidebar-box">-->
+<!--      <div class="sb-head">Help &amp; Support</div>-->
+<!--      <div class="sb-body" style="color:var(&#45;&#45;muted);">-->
+<!--        For technical issues contact:<br>-->
+<!--        <strong style="color:var(&#45;&#45;gov-navy)">support@vegegrade.gov.in</strong><br><br>-->
+<!--        Helpline: <strong style="color:var(&#45;&#45;gov-navy)">1800-180-1551</strong><br>-->
+<!--        (Mon–Sat, 6 AM to 10 PM)-->
+<!--      </div>-->
+<!--    </div>-->
 
   </aside><!-- /side-col -->
 
@@ -256,7 +251,7 @@
   <div class="modal-box">
 
     <div class="modal-title-bar">
-      <h3>⛓ Create Blockchain Transaction</h3>
+      <h3>Create Blockchain Transaction</h3>
       <button class="modal-close" onclick="closeTransactionModal()">×</button>
     </div>
 
@@ -317,7 +312,7 @@
         </div>
 
         <div class="blockchain-note">
-          <strong>⛓ Blockchain Record:</strong> This transaction will be permanently recorded
+          <strong>Blockchain Record:</strong> This transaction will be permanently recorded
           on the <em>Sepolia Testnet</em> and stored in the national ledger.
         </div>
 
@@ -341,7 +336,7 @@
     <div class="footer-col">
       <h4>VEGEGRADE Portal</h4>
       <ul>
-        <li><a href="#">About the Portal</a></li>
+        <li><a href="faq.html">FAQs</a></li>
         <li><a href="#">How It Works</a></li>
         <li><a href="#">API Access</a></li>
         <li><a href="#">Open Data</a></li>
@@ -350,33 +345,31 @@
     <div class="footer-col">
       <h4>Related Services</h4>
       <ul>
-        <li><a href="#">PM-KISAN Portal</a></li>
-        <li><a href="#">eNAM Market</a></li>
-        <li><a href="#">Soil Health Card</a></li>
-        <li><a href="#">Krishi Vigyan Kendras</a></li>
+        <li><a href="https://pmkisan.gov.in/">PM-KISAN Portal</a></li>
+        <li><a href="https://enam.gov.in/web/">eNAM Market</a></li>
+        <li><a href="https://www.soilhealth.dac.gov.in/home">Soil Health Card</a></li>
+        <li><a href="https://icar.org.in/en/krishi-vigyan-kendras">Krishi Vigyan Kendras</a></li>
       </ul>
     </div>
-    <div class="footer-col">
-      <h4>Legal</h4>
-      <ul>
-        <li><a href="#">Terms &amp; Conditions</a></li>
-        <li><a href="#">Privacy Policy</a></li>
-        <li><a href="#">Copyright Policy</a></li>
-        <li><a href="#">Accessibility Statement</a></li>
-      </ul>
-    </div>
+<!--    <div class="footer-col">-->
+<!--      <h4>Legal</h4>-->
+<!--      <ul>-->
+<!--        <li><a href="#">Terms &amp; Conditions</a></li>-->
+<!--        <li><a href="#">Privacy Policy</a></li>-->
+<!--        <li><a href="#">Copyright Policy</a></li>-->
+<!--        <li><a href="#">Accessibility Statement</a></li>-->
+<!--      </ul>-->
+<!--    </div>-->
     <div class="footer-col" style="flex:1; min-width:200px;">
       <h4>About</h4>
       <p style="font-size:13px; line-height:1.6;">
-        VEGEGRADE is an initiative under the Digital Agriculture Mission,
-        Ministry of Agriculture &amp; Farmers Welfare, Government of India.
+        VEGEGRADE is a platform that uses AI to automatically grade vegetables based on visual quality. It records grading and trade data on blockchain to enable transparent and fair pricing.
       </p>
     </div>
   </div>
   <div class="footer-bottom">
-    © 2023 VEGEGRADE. A Government of India Initiative.
-    &nbsp;|&nbsp; Last Updated: April 2023
-    &nbsp;|&nbsp; Site Version 2.1.0
+
+    &nbsp;|&nbsp; Site Version 0.4
   </div>
 </footer>
 

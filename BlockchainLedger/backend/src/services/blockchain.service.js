@@ -96,7 +96,7 @@ class BlockchainService {
       const record = await contract.records(id);
       return record.exists === true;
     } catch (err) {
-      console.warn(`⚠️  Could not check record existence for ID ${id}:`, err.message);
+      console.warn(`Could not check record existence for ID ${id}:`, err.message);
       return false;
     }
   }
@@ -107,17 +107,17 @@ class BlockchainService {
       // Guard: skip if this ID is already anchored on-chain
       const exists = await BlockchainService.recordExists(id);
       if (exists) {
-        console.warn(`⚠️  Record ID ${id} already exists on-chain. Skipping anchor.`);
+        console.warn(`Record ID ${id} already exists on-chain. Skipping anchor.`);
         return { skipped: true, reason: 'already_anchored' };
       }
 
-      console.log(`⛓️  Anchoring to Sepolia: ID=${id}, Farmer=${farmerName}`);
+      console.log(`Anchoring to Sepolia: ID=${id}, Farmer=${farmerName}`);
 
       const tx = await contract.storeHash(id, hash, farmerName);
-      console.log(`📝 Transaction sent: ${tx.hash}`);
+      console.log(`Transaction sent: ${tx.hash}`);
 
       const receipt = await tx.wait();
-      console.log(`✅ Confirmed in block: ${receipt.blockNumber}`);
+      console.log(`Confirmed in block: ${receipt.blockNumber}`);
 
       return {
         skipped: false,
@@ -129,7 +129,7 @@ class BlockchainService {
       };
 
     } catch (err) {
-      console.error('❌ Blockchain anchoring error:', err.message);
+      console.error('Blockchain anchoring error:', err.message);
       throw new Error(`Failed to anchor to Sepolia: ${err.message}`);
     }
   }
@@ -145,7 +145,7 @@ class BlockchainService {
       const isValid = await contract.verifyHash(id, hash);
       return isValid;
     } catch (err) {
-      console.error('❌ Verification error:', err.message);
+      console.error('Verification error:', err.message);
       throw new Error(`Failed to verify hash: ${err.message}`);
     }
   }
@@ -161,7 +161,7 @@ class BlockchainService {
         id
       };
     } catch (err) {
-      console.error('❌ Fetch error:', err.message);
+      console.error('Fetch error:', err.message);
       throw new Error(`Failed to fetch record: ${err.message}`);
     }
   }

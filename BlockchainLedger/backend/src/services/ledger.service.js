@@ -36,7 +36,7 @@ class LedgerService {
 
     if (existingProofResult.rows.length > 0) {
       // Already anchored — reuse existing proof, skip blockchain write
-      console.warn(`⚠️  Ledger ID ${insertedEntry.id} already has a proof record. Reusing.`);
+      console.warn(`Ledger ID ${insertedEntry.id} already has a proof record. Reusing.`);
       const existingProof = existingProofResult.rows[0];
       return {
         entry: insertedEntry,
@@ -57,7 +57,7 @@ class LedgerService {
 
     // 5. If anchor was skipped (already on-chain), fetch existing proof from DB or chain
     if (blockchainProof.skipped) {
-      console.warn(`⚠️  Anchor skipped for ledger ID ${insertedEntry.id} — already on-chain.`);
+      console.warn(`Anchor skipped for ledger ID ${insertedEntry.id} — already on-chain.`);
 
       // Store a placeholder proof row so future calls don't retry
       await client.query(

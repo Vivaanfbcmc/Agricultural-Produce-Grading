@@ -44,9 +44,15 @@
 		}
 	}
 
+	// Get the farmer-specific localStorage key to prevent cross-account cache bleed
+	function getHistoryKey() {
+		const farmerId = localStorage.getItem('farmerId') || 'guest';
+		return 'vegegrade_history_' + farmerId;
+	}
+
 	// Get local history from localStorage (fallback)
 	function getLocalHistory() {
-		return JSON.parse(localStorage.getItem('vegegrade_history') || '[]');
+		return JSON.parse(localStorage.getItem(getHistoryKey()) || '[]');
 	}
 
 	// Render history entries into the table
@@ -146,8 +152,8 @@
 						backendHistory && backendHistory.length > 0
 								? '✓ Synced from blockchain'
 								: '⚠ Showing local cache (offline)';
-				// Update localStorage with merged data
-				localStorage.setItem('vegegrade_history', JSON.stringify(merged));
+				// Update localStorage with merged data (farmer-specific key)
+				localStorage.setItem(getHistoryKey(), JSON.stringify(merged));
 			} else {
 				renderHistory([]);
 			}
@@ -172,7 +178,7 @@
 			return;
 		}
 
-		localStorage.removeItem('vegegrade_history');
+		localStorage.removeItem(getHistoryKey());
 		document.getElementById('syncStatus').textContent = '✓ Local cache cleared';
 
 		// Refresh from backend
@@ -193,7 +199,23 @@
 				})
 				.then(data => {
 					if (data && data.user) {
-						// User authenticated, sync history
+						const incomingId = data.user.farmerId || data.user.id || '';
+						const cachedId   = localStorage.getItem('farmerId') || '';
+
+						// If farmer changed, wipe the old farmer's cached history key
+						if (incomingId && cachedId && incomingId !== cachedId) {
+							localStorage.removeItem('vegegrade_history_' + cachedId);
+						}
+
+						// Always refresh farmerId so getHistoryKey() resolves correctly
+						if (incomingId) {
+							localStorage.setItem('farmerId', incomingId);
+						}
+						if (data.user.fullName) {
+							localStorage.setItem('farmerName', data.user.fullName);
+						}
+
+						// Sync using the correct farmer's history key
 						syncHistory();
 					}
 				})

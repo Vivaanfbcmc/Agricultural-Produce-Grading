@@ -412,7 +412,7 @@
 	<!-- Controls Bar -->
 	<div class="controls-bar">
 		<div class="controls-left">
-			<button onclick="syncHistory()" class="btn btn-primary">🔄 Refresh</button>
+			<button onclick="syncHistory()" class="btn btn-primary">Refresh</button>
 			<span id="syncStatus" class="sync-status"></span>
 		</div>
 		<div>
@@ -453,7 +453,7 @@
 
 	<!-- Empty State -->
 	<div id="emptyState" class="empty-state" style="display:none;">
-		<div class="empty-icon">📋</div>
+		<div class="empty-icon"></div>
 		<h3>No Transactions Yet</h3>
 		<p>No transaction history found. Create your first transaction from the dashboard!</p>
 	</div>
@@ -519,9 +519,15 @@
 		}
 	}
 
+	// Get the farmer-specific localStorage key to prevent cross-account cache bleed
+	function getHistoryKey() {
+		const farmerId = localStorage.getItem('farmerId') || 'guest';
+		return 'vegegrade_history_' + farmerId;
+	}
+
 	// Get local history from localStorage (fallback)
 	function getLocalHistory() {
-		return JSON.parse(localStorage.getItem('vegegrade_history') || '[]');
+		return JSON.parse(localStorage.getItem(getHistoryKey()) || '[]');
 	}
 
 	// Update summary stats
@@ -647,8 +653,8 @@
 						backendHistory && backendHistory.length > 0
 								? '✓ Synced from blockchain'
 								: '⚠ Showing local cache (offline)';
-				// Update localStorage with merged data
-				localStorage.setItem('vegegrade_history', JSON.stringify(merged));
+				// Update localStorage with merged data (farmer-specific key)
+				localStorage.setItem(getHistoryKey(), JSON.stringify(merged));
 			} else {
 				renderHistory([]);
 			}
@@ -673,7 +679,7 @@
 			return;
 		}
 
-		localStorage.removeItem('vegegrade_history');
+		localStorage.removeItem(getHistoryKey());
 		document.getElementById('syncStatus').textContent = '✓ Local cache cleared';
 
 		// Refresh from backend
@@ -694,13 +700,31 @@
 				})
 				.then(data => {
 					if (data && data.user) {
-						// User authenticated, sync history
+						const incomingId = data.user.farmerId || data.user.id || '';
+						const cachedId   = localStorage.getItem('farmerId') || '';
+
+						// If farmer changed, wipe the old farmer's cached history key
+						// (the new farmer's key, if any, is a separate key — no bleed)
+						if (incomingId && cachedId && incomingId !== cachedId) {
+							// Remove the OLD farmer's cache entry so it doesn't hang around
+							localStorage.removeItem('vegegrade_history_' + cachedId);
+						}
+
+						// Always refresh farmerId so getHistoryKey() resolves correctly
+						if (incomingId) {
+							localStorage.setItem('farmerId', incomingId);
+						}
+						if (data.user.fullName) {
+							localStorage.setItem('farmerName', data.user.fullName);
+						}
+
+						// Now sync using the correct farmer's history key
 						syncHistory();
 					}
 				})
 				.catch(err => {
 					console.error('Auth check error:', err);
-					// Fallback to local history
+					// Fallback to local history (uses whatever farmerId is cached)
 					const localHistory = getLocalHistory();
 					renderHistory(localHistory);
 				});

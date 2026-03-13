@@ -125,21 +125,21 @@ class AgmarknetPriceFetcher {
     }
 
     formatResult(result) {
-        if (!result.success || !result.data) return `❌ Error: ${result.message}`;
+        if (!result.success || !result.data) return `Error: ${result.message}`;
 
         const data = result.data;
         const fmt = (n) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 }).format(n);
 
         return `
-📍 Location: ${data.district}, ${data.state}
-🏪 Market: ${data.market}
-🥦 Commodity: ${data.commodity} (${data.variety})
-📅 Arrival Date: ${data.arrivalDate}
-📊 Grade in Data: ${data.recordedGrade}
-🎯 Selected Grade: ${data.inputGrade}
-💰 Price Type: ${data.selectedPriceType.replace(/_/g, ' ').toUpperCase()}
-💵 Selected Price: ${fmt(data.selectedPrice)} per quintal
-📈 All Available Prices:
+    Location: ${data.district}, ${data.state}
+    Market: ${data.market}
+    Commodity: ${data.commodity} (${data.variety})
+    Arrival Date: ${data.arrivalDate}
+    Grade in Data: ${data.recordedGrade}
+    Selected Grade: ${data.inputGrade}
+    Price Type: ${data.selectedPriceType.replace(/_/g, ' ').toUpperCase()}
+    Selected Price: ${fmt(data.selectedPrice)} per quintal
+    All Available Prices:
    Minimum Price: ${fmt(data.minPrice)}
    Maximum Price: ${fmt(data.maxPrice)}
    Modal Price:   ${fmt(data.modalPrice)}

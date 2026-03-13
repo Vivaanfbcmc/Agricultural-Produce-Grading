@@ -1,10 +1,10 @@
 /**
  * ╔══════════════════════════════════════════════════════════╗
- * ║         CEDA Smart Price Guesser — Single File           ║
+ * ║         CEDA Smart Price Guesser | Single File           ║
  * ║                  Runs on port 3002                       ║
  * ╠══════════════════════════════════════════════════════════╣
  * ║  FLOW:                                                   ║
- * ║  1. ML Model (port 5001) detects grade → A / B / C      ║
+ * ║  1. ML Model (port 5001) detects grade -> A / B / C      ║
  * ║  2. Frontend POSTs grade + commodity_id to /price        ║
  * ║  3. This server fetches May–Oct 2025 data from CEDA      ║
  * ║  4. Smart price calc (IQR + weighted avg) on that grade  ║
@@ -12,10 +12,10 @@
  * ╚══════════════════════════════════════════════════════════╝
  *
  *  Grade logic:
- *    A (premium)  → smart price from max_price   column
- *    B (standard) → smart price from modal_price column
- *    C (lower)    → smart price from min_price   column
- *    rotten       → price = 0, rejected
+ *    A (premium)  -> smart price from max_price   column
+ *    B (standard) -> smart price from modal_price column
+ *    C (lower)    -> smart price from min_price   column
+ *    rotten       -> price = 0, rejected
  */
 
 import express   from "express";
@@ -23,9 +23,9 @@ import cors      from "cors";
 import bodyParser from "body-parser";
 
 // ══════════════════════════════════════════════════════════
-//  ✏️  CONFIG — fill these in
+//  CONFIG | fill these in
 // ══════════════════════════════════════════════════════════
-const CEDA_TOKEN      = "4face3859fdd510cb9b259c09cc8309f37bb574b57539ca6f36887742f890a84";          // 👈 paste your Bearer token here
+const CEDA_TOKEN      = "21d3872e1db9e699d3114c0d6916c43dfee943e3fef11a2f902e86975da33cbe";          // 👈 paste your Bearer token here
 const CEDA_API_URL    = "https://api.ceda.ashoka.edu.in/v1/agmarknet/prices";
 
 // Hardcoded location (Maharashtra / Solapur / market)
@@ -39,11 +39,11 @@ const SEASON_TO       = "2025-10-31";
 
 const PORT            = 3002;
 
-// debug logger — every log prefixed [CW]
+// debug logger | every log prefixed [CW]
 const cw = (...a) => console.log("[CW]", ...a);
 
 // ══════════════════════════════════════════════════════════
-//  STEP 1 — Call CEDA API
+//  STEP 1 | Call CEDA API
 //  POST https://api.ceda.ashoka.edu.in/v1/agmarknet/prices
 //  Bearer token in Authorization header
 //  Returns: { data: [ { date, min_price, max_price, modal_price, ... } ] }
@@ -59,8 +59,8 @@ async function fetchCedaRecords(commodity_id) {
     };
 
     cw("── CEDA REQUEST ──────────────────────────────");
-    cw("URL  →", CEDA_API_URL);
-    cw("Body →", JSON.stringify(body));
+    cw("URL  ->", CEDA_API_URL);
+    cw("Body ->", JSON.stringify(body));
 
     const res = await fetch(CEDA_API_URL, {
         method:  "POST",
@@ -71,25 +71,25 @@ async function fetchCedaRecords(commodity_id) {
         body: JSON.stringify(body)
     });
 
-    cw("CEDA HTTP status →", res.status);
+    cw("CEDA HTTP status ->", res.status);
 
-    if (res.status === 401) throw new Error("Unauthorized — check CEDA Bearer token");
-    if (res.status === 429) throw new Error("Rate limit hit — wait and retry");
+    if (res.status === 401) throw new Error("Unauthorized | check CEDA Bearer token");
+    if (res.status === 429) throw new Error("Rate limit hit | wait and retry");
     if (!res.ok)            throw new Error(`CEDA API failed: HTTP ${res.status}`);
 
     const json = await res.json();
-    cw("CEDA response keys →", Object.keys(json));
+    cw("CEDA response keys ->", Object.keys(json));
 
     // CEDA response: { data: [...] }  or  { output: { data: [...] } }
     const records = json?.data || json?.output?.data || [];
-    cw(`Records returned → ${records.length}`);
-    if (records.length > 0) cw("Sample record →", JSON.stringify(records[0]));
+    cw(`Records returned -> ${records.length}`);
+    if (records.length > 0) cw("Sample record ->", JSON.stringify(records[0]));
 
     return records;
 }
 
 // ══════════════════════════════════════════════════════════
-//  STEP 2 — Smart Price Calculation
+//  STEP 2 | Smart Price Calculation
 //
 //  Given an array of daily price records and a grade:
 //
@@ -100,7 +100,7 @@ async function fetchCedaRecords(commodity_id) {
 //       - IQR = Q3 - Q1
 //       - Drop any record outside [Q1-1.5*IQR, Q3+1.5*IQR]
 //       - This removes freak spike/crash days automatically
-//  d) Sort remaining records oldest → newest
+//  d) Sort remaining records oldest -> newest
 //  e) Recency-Weighted Average:
 //       - weight = index + 1  (Oct data weighs more than May)
 //       - weighted_price = Σ(price × weight) / Σ(weight)
@@ -125,12 +125,12 @@ function computeSmartPrice(records, grade) {
         modal: Number(r.modal_price) || 0,
     })).filter(r => r.min > 0 || r.max > 0 || r.modal > 0);
 
-    cw(`Valid records after parsing → ${parsed.length}`);
+    cw(`Valid records after parsing -> ${parsed.length}`);
     if (parsed.length === 0) return null;
 
-    // Sort oldest → newest
+    // Sort oldest -> newest
     parsed.sort((a, b) => new Date(a.date) - new Date(b.date));
-    cw(`Date range → ${parsed[0].date}  to  ${parsed[parsed.length - 1].date}`);
+    cw(`Date range -> ${parsed[0].date}  to  ${parsed[parsed.length - 1].date}`);
 
     // IQR on the target price column
     const values = parsed.map(r => r[priceKey]).filter(v => v > 0).sort((a, b) => a - b);
@@ -145,8 +145,8 @@ function computeSmartPrice(records, grade) {
         return v === 0 || (v >= lower && v <= upper);
     });
 
-    cw(`IQR bounds → [${Math.round(lower)}, ${Math.round(upper)}]`);
-    cw(`Outliers removed → ${parsed.length - clean.length} | clean records = ${clean.length}`);
+    cw(`IQR bounds -> [${Math.round(lower)}, ${Math.round(upper)}]`);
+    cw(`Outliers removed -> ${parsed.length - clean.length} | clean records = ${clean.length}`);
 
     if (clean.length === 0) return null;
 
@@ -159,7 +159,7 @@ function computeSmartPrice(records, grade) {
     });
 
     const smartPrice = Math.round(wSum / wTotal);
-    cw(`✅ Smart price (${priceKey}) → ₹${smartPrice}`);
+    cw(`Smart price (${priceKey}) -> ₹${smartPrice}`);
 
     // Also compute all 3 weighted avgs for reference
     let wMin = 0, wMax = 0, wModal = 0, wT2 = 0;
@@ -195,7 +195,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.get("/", (req, res) => res.json({
     service:    "CEDA Smart Price Guesser",
     status:     "running",
-    token_set:  CEDA_TOKEN ? "✓ YES" : "✗ NO — fill CEDA_TOKEN",
+    token_set:  CEDA_TOKEN ? "✓ YES" : "✗ NO | fill CEDA_TOKEN",
     season:     `${SEASON_FROM} to ${SEASON_TO}`,
     location:   { state_id: STATE_ID, district_id: DISTRICT_ID, market_id: MARKET_ID },
     grades:     { A: "max_price (premium)", B: "modal_price (standard)", C: "min_price (lower)", rotten: "rejected ₹0" },
@@ -209,27 +209,27 @@ app.get("/", (req, res) => res.json({
 // ── Main /price endpoint ──────────────────────────────────
 app.post("/price", async (req, res) => {
     cw("══════════════════════════════════════════════");
-    cw("POST /price →", req.body);
+    cw("POST /price ->", req.body);
 
     const { commodity_id, grade } = req.body || {};
 
     // Validate
     if (!commodity_id || !grade) {
-        cw("❌ Missing params");
+        cw("Missing params");
         return res.status(400).json({
             success: false,
             message: `Missing: ${!commodity_id ? "commodity_id " : ""}${!grade ? "grade" : ""}`.trim()
         });
     }
 
-    // Rotten → reject immediately, no price needed
+    // Rotten -> reject immediately, no price needed
     if (grade.toLowerCase() === "rotten") {
-        cw("🔴 Grade = rotten → rejected");
+        cw("Grade = rotten -> rejected");
         return res.json({
             success:       true,
             grade:         "rotten",
             price:         0,
-            price_display: "₹0 — Rejected (rotten)",
+            price_display: "₹0, Rejected (rotten)",
             message:       "Tomato is rotten and cannot be sold"
         });
     }
@@ -246,10 +246,10 @@ app.post("/price", async (req, res) => {
         const records = await fetchCedaRecords(commodity_id);
 
         if (!records || records.length === 0) {
-            cw("❌ No records from CEDA");
+            cw("No records from CEDA");
             return res.status(404).json({
                 success: false,
-                message: `No data found for commodity_id=${commodity_id} in season ${SEASON_FROM}→${SEASON_TO}`
+                message: `No data found for commodity_id=${commodity_id} in season ${SEASON_FROM} -> ${SEASON_TO}`
             });
         }
 
@@ -257,22 +257,22 @@ app.post("/price", async (req, res) => {
         const result = computeSmartPrice(records, grade);
 
         if (!result) {
-            cw("❌ Smart price computation failed");
+            cw("Smart price computation failed");
             return res.status(500).json({
                 success: false,
-                message: "Price computation failed — all price values were zero"
+                message: "Price computation failed, all price values were zero"
             });
         }
 
         const price = result.smartPrice;
-        cw(`✅ FINAL PRICE → Grade ${grade.toUpperCase()} = ₹${price} per quintal`);
+        cw(`FINAL PRICE: Grade ${grade.toUpperCase()} = ₹${price} per quintal`);
         cw("══════════════════════════════════════════════");
 
         return res.json({
             success:          true,
             grade:            grade.toUpperCase(),
 
-            // ✅ THE PRICE (use this in frontend)
+            // THE PRICE (use this in frontend)
             price,
             price_display:    `₹${price.toLocaleString("en-IN")} per quintal`,
             price_column:     result.priceColumn,
@@ -297,7 +297,7 @@ app.post("/price", async (req, res) => {
         });
 
     } catch (err) {
-        cw("💥 ERROR →", err.message);
+        cw("ERROR: ", err.message);
         return res.status(500).json({ success: false, message: err.message });
     }
 });
@@ -311,10 +311,10 @@ app.get("/price", async (req, res) => {
 // ── Start ─────────────────────────────────────────────────
 app.listen(PORT, () => {
     cw("══════════════════════════════════════════════");
-    cw(`✅  CEDA Smart Price Guesser — http://localhost:${PORT}`);
-    cw(`    Season   : ${SEASON_FROM} → ${SEASON_TO}`);
+    cw(`CEDA Smart Price Guesser | http://localhost:${PORT}`);
+    cw(`    Season   : ${SEASON_FROM} -> ${SEASON_TO}`);
     cw(`    Location : state=${STATE_ID} district=${DISTRICT_ID} market=${MARKET_ID}`);
-    cw(`    Token    : ${CEDA_TOKEN ? "SET ✓" : "NOT SET ✗ — open file and fill CEDA_TOKEN"}`);
+    cw(`    Token    : ${CEDA_TOKEN ? "SET" : "NOT SET | open file and fill CEDA_TOKEN"}`);
     cw(`    ML Model : http://localhost:5001/analyze  (POST image)`);
     cw(`    Price    : http://localhost:${PORT}/price  (POST { commodity_id, grade })`);
     cw("══════════════════════════════════════════════");

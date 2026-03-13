@@ -56,7 +56,7 @@ app.post("/price", async (req, res) => {
         return res.json({
             success:       true,
             grade:         g,
-            // ✅ Main price
+            // Main price
             price:         selected,
             price_type:    g === "A" ? "max_price" : g === "B" ? "modal_price" : "min_price",
             price_display: `₹${selected.toLocaleString('en-IN')} per quintal`,
@@ -108,7 +108,7 @@ app.get("/price", async (req, res) => {
         return res.json({
             success:       true,
             grade:         g,
-            // ✅ Main price
+            // Main price
             price:         selected,
             price_type:    g === "A" ? "max_price" : g === "B" ? "modal_price" : "min_price",
             price_display: `₹${selected.toLocaleString('en-IN')} per quintal`,
@@ -132,7 +132,7 @@ app.get("/price", async (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`✅ Price API running on http://localhost:${PORT}`);
+    console.log(` Price API running on http://localhost:${PORT}`);
     console.log(`   POST http://localhost:${PORT}/price`);
     console.log(`   GET  http://localhost:${PORT}/price?state=Maharashtra&district=Sholapur&commodity=Tomato&grade=A`);
 });
