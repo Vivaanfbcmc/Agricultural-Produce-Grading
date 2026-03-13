@@ -83,5 +83,20 @@ VALUES (
     'genesis_00000000000000000000000000000000000000000000000000000000'
 );
 
+CREATE TABLE ledger_blockchain_proof (
+    id SERIAL PRIMARY KEY,
+    ledger_id BIGINT NOT NULL REFERENCES ledger(id),
+    blockchain_tx_hash VARCHAR(255),
+    block_number BIGINT,
+    anchored_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+
+ALTER TABLE ledger_blockchain_proof ADD CONSTRAINT uq_ledger_id UNIQUE (ledger_id);
+
+
+
 -- Verify genesis block
 SELECT * FROM ledger;
+
+

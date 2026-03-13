@@ -1,0 +1,10 @@
+https://sepolia.etherscan.io/tx/0xfe701c96c2d309556304fff0bf4aa30b0a6f70c8262d5c453b7afb30841aab21  --- contract page (permanant)
+
+https://sepolia.etherscan.io/address/0x2203644d56235f7da8e5297ca48dee71a00dbc63 --- contract page (this is from the wallet address transaction)
+
+
+https://remix.ethereum.org/#lang=en&optimize&runs=200&evmVersion&version=soljson-v0.8.31+commit.fd3a2265.js --- Remix IDE for Solidity development
+
+
+https://sepolia.etherscan.io/address/0x71d1646f574b5cbb4591b506c349ab3886c747d2#readContract --- Read contract functions on Etherscan
+
