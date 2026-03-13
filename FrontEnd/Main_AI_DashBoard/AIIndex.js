@@ -20,7 +20,7 @@ let currentImage = null;
 // CEDA commodity ID for Tomato
 const DEFAULT_COMMODITY_ID = 23;
 
-// Drag and drop functionality
+// ── DRAG & DROP ────────────────────────────────────────────────
 uploadArea.addEventListener('dragover', (e) => {
     e.preventDefault();
     uploadArea.classList.add('drag-over');
@@ -38,7 +38,7 @@ uploadArea.addEventListener('drop', (e) => {
     }
 });
 
-// Handle file selection
+// ── FILE SELECT ────────────────────────────────────────────────
 function handleFileSelect(event) {
     const file = event.target.files[0];
     if (!file || !file.type.startsWith('image/')) {
@@ -55,12 +55,12 @@ function handleFileSelect(event) {
     fileSize.textContent = formatFileSize(file.size);
 
     const reader = new FileReader();
-    reader.onload = function(e) {
+    reader.onload = function (e) {
         previewImage.src = e.target.result;
         resultImage.src = e.target.result;
 
         const img = new Image();
-        img.onload = function() {
+        img.onload = function () {
             fileDimensions.textContent = `${img.width} × ${img.height}px`;
         };
         img.src = e.target.result;
@@ -69,6 +69,10 @@ function handleFileSelect(event) {
 
     previewContainer.style.display = 'block';
     analyzeBtn.disabled = false;
+
+    // Hide any previous not-a-tomato banner
+    hideNotTomatoBanner();
+    resultSection.style.display = 'none';
 }
 
 function formatFileSize(bytes) {
@@ -77,19 +81,82 @@ function formatFileSize(bytes) {
     else return (bytes / 1048576).toFixed(2) + ' MB';
 }
 
-// All API calls go through gateway
+// ── NOT-A-TOMATO BANNER ────────────────────────────────────────
+function showNotTomatoBanner(detectedAs, confidence) {
+    // Remove old banner if present
+    hideNotTomatoBanner();
+
+    const banner = document.createElement('div');
+    banner.id = 'notTomatoBanner';
+    banner.style.cssText = `
+        background: #fff3cd;
+        border: 1px solid #ffc107;
+        border-left: 5px solid #e65100;
+        border-radius: 6px;
+        padding: 16px 20px;
+        margin: 18px 0;
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        font-family: inherit;
+        animation: fadeIn 0.3s ease;
+    `;
+
+    const detectedLabel = detectedAs && detectedAs !== 'unknown' && detectedAs !== 'detection_disabled'
+        ? `Detected as: <strong>${detectedAs}</strong>`
+        : 'Object not recognised as a tomato';
+
+    const confText = confidence > 0
+        ? ` (${confidence}% confidence)`
+        : '';
+
+    banner.innerHTML = `
+        <span style="font-size:28px;line-height:1;">🍅</span>
+        <div style="flex:1;">
+            <div style="font-weight:700;font-size:15px;color:#b33000;margin-bottom:4px;">
+                ⚠ Not a Tomato
+            </div>
+            <div style="font-size:13.5px;color:#5d4000;line-height:1.5;">
+                ${detectedLabel}${confText}.<br>
+                This system is trained to grade <strong>tomatoes only</strong>.
+                Please upload a clear photo of a <strong>tomato</strong> and try again.
+            </div>
+            <button onclick="resetApp()" style="
+                margin-top:10px;
+                background:#e65100;color:white;
+                border:none;border-radius:4px;
+                padding:7px 16px;font-size:13px;font-weight:600;
+                cursor:pointer;">
+                📷 Upload a Tomato
+            </button>
+        </div>
+    `;
+
+    // Insert banner just before the result section (or after preview)
+    const anchor = resultSection.parentNode;
+    anchor.insertBefore(banner, resultSection);
+
+    banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function hideNotTomatoBanner() {
+    const old = document.getElementById('notTomatoBanner');
+    if (old) old.remove();
+}
+
+// ── MAIN ANALYZE FUNCTION ──────────────────────────────────────
 async function analyzeImage() {
     if (!currentImage) return;
 
     loading.style.display = 'block';
     analyzeBtn.disabled = true;
     resultSection.style.display = 'none';
+    hideNotTomatoBanner();
 
-    // Reset stored price
     analysisResults.price = '';
 
     try {
-        // Step 1: Get grade from ML service via gateway
+        // ── Step 1: ML service (tomato check + grade) ──
         const formData = new FormData();
         formData.append("image", currentImage);
 
@@ -104,21 +171,26 @@ async function analyzeImage() {
 
         const mlJson = await mlRes.json();
 
+        // ── Not a tomato? Show banner and stop. ────────
+        if (mlJson.is_tomato === false) {
+            showNotTomatoBanner(mlJson.detected_as, mlJson.detection_conf);
+            return;   // don't show grade/price section
+        }
+
+        // ── Success: process grade ─────────────────────
         let grade = mlJson.grade || "Rotten";
         if (grade.toUpperCase() === "D") grade = "Rotten";
         grade = grade.toUpperCase();
+
         gradeValue.textContent = grade;
+        analysisResults.grade  = grade;
 
-        // Store grade in analysisResults
-        analysisResults.grade = grade;
-
-        // Step 2: Get price from CEDA Smart Price server via gateway
+        // ── Step 2: Fetch market price ─────────────────
         priceValue.textContent = "Fetching market price...";
 
         if (grade === 'ROTTEN') {
-            // Rotten produce — no price needed
             priceValue.textContent = "₹0 — Rejected (rotten produce)";
-            analysisResults.price = '0';
+            analysisResults.price  = '0';
         } else {
             try {
                 const priceRes = await fetch("/api/ceda-price", {
@@ -126,25 +198,23 @@ async function analyzeImage() {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         commodity_id: DEFAULT_COMMODITY_ID,
-                        grade: grade  // A, B, or C
+                        grade: grade
                     })
                 });
 
                 const priceJson = await priceRes.json();
 
                 if (priceJson.success && typeof priceJson.price === 'number') {
-                    // Store clean numeric price for transaction modal
-                    analysisResults.price = String(priceJson.price);
-
+                    analysisResults.price  = String(priceJson.price);
                     priceValue.textContent = `${priceJson.price_display} (Grade ${grade})`;
                 } else {
                     priceValue.textContent = "Price not available for this grade.";
-                    analysisResults.price = '';
+                    analysisResults.price  = '';
                 }
             } catch (priceErr) {
                 console.warn('CEDA price fetch failed:', priceErr);
                 priceValue.textContent = "Price not available (service offline).";
-                analysisResults.price = '';
+                analysisResults.price  = '';
             }
         }
 
@@ -156,83 +226,78 @@ async function analyzeImage() {
         console.error('Analysis error:', err);
         alert(`Error: ${err.message}`);
     } finally {
-        loading.style.display = 'none';
-        analyzeBtn.disabled = false;
+        loading.style.display  = 'none';
+        analyzeBtn.disabled    = false;
     }
 }
 
-// Generate analysis details for each grade
+// ── ANALYSIS DETAILS ───────────────────────────────────────────
 function generateAnalysisDetails(grade) {
     analysisDetails.innerHTML = '';
 
     const detailsMap = {
         'A': [
-            { label: 'Freshness', value: 'Excellent', color: '#059669' },
-            { label: 'Color', value: 'Vibrant & Uniform', color: '#059669' },
-            { label: 'Texture', value: 'Firm & Crisp', color: '#059669' },
-            { label: 'Size Consistency', value: 'Highly Consistent', color: '#059669' },
-            { label: 'Defects', value: 'Minimal to None', color: '#059669' }
+            { label: 'Freshness',         value: 'Excellent',            color: '#059669' },
+            { label: 'Color',             value: 'Vibrant & Uniform',    color: '#059669' },
+            { label: 'Texture',           value: 'Firm & Crisp',         color: '#059669' },
+            { label: 'Size Consistency',  value: 'Highly Consistent',    color: '#059669' },
+            { label: 'Defects',           value: 'Minimal to None',      color: '#059669' }
         ],
         'B': [
-            { label: 'Freshness', value: 'Good', color: '#f59e0b' },
-            { label: 'Color', value: 'Slightly Faded', color: '#f59e0b' },
-            { label: 'Texture', value: 'Mostly Firm', color: '#f59e0b' },
-            { label: 'Size Consistency', value: 'Moderately Consistent', color: '#f59e0b' },
-            { label: 'Defects', value: 'Minor Blemishes', color: '#f59e0b' }
+            { label: 'Freshness',         value: 'Good',                     color: '#f59e0b' },
+            { label: 'Color',             value: 'Slightly Faded',           color: '#f59e0b' },
+            { label: 'Texture',           value: 'Mostly Firm',              color: '#f59e0b' },
+            { label: 'Size Consistency',  value: 'Moderately Consistent',    color: '#f59e0b' },
+            { label: 'Defects',           value: 'Minor Blemishes',          color: '#f59e0b' }
         ],
         'C': [
-            { label: 'Freshness', value: 'Average', color: '#f97316' },
-            { label: 'Color', value: 'Noticeably Faded', color: '#f97316' },
-            { label: 'Texture', value: 'Some Soft Spots', color: '#f97316' },
-            { label: 'Size Consistency', value: 'Inconsistent', color: '#f97316' },
-            { label: 'Defects', value: 'Visible Blemishes', color: '#f97316' }
+            { label: 'Freshness',         value: 'Average',              color: '#f97316' },
+            { label: 'Color',             value: 'Noticeably Faded',     color: '#f97316' },
+            { label: 'Texture',           value: 'Some Soft Spots',      color: '#f97316' },
+            { label: 'Size Consistency',  value: 'Inconsistent',         color: '#f97316' },
+            { label: 'Defects',           value: 'Visible Blemishes',    color: '#f97316' }
         ],
         'ROTTEN': [
-            { label: 'Freshness', value: 'Poor', color: '#dc2626' },
-            { label: 'Color', value: 'Dull & Discolored', color: '#dc2626' },
-            { label: 'Texture', value: 'Soft & Wilted', color: '#dc2626' },
-            { label: 'Size Consistency', value: 'Highly Inconsistent', color: '#dc2626' },
-            { label: 'Defects', value: 'Significant Damage', color: '#dc2626' }
+            { label: 'Freshness',         value: 'Poor',                 color: '#dc2626' },
+            { label: 'Color',             value: 'Dull & Discolored',    color: '#dc2626' },
+            { label: 'Texture',           value: 'Soft & Wilted',        color: '#dc2626' },
+            { label: 'Size Consistency',  value: 'Highly Inconsistent',  color: '#dc2626' },
+            { label: 'Defects',           value: 'Significant Damage',   color: '#dc2626' }
         ]
     };
 
     const gradeDetails = detailsMap[grade] || detailsMap['B'];
     gradeDetails.forEach(detail => {
         const li = document.createElement('li');
-        li.innerHTML = `<strong>${detail.label}:</strong> <span style="color: ${detail.color}">${detail.value}</span>`;
+        li.innerHTML = `<strong>${detail.label}:</strong> <span style="color:${detail.color}">${detail.value}</span>`;
         analysisDetails.appendChild(li);
     });
 }
 
-// Reset the app for another image
+// ── RESET ──────────────────────────────────────────────────────
 function resetApp() {
     fileInput.value = '';
     previewContainer.style.display = 'none';
-    resultSection.style.display = 'none';
-    analyzeBtn.disabled = true;
-    previewImage.src = '';
-    resultImage.src = '';
-    currentImage = null;
-    analysisResults = { grade: '', price: '', produceName: 'Tomato' };
+    resultSection.style.display    = 'none';
+    analyzeBtn.disabled            = true;
+    previewImage.src               = '';
+    resultImage.src                = '';
+    currentImage                   = null;
+    analysisResults                = { grade: '', price: '', produceName: 'Tomato' };
+    hideNotTomatoBanner();
     uploadArea.scrollIntoView({ behavior: 'smooth' });
 }
 
+// ── INIT ───────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
     console.log('VEGEGRADE AI ready.');
     initializeTransactionModal();
 });
 
-// ==================== TRANSACTION MODAL FUNCTIONS ====================
-
-// Track analysis results for transaction
-let analysisResults = {
-    grade: '',
-    price: '',
-    produceName: 'Tomato'
-};
+// ── TRANSACTION MODAL ──────────────────────────────────────────
+let analysisResults = { grade: '', price: '', produceName: 'Tomato' };
 
 async function initializeTransactionModal() {
-    // Fetch farmer ID from session on load
     try {
         const res = await fetch('/api/auth/profile');
         if (res.ok) {
@@ -252,15 +317,13 @@ async function initializeTransactionModal() {
 
 function calculateTotal() {
     const quantity = parseFloat(document.getElementById('quantity').value) || 0;
-    const price = parseFloat(document.getElementById('price').value) || 0;
-    const total = quantity * price;
-    document.getElementById('totalAmount').textContent = `₹${total.toFixed(2)}`;
+    const price    = parseFloat(document.getElementById('price').value)    || 0;
+    document.getElementById('totalAmount').textContent = `₹${(quantity * price).toFixed(2)}`;
 }
 
 async function openTransactionModal() {
     const modal = document.getElementById('transactionModal');
 
-    // Always re-fetch fresh farmer ID from session (fixes second-open issue)
     let farmerId = localStorage.getItem('farmerId') || '';
     try {
         const res = await fetch('/api/auth/profile');
@@ -275,20 +338,13 @@ async function openTransactionModal() {
         console.warn('Could not fetch profile:', err);
     }
 
-    document.getElementById('farmerId').value = farmerId;
-
-    const grade = gradeValue.textContent;
-
-    // Use cleanly stored numeric price — no regex needed
-    const price = analysisResults.price || '';
-
-    analysisResults.grade = grade;
-
-    document.getElementById('aiGrade').value = grade;
+    document.getElementById('farmerId').value    = farmerId;
+    document.getElementById('aiGrade').value     = gradeValue.textContent;
     document.getElementById('produceName').value = analysisResults.produceName;
+    analysisResults.grade = gradeValue.textContent;
 
-    if (price) {
-        document.getElementById('price').value = price;
+    if (analysisResults.price) {
+        document.getElementById('price').value = analysisResults.price;
         calculateTotal();
     }
 
@@ -297,82 +353,58 @@ async function openTransactionModal() {
 }
 
 function closeTransactionModal() {
-    const modal = document.getElementById('transactionModal');
-    modal.classList.remove('show');
+    document.getElementById('transactionModal').classList.remove('show');
     document.body.style.overflow = 'auto';
-
-    // Reset form
     document.getElementById('transactionForm').reset();
     document.getElementById('errorMessage').style.display = 'none';
 }
 
 async function submitTransaction() {
-    const farmerId = document.getElementById('farmerId').value;
+    const farmerId   = document.getElementById('farmerId').value;
     const produceName = document.getElementById('produceName').value;
-    const quantity = parseFloat(document.getElementById('quantity').value);
-    const aiGrade = document.getElementById('aiGrade').value;
-    const price = parseFloat(document.getElementById('price').value);
-    const status = document.getElementById('status').value;
+    const quantity   = parseFloat(document.getElementById('quantity').value);
+    const aiGrade    = document.getElementById('aiGrade').value;
+    const price      = parseFloat(document.getElementById('price').value);
+    const status     = document.getElementById('status').value;
 
-    // Validation
-    if (!farmerId) {
-        showError('Farmer ID is missing. Please log in again.');
-        return;
-    }
-    if (!quantity || quantity <= 0) {
-        showError('Please enter a valid quantity');
-        return;
-    }
-    if (!price || price <= 0) {
-        showError('Please enter a valid price');
-        return;
-    }
+    if (!farmerId)             return showError('Farmer ID is missing. Please log in again.');
+    if (!quantity || quantity <= 0) return showError('Please enter a valid quantity');
+    if (!price    || price    <= 0) return showError('Please enter a valid price');
 
-    // Show loading state
     document.getElementById('submitTransactionBtn').disabled = true;
-    document.getElementById('loadingModal').style.display = 'block';
-    document.getElementById('errorMessage').style.display = 'none';
+    document.getElementById('loadingModal').style.display   = 'block';
+    document.getElementById('errorMessage').style.display   = 'none';
 
     try {
-        const transactionData = {
-            farmer_id: farmerId,
-            produce_name: produceName,
-            quantity: quantity,
-            ai_grade: aiGrade,
-            price: price,
-            status: status
-        };
-
-        console.log('Submitting transaction:', transactionData);
-
-        // Call the blockchain transaction API
         const response = await fetch('/api/blockchain/transactions', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(transactionData)
+            body: JSON.stringify({
+                farmer_id:    farmerId,
+                produce_name: produceName,
+                quantity,
+                ai_grade:     aiGrade,
+                price,
+                status
+            })
         });
 
         const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Failed to create transaction');
 
-        if (!response.ok) {
-            throw new Error(result.error || 'Failed to create transaction');
-        }
-
-        // Success
         showSuccess(result);
-
     } catch (err) {
         console.error('Transaction submission error:', err);
         showError(err.message || 'Error creating transaction. Please try again.');
     } finally {
         document.getElementById('submitTransactionBtn').disabled = false;
-        document.getElementById('loadingModal').style.display = 'none';
+        document.getElementById('loadingModal').style.display   = 'none';
     }
 }
 
 function showError(message) {
     const errorDiv = document.getElementById('errorMessage');
-    errorDiv.textContent = '❌ Error: ' + message;
+    errorDiv.textContent   = '❌ Error: ' + message;
     errorDiv.style.display = 'block';
     errorDiv.scrollIntoView({ behavior: 'smooth' });
 }
@@ -380,41 +412,36 @@ function showError(message) {
 function showSuccess(result) {
     alert(
         'Transaction Created Successfully!\n\n' +
-        'Transaction ID: ' + (result.transaction?.id || 'N/A') + '\n' +
-        'Ledger Entry ID: ' + (result.ledger_entry_id || 'N/A') + '\n' +
-        'Hash: ' + (result.hash ? result.hash.substring(0, 16) + '...' : 'N/A') + '\n\n' +
+        'Transaction ID: '  + (result.transaction?.id || 'N/A') + '\n' +
+        'Ledger Entry ID: ' + (result.ledger_entry_id  || 'N/A') + '\n' +
+        'Hash: '            + (result.hash ? result.hash.substring(0, 16) + '...' : 'N/A') + '\n\n' +
         'Your transaction has been recorded in the ledger.'
     );
-
-    // Save to local history so history.html always shows it
     saveTransactionToHistory(result);
-
     closeTransactionModal();
     localStorage.setItem('lastMarketPrice', document.getElementById('price').value);
 }
 
 function saveTransactionToHistory(result) {
-    const farmerId = localStorage.getItem('farmerId') || 'guest';
+    const farmerId   = localStorage.getItem('farmerId') || 'guest';
     const historyKey = 'vegegrade_history_' + farmerId;
-    const history = JSON.parse(localStorage.getItem(historyKey) || '[]');
+    const history    = JSON.parse(localStorage.getItem(historyKey) || '[]');
 
     const qty = parseFloat(document.getElementById('quantity').value) || 0;
-    const prc = parseFloat(document.getElementById('price').value) || 0;
+    const prc = parseFloat(document.getElementById('price').value)    || 0;
 
-    const historyEntry = {
-        date: new Date().toISOString(),
-        item: document.getElementById('produceName').value,
-        quantity: qty + ' kg',
-        price: prc,
-        buyer: result.transaction?.buyer_name || 'Market Sale',
-        total: qty * prc,
-        transactionId: result.transaction?.id || 'N/A',
-        id: result.transaction?.id || 'N/A',
-        grade: document.getElementById('aiGrade').value,
-        blockchainHash: result.hash ? result.hash.substring(0, 16) + '...' : 'N/A'
-    };
+    history.unshift({
+        date:            new Date().toISOString(),
+        item:            document.getElementById('produceName').value,
+        quantity:        qty + ' kg',
+        price:           prc,
+        buyer:           result.transaction?.buyer_name || 'Market Sale',
+        total:           qty * prc,
+        transactionId:   result.transaction?.id || 'N/A',
+        id:              result.transaction?.id || 'N/A',
+        grade:           document.getElementById('aiGrade').value,
+        blockchainHash:  result.hash ? result.hash.substring(0, 16) + '...' : 'N/A'
+    });
 
-    history.unshift(historyEntry);
     localStorage.setItem(historyKey, JSON.stringify(history));
-    console.log('Transaction saved to history (key:', historyKey, '):', historyEntry);
 }
