@@ -483,9 +483,9 @@
 <body>
 
 <!-- TOP STRIP -->
-<div class="top-strip">
-    Government of India &nbsp;|&nbsp; Ministry of Agriculture &amp; Farmers Welfare &nbsp;|&nbsp; Digital Agriculture Mission
-</div>
+<!--<div class="top-strip">-->
+<!--    Government of India &nbsp;|&nbsp; Ministry of Agriculture &amp; Farmers Welfare &nbsp;|&nbsp; Digital Agriculture Mission-->
+<!--</div>-->
 
 <!-- HEADER -->
 <header class="site-header">
@@ -530,7 +530,7 @@
     <div class="main-col">
 
         <div class="notice-banner">
-            <span class="notice-icon">📢</span>
+            <span class="notice-icon"></span>
             <div>
                 <strong>Important Notice:</strong> All vegetable transactions are anchored on the Sepolia blockchain for tamper-proof verification. Farmers must register before submitting produce for grading.
             </div>
@@ -546,8 +546,8 @@
             <div class="progress-strip"><div class="progress-fill" id="mainProgress"></div></div>
 
             <div class="tab-row">
-                <button class="tab-btn active" id="tab-signin" onclick="switchTab('signin')">🔐 Sign In</button>
-                <button class="tab-btn" id="tab-signup" onclick="switchTab('signup')">📋 New Registration</button>
+                <button class="tab-btn active" id="tab-signin" onclick="switchTab('signin')"> Sign In</button>
+                <button class="tab-btn" id="tab-signup" onclick="switchTab('signup')"> New Registration</button>
             </div>
 
             <!-- SIGN IN -->
@@ -569,7 +569,7 @@
                 </div>
 
                 <div class="form-actions">
-                    <button class="btn-primary" id="signinBtn" onclick="handleSignIn()">Sign In →</button>
+                    <button class="btn-primary" id="signinBtn" onclick="handleSignIn()">Sign In</button>
                     <button class="btn-secondary" onclick="switchTab('signup')">New Registration</button>
                     <span style="font-size:13px; color:var(--muted); margin-left:auto;"><a href="#">Forgot Password?</a></span>
                 </div>
@@ -636,7 +636,7 @@
                 </div>
 
                 <div class="form-actions">
-                    <button class="btn-primary" id="signupBtn" onclick="handleSignUp()">Submit Registration →</button>
+                    <button class="btn-primary" id="signupBtn" onclick="handleSignUp()">Submit Registration</button>
                     <button class="btn-secondary" onclick="switchTab('signin')">Already Registered? Sign In</button>
                 </div>
             </div>
@@ -649,7 +649,7 @@
 
         <!-- Carousel -->
         <div class="sidebar-box">
-            <div class="sb-head">📸 From the Fields</div>
+            <div class="sb-head"> From the Fields</div>
             <div class="carousel-wrap">
                 <img class="c-slide active" src="../images/farmer.jpg" alt="Farmer" onerror="this.src='https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=400&h=190&fit=crop'" />
                 <img class="c-slide" src="../images/vegetables.webp" alt="Vegetables" onerror="this.src='https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=400&h=190&fit=crop'" />
@@ -671,7 +671,7 @@
 
         <!-- Portal Info -->
         <div class="sidebar-box">
-            <div class="sb-head">ℹ️ Portal Information</div>
+            <div class="sb-head">️ Portal Information</div>
             <div class="sb-body">
                 <div class="info-row"><span class="lbl">Version</span><span class="val">2.4.1</span></div>
                 <div class="info-row"><span class="lbl">Network</span><span class="val">Sepolia Testnet</span></div>
@@ -681,78 +681,73 @@
             </div>
         </div>
 
-        <!-- Quick Links -->
-        <div class="sidebar-box">
-            <div class="sb-head">🔗 Quick Links</div>
-            <div class="sb-body">
-                <ul>
-                    <li><a href="#">Grade Classification Guide</a></li>
-                    <li><a href="#">Market Price Bulletin</a></li>
-                    <li><a href="#">Blockchain Verification</a></li>
-                    <li><a href="#">Download Mobile App</a></li>
-                    <li><a href="#">Grievance Portal</a></li>
-                </ul>
-            </div>
-        </div>
+<!--        &lt;!&ndash; Quick Links &ndash;&gt;-->
+<!--        <div class="sidebar-box">-->
+<!--            <div class="sb-head"> Quick Links</div>-->
+<!--            <div class="sb-body">-->
+<!--                <ul>-->
+<!--                    <li><a href="#">Grade Classification Guide</a></li>-->
+<!--                    <li><a href="#">Market Price Bulletin</a></li>-->
+<!--                    <li><a href="#">Blockchain Verification</a></li>-->
+<!--                    <li><a href="#">Download Mobile App</a></li>-->
+<!--                    <li><a href="#">Grievance Portal</a></li>-->
+<!--                </ul>-->
+<!--            </div>-->
+<!--        </div>-->
 
         <!-- Help -->
-        <div class="sidebar-box">
-            <div class="sb-head">📞 Help &amp; Support</div>
-            <div class="sb-body" style="line-height:1.7;">
-                <strong style="color:var(--gov-navy)">Kisan Call Centre</strong><br>
-                Toll Free: <strong style="color:var(--gov-blue)">1800-180-1551</strong><br>
-                Mon–Sat, 6 AM – 10 PM<br><br>
-                <strong style="color:var(--gov-navy)">Email Support</strong><br>
-                <a href="#">help@vegegrade.gov.in</a>
-            </div>
-        </div>
+<!--        <div class="sidebar-box">-->
+<!--            <div class="sb-head"> Help &amp; Support</div>-->
+<!--            <div class="sb-body" style="line-height:1.7;">-->
+<!--                <strong style="color:var(&#45;&#45;gov-navy)">Kisan Call Centre</strong><br>-->
+<!--                Toll Free: <strong style="color:var(&#45;&#45;gov-blue)">1800-180-1551</strong><br>-->
+<!--                Mon–Sat, 6 AM – 10 PM<br><br>-->
+<!--                <strong style="color:var(&#45;&#45;gov-navy)">Email Support</strong><br>-->
+<!--                <a href="#">help@vegegrade.gov.in</a>-->
+<!--            </div>-->
+<!--        </div>-->
 
     </div><!-- /side-col -->
 </div><!-- /page-body -->
-
-<!-- FOOTER -->
 <footer class="site-footer">
     <div class="footer-inner">
         <div class="footer-col">
             <h4>VEGEGRADE Portal</h4>
             <ul>
-                <li><a href="#">About the Portal</a></li>
+                <li><a href="faq.html">FAQs</a></li>
                 <li><a href="#">How It Works</a></li>
-                <li><a href="#">Grade Standards</a></li>
-                <li><a href="#">Blockchain Ledger</a></li>
+                <li><a href="#">API Access</a></li>
+                <li><a href="#">Open Data</a></li>
             </ul>
         </div>
         <div class="footer-col">
-            <h4>Farmer Services</h4>
+            <h4>Related Services</h4>
             <ul>
-                <li><a href="#">Register Produce</a></li>
-                <li><a href="#">Check Market Prices</a></li>
-                <li><a href="#">Transaction History</a></li>
-                <li><a href="#">Download Reports</a></li>
+                <li><a href="https://pmkisan.gov.in/">PM-KISAN Portal</a></li>
+                <li><a href="https://enam.gov.in/web/">eNAM Market</a></li>
+                <li><a href="https://www.soilhealth.dac.gov.in/home">Soil Health Card</a></li>
+                <li><a href="https://icar.org.in/en/krishi-vigyan-kendras">Krishi Vigyan Kendras</a></li>
             </ul>
         </div>
-        <div class="footer-col">
-            <h4>Government Links</h4>
-            <ul>
-                <li><a href="#">Ministry of Agriculture</a></li>
-                <li><a href="#">PM-KISAN Portal</a></li>
-                <li><a href="#">eNAM Marketplace</a></li>
-                <li><a href="#">Soil Health Card</a></li>
-            </ul>
-        </div>
-        <div class="footer-col">
-            <h4>Legal</h4>
-            <ul>
-                <li><a href="#">Terms of Use</a></li>
-                <li><a href="#">Privacy Policy</a></li>
-                <li><a href="#">Disclaimer</a></li>
-                <li><a href="#">RTI Information</a></li>
-            </ul>
+        <!--    <div class="footer-col">-->
+        <!--      <h4>Legal</h4>-->
+        <!--      <ul>-->
+        <!--        <li><a href="#">Terms &amp; Conditions</a></li>-->
+        <!--        <li><a href="#">Privacy Policy</a></li>-->
+        <!--        <li><a href="#">Copyright Policy</a></li>-->
+        <!--        <li><a href="#">Accessibility Statement</a></li>-->
+        <!--      </ul>-->
+        <!--    </div>-->
+        <div class="footer-col" style="flex:1; min-width:200px;">
+            <h4>About</h4>
+            <p style="font-size:13px; line-height:1.6;">
+                VEGEGRADE is a platform that uses AI to automatically grade vegetables based on visual quality. It records grading and trade data on blockchain to enable transparent and fair pricing.
+            </p>
         </div>
     </div>
     <div class="footer-bottom">
-        Content owned &amp; maintained by <strong>Ministry of Agriculture &amp; Farmers Welfare</strong>, Government of India.
-        &nbsp;|&nbsp; © 2025 VEGEGRADE. All rights reserved. &nbsp;|&nbsp; Last updated: March 2025
+
+        &nbsp;|&nbsp; Site Version 0.4
     </div>
 </footer>
 

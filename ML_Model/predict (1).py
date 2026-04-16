@@ -7,7 +7,7 @@ classes = ['A', 'B', 'C', 'rotten']
 
 model = tf.keras.models.load_model("vegetable_grading_model.h5")
 
-image_path = "D:/data_agimentation/test8.jpg"
+image_path = r"D:\FarmerProject\mine\Agricultural-Produce-Grading\ML_Model\Old\images (12).jpg"
 
 image = cv2.imread(image_path)
 

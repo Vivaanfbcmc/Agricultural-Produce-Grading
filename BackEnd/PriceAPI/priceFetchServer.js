@@ -25,7 +25,7 @@ import bodyParser from "body-parser";
 // ══════════════════════════════════════════════════════════
 //  CONFIG | fill these in
 // ══════════════════════════════════════════════════════════
-const CEDA_TOKEN      = "4face3859fdd510cb9b259c09cc8309f37bb574b57539ca6f36887742f890a84";          // 👈 paste your Bearer token here
+const CEDA_TOKEN      = "62ee47b9b9d68040469534d85d7ed3c5c31a2a48e70d1803ed7c4dc65b499c21";
 const CEDA_API_URL    = "https://api.ceda.ashoka.edu.in/v1/agmarknet/prices";
 
 // Hardcoded location (Maharashtra / Solapur / market)

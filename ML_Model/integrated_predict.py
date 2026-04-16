@@ -55,5 +55,5 @@ def analyze_image():
         return jsonify({"success": False, "message": str(e)}), 500
 
 if __name__ == "__main__":
-    print("✅ ML API running on http://localhost:5001")
+    print("ML API running on http://localhost:5001")
     app.run(port=5001, threaded=True)
