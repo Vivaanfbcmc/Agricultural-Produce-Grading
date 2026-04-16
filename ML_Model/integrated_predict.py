@@ -1,41 +1,16 @@
+import subprocess
+import tempfile
 import os
-import cv2
-import numpy as np
-import tensorflow as tf
-from tensorflow.keras.models import load_model
+import json
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
-IMG_SIZE = 224
-GRADE_CLASSES = ['A', 'B', 'C', 'rotten']
-
-# Load model once
-grading_model = load_model("vegetable_grading_model.h5")
-
-def preprocess(img):
-    img = cv2.resize(img, (IMG_SIZE, IMG_SIZE))
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    img = img.astype("float32") / 255.0
-    img = np.expand_dims(img, axis=0)
-    return img
-
-def predict_grade(file):
-    arr = np.frombuffer(file.read(), np.uint8)
-    img = cv2.imdecode(arr, cv2.IMREAD_COLOR)
-    if img is None:
-        return "rotten", 0.0
-
-    processed = preprocess(img)
-    prediction = grading_model.predict(processed, verbose=0)
-
-    index = int(np.argmax(prediction))
-    confidence = float(np.max(prediction))
-
-    return GRADE_CLASSES[index], round(confidence * 100, 2)
-
 app = Flask(__name__)
-CORS(app)  # Fix CORS for all origins
+CORS(app)
 
+# Path to your existing pipeline script
+#PIPELINE_SCRIPT = r"D:\COLLEGE STUFF\sem7\Final_Year_project_final_ML_\Basic_Requirement_Integration1\main_pipeline.py"
+PIPELINE_SCRIPT ="Newer_Better_Model/basic_requirement_test.py"
 @app.route('/analyze', methods=['POST', 'OPTIONS'])
 def analyze_image():
     if request.method == 'OPTIONS':
@@ -45,15 +20,33 @@ def analyze_image():
         return jsonify({"success": False, "message": "No image uploaded"}), 400
 
     try:
-        grade, confidence = predict_grade(request.files['image'])
-        return jsonify({
-            "success": True,
-            "grade": grade,
-            "confidence": confidence
-        })
+        file = request.files['image']
+        suffix = os.path.splitext(file.filename)[-1] or ".jpg"
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+            file.save(tmp.name)
+            tmp_path = tmp.name
+
+        result = subprocess.run(
+            ["python", PIPELINE_SCRIPT, "--image", tmp_path],
+            capture_output=True,
+            text=True
+        )
+
+        os.unlink(tmp_path)
+
+        if result.returncode != 0:
+            return jsonify({"success": False, "message": result.stderr}), 500
+
+        # Pipeline script must print a JSON object as its last line
+        last_line = result.stdout.strip().splitlines()[-1]
+        output = json.loads(last_line)
+        return jsonify({"success": True, **output})
+
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
 
+
 if __name__ == "__main__":
-    print("ML API running on http://localhost:5001")
-    app.run(port=5001, threaded=True)
+    print("Tomato Pipeline API -> http://localhost:5001")
+    app.run(port=5001, threaded=False)
