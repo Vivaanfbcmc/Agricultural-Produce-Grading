@@ -107,7 +107,12 @@ async function analyzeImage() {
         let grade = mlJson.grade || "Rotten";
         if (grade.toUpperCase() === "D") grade = "Rotten";
         grade = grade.toUpperCase();
-        gradeValue.textContent = grade;
+
+        const gradeMap = { 'EXTRA': 'A', 'CLASS1': 'B', 'CLASS2': 'C' };
+        const priceGrade = gradeMap[grade] || grade;
+
+        gradeValue.textContent = grade;  // still shows EXTRA/CLASS1/CLASS2 to user
+        analysisResults.grade = grade;
 
         // Store grade in analysisResults
         analysisResults.grade = grade;
@@ -126,7 +131,7 @@ async function analyzeImage() {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         commodity_id: DEFAULT_COMMODITY_ID,
-                        grade: grade  // A, B, or C
+                        grade: priceGrade  // A, B, or C (extra,I,II); no "rotten" grade in CEDA, so we handle that case separately above
                     })
                 });
 

@@ -25,7 +25,7 @@ import bodyParser from "body-parser";
 // ══════════════════════════════════════════════════════════
 //  CONFIG | fill these in
 // ══════════════════════════════════════════════════════════
-const CEDA_TOKEN      = "62ee47b9b9d68040469534d85d7ed3c5c31a2a48e70d1803ed7c4dc65b499c21";
+const CEDA_TOKEN      = "a2adc32917a957efb954ecf46ecc2ae5f4ebe3cccbef48a820d76776073f74c5";
 const CEDA_API_URL    = "https://api.ceda.ashoka.edu.in/v1/agmarknet/prices";
 
 // Hardcoded location (Maharashtra / Solapur / market)
