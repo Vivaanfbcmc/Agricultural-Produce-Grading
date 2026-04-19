@@ -1,0 +1,20 @@
+{
+  "name": "agricultural-produce-grading",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "concurrently --kill-others-on-fail --names \"ML,BACKEND,BLOCKCHAIN,PRICE,GATEWAY\" --prefix-colors \"magenta,cyan,yellow,green,blue\" \"cd ML_Model && python integrated_predict.py\" \"cd BackEnd && node server.js\" \"cd BlockchainLedger/backend && node src/app.js\" \"cd BackEnd && node PriceAPI/priceFetchServer.js\" \"cd Gateway && node gateway.js\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "ethers": "^6.16.0",
+    "express": "^5.2.1",
+    "express-session": "^1.19.0",
+    "form-data": "^4.0.5",
+    "multer": "^2.1.1",
+    "node-fetch": "^3.3.2",
+    "nodemon": "^3.1.14"
+  }
+}

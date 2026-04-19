@@ -1,0 +1,174 @@
+/* ═══════════════════════════════════════════════
+   VEGEGRADE — History Page Styles
+   Extends AIIndex.css
+   ═══════════════════════════════════════════════ */
+
+/* ── CONTROLS BAR ─────────────────────────────── */
+.controls-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.controls-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.sync-status {
+  font-size: 13px;
+  color: var(--gov-green);
+  font-weight: 600;
+}
+
+/* ── SUMMARY STATS ────────────────────────────── */
+.stats-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.stat-box {
+  flex: 1;
+  min-width: 120px;
+  background: var(--gov-sky);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--gov-blue);
+  border-radius: 3px;
+  padding: 14px 16px;
+  text-align: center;
+}
+
+.stat-val {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--gov-navy);
+  line-height: 1.2;
+}
+
+.stat-lbl {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+/* ── TABLE ────────────────────────────────────── */
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  min-width: 820px;
+}
+
+.history-table thead tr {
+  background: var(--gov-navy);
+  color: white;
+}
+
+.history-table thead th {
+  padding: 10px 14px;
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.history-table tbody tr:nth-child(odd)  { background: var(--gov-sky); }
+.history-table tbody tr:nth-child(even) { background: white; }
+
+.history-table tbody tr:hover { background: #d6e8ff; }
+
+.history-table tbody td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.history-table tbody td:last-child { border-right: none; }
+
+.tx-id {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.row-num {
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+.amount-strong {
+  font-weight: 700;
+  color: var(--gov-navy);
+}
+
+/* ── GRADE PILLS ──────────────────────────────── */
+.hist-pill {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.pill-grade-a { background: #d4f0e0; color: #005522; }
+.pill-grade-b { background: #dbeeff; color: #004488; }
+.pill-grade-c { background: #ffe0cc; color: #7a3000; }
+.pill-grade-r { background: #ffd6d6; color: #7a0000; }
+
+.pill-status-verified  { background: #d4f0e0; color: #005522; }
+.pill-status-pending   { background: #fff3cd; color: #7a5000; }
+.pill-status-completed { background: #dbeeff; color: #004488; }
+
+/* ── EMPTY STATE ──────────────────────────────── */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--muted);
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.empty-state h3 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--gov-navy);
+  margin-bottom: 8px;
+}
+
+.empty-state p {
+  font-size: 14px;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+/* ── RESPONSIVE ───────────────────────────────── */
+@media (max-width: 760px) {
+  .controls-bar { flex-direction: column; align-items: flex-start; }
+  .stats-row { flex-direction: column; }
+  .stat-box { min-width: unset; }
+}

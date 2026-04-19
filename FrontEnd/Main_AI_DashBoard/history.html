@@ -3,201 +3,732 @@
 <head>
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>VEGEGRADE - History</title>
-	<link rel="stylesheet" href="AIIndex.css">
+	<title>VEGEGRADE - Transaction History</title>
+	<link rel="stylesheet" href="history.css">
 	<style>
-		.header { display:flex; justify-content:space-between; align-items:center; padding:18px 0; }
-		.nav-links { display:flex; gap:14px; align-items:center; }
-		.nav-links a { color: #ffffff; text-decoration:none; padding:8px 12px; border-radius:6px; font-weight:600; }
-		.nav-links a:hover { background: rgba(255,255,255,0.06); }
-		.profile-link { display:inline-flex; align-items:center; }
-		.profile-circle { width:40px; height:40px; border-radius:50%; background:#fff; color:#1a1a1a; display:flex; align-items:center; justify-content:center; font-weight:700; }
-		.history-card { background: rgba(255,255,255,0.04); padding:18px; border-radius:10px; margin-top:22px; }
-		table.history { width:100%; border-collapse:collapse; margin-top:12px; }
-		table.history th, table.history td { padding:10px 8px; text-align:left; border-bottom:1px solid rgba(255,255,255,0.06); }
-		.controls { display:flex; gap:10px; margin-top:12px; }
-		.muted { color: rgba(255,255,255,0.7); }
+		/* ── CSS VARIABLES (gov theme) ─────────────────── */
+		:root {
+			--gov-navy:   #0b2545;
+			--gov-blue:   #1a56db;
+			--gov-green:  #059669;
+			--gov-sky:    #f0f6ff;
+			--border:     #c9d8ee;
+			--muted:      #6b7a99;
+			--bg:         #f4f8ff;
+			--white:      #ffffff;
+		}
+
+		* { box-sizing: border-box; margin: 0; padding: 0; }
+
+		body {
+			font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+			background: var(--bg);
+			color: var(--gov-navy);
+			min-height: 100vh;
+		}
+
+		/* ── HEADER ───────────────────────────────────── */
+		.site-header {
+			background: var(--gov-navy);
+			border-bottom: 3px solid var(--gov-blue);
+			padding: 0 24px;
+		}
+
+		.header-inner {
+			max-width: 1200px;
+			margin: 0 auto;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			padding: 14px 0;
+		}
+
+		.logo {
+			font-size: 22px;
+			font-weight: 900;
+			color: #fff;
+			letter-spacing: 1px;
+		}
+
+		.logo span { color: var(--gov-green); }
+
+		.tagline {
+			font-size: 11px;
+			color: rgba(255,255,255,0.55);
+			letter-spacing: 0.5px;
+			margin-top: 2px;
+			text-transform: uppercase;
+		}
+
+		.nav-links {
+			display: flex;
+			gap: 4px;
+			align-items: center;
+		}
+
+		.nav-links a {
+			color: rgba(255,255,255,0.85);
+			text-decoration: none;
+			padding: 7px 13px;
+			border-radius: 4px;
+			font-size: 13.5px;
+			font-weight: 600;
+			transition: background 0.15s;
+		}
+
+		.nav-links a:hover { background: rgba(255,255,255,0.1); }
+		.nav-links a.active { background: var(--gov-blue); color: #fff; }
+
+		.profile-circle {
+			width: 36px;
+			height: 36px;
+			border-radius: 50%;
+			background: var(--gov-green);
+			color: #fff;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-weight: 800;
+			font-size: 15px;
+		}
+
+		/* ── PAGE WRAPPER ─────────────────────────────── */
+		.container {
+			max-width: 1200px;
+			margin: 0 auto;
+			padding: 28px 24px 60px;
+		}
+
+		/* ── PAGE TITLE ───────────────────────────────── */
+		.page-title-row {
+			display: flex;
+			align-items: flex-end;
+			justify-content: space-between;
+			flex-wrap: wrap;
+			gap: 12px;
+			margin-bottom: 24px;
+			padding-bottom: 18px;
+			border-bottom: 2px solid var(--border);
+		}
+
+		.page-title-row h1 {
+			font-size: 26px;
+			font-weight: 800;
+			color: var(--gov-navy);
+			line-height: 1.1;
+		}
+
+		.page-title-row p {
+			font-size: 13.5px;
+			color: var(--muted);
+			margin-top: 4px;
+		}
+
+		/* ── BUTTONS ──────────────────────────────────── */
+		.btn {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+			padding: 8px 16px;
+			border-radius: 4px;
+			font-size: 13.5px;
+			font-weight: 700;
+			cursor: pointer;
+			border: none;
+			transition: opacity 0.15s, transform 0.1s;
+		}
+
+		.btn:active { transform: translateY(1px); }
+
+		.btn-primary {
+			background: var(--gov-blue);
+			color: #fff;
+		}
+
+		.btn-primary:hover { opacity: 0.88; }
+
+		.btn-ghost {
+			background: transparent;
+			color: var(--muted);
+			border: 1px solid var(--border);
+		}
+
+		.btn-ghost:hover { background: var(--gov-sky); color: var(--gov-navy); }
+
+		/* ── STATS ROW ────────────────────────────────── */
+		.stats-row {
+			display: flex;
+			gap: 16px;
+			flex-wrap: wrap;
+			margin-bottom: 24px;
+		}
+
+		.stat-box {
+			flex: 1;
+			min-width: 120px;
+			background: var(--white);
+			border: 1px solid var(--border);
+			border-top: 3px solid var(--gov-blue);
+			border-radius: 3px;
+			padding: 14px 16px;
+			text-align: center;
+		}
+
+		.stat-val {
+			font-size: 22px;
+			font-weight: 700;
+			color: var(--gov-navy);
+			line-height: 1.2;
+		}
+
+		.stat-lbl {
+			font-size: 12px;
+			color: var(--muted);
+			margin-top: 4px;
+			text-transform: uppercase;
+			letter-spacing: 0.4px;
+		}
+
+		/* ── CONTROLS BAR ─────────────────────────────── */
+		.controls-bar {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			flex-wrap: wrap;
+			gap: 12px;
+			margin-bottom: 16px;
+			padding-bottom: 14px;
+			border-bottom: 1px solid var(--border);
+		}
+
+		.controls-left {
+			display: flex;
+			align-items: center;
+			gap: 14px;
+			flex-wrap: wrap;
+		}
+
+		.sync-status {
+			font-size: 13px;
+			color: var(--gov-green);
+			font-weight: 600;
+		}
+
+		/* ── TABLE ────────────────────────────────────── */
+		.table-wrap {
+			overflow-x: auto;
+			border: 1px solid var(--border);
+			border-radius: 3px;
+		}
+
+		.history-table {
+			width: 100%;
+			border-collapse: collapse;
+			font-size: 13.5px;
+			min-width: 820px;
+		}
+
+		.history-table thead tr {
+			background: var(--gov-navy);
+			color: white;
+		}
+
+		.history-table thead th {
+			padding: 10px 14px;
+			font-weight: 700;
+			font-size: 12px;
+			text-transform: uppercase;
+			letter-spacing: 0.5px;
+			text-align: left;
+			white-space: nowrap;
+		}
+
+		.history-table tbody tr:nth-child(odd)  { background: var(--gov-sky); }
+		.history-table tbody tr:nth-child(even) { background: white; }
+		.history-table tbody tr:hover { background: #d6e8ff; }
+
+		.history-table tbody td {
+			padding: 10px 14px;
+			border-bottom: 1px solid var(--border);
+			vertical-align: middle;
+		}
+
+		.tx-id {
+			font-family: 'Courier New', monospace;
+			font-size: 12px;
+			color: var(--muted);
+			white-space: nowrap;
+		}
+
+		.row-num {
+			color: var(--muted);
+			font-size: 12px;
+			text-align: center;
+		}
+
+		.amount-strong {
+			font-weight: 700;
+			color: var(--gov-navy);
+		}
+
+		/* ── GRADE PILLS ──────────────────────────────── */
+		.hist-pill {
+			display: inline-block;
+			padding: 3px 10px;
+			border-radius: 20px;
+			font-size: 12px;
+			font-weight: 700;
+			letter-spacing: 0.3px;
+		}
+
+		.pill-grade-a { background: #d4f0e0; color: #005522; }
+		.pill-grade-b { background: #dbeeff; color: #004488; }
+		.pill-grade-c { background: #ffe0cc; color: #7a3000; }
+		.pill-grade-r { background: #ffd6d6; color: #7a0000; }
+		.pill-status-verified  { background: #d4f0e0; color: #005522; }
+		.pill-status-pending   { background: #fff3cd; color: #7a5000; }
+		.pill-status-completed { background: #dbeeff; color: #004488; }
+
+		/* ── LOADING / ERROR / EMPTY ──────────────────── */
+		.loading-spinner {
+			text-align: center;
+			padding: 60px 20px;
+		}
+
+		.spinner {
+			width: 36px;
+			height: 36px;
+			border: 4px solid var(--border);
+			border-top-color: var(--gov-blue);
+			border-radius: 50%;
+			animation: spin 0.8s linear infinite;
+			margin: 0 auto 14px;
+		}
+
+		@keyframes spin { to { transform: rotate(360deg); } }
+
+		.error-message {
+			color: #b91c1c;
+			padding: 12px 16px;
+			background: #fef2f2;
+			border: 1px solid #fca5a5;
+			border-left: 4px solid #b91c1c;
+			border-radius: 3px;
+			margin-top: 12px;
+			font-size: 13.5px;
+		}
+
+		.empty-state {
+			text-align: center;
+			padding: 60px 20px;
+			color: var(--muted);
+		}
+
+		.empty-icon { font-size: 48px; margin-bottom: 16px; }
+
+		.empty-state h3 {
+			font-size: 20px;
+			font-weight: 700;
+			color: var(--gov-navy);
+			margin-bottom: 8px;
+		}
+
+		.empty-state p {
+			font-size: 14px;
+			max-width: 400px;
+			margin: 0 auto;
+		}
+
+		/* ── FOOTER ───────────────────────────────────── */
+		.site-footer {
+			background: var(--gov-navy);
+			color: rgba(255,255,255,0.5);
+			text-align: center;
+			font-size: 12px;
+			padding: 16px 24px;
+			margin-top: 40px;
+		}
+
+		/* ── RESPONSIVE ───────────────────────────────── */
+		@media (max-width: 760px) {
+			.controls-bar { flex-direction: column; align-items: flex-start; }
+			.stats-row { flex-direction: column; }
+			.stat-box { min-width: unset; }
+			.page-title-row { flex-direction: column; align-items: flex-start; }
+		}
 	</style>
 </head>
 <body>
-	<div class="bg-gradient"></div>
 
-	<div class="container">
-		<!-- Header (shared) -->
-		<header class="header">
-			<div>
-				<div class="logo">VEGE<span>GRADE</span></div>
-				<div class="tagline">AI-Powered Vegetable Quality & Pricing</div>
-			</div>
-			<nav class="nav-links">
-				<a href="AIIndex.html">VEGEGRADE AI</a>
-				<a href="AIIndex.html">Dashboard</a>
-				<a href="history.html">History</a>
-				<a href="profile.html" class="profile-link" title="Profile">
-					<div class="profile-circle">P</div>
-				</a>
-			</nav>
-		</header>
+<!-- ── HEADER ──────────────────────────────────────── -->
+<header class="site-header">
+	<div class="header-inner">
+		<div>
+			<div class="logo">VEGE<span>GRADE</span></div>
+			<div class="tagline">AI-Powered Vegetable Quality &amp; Pricing</div>
+		</div>
+		<nav class="nav-links">
+			<a href="AIIndex.html">VEGEGRADE AI</a>
+			<a href="AIIndex.html">Dashboard</a>
+			<a href="history.html" class="active">History</a>
+			<a href="profile.html" title="Profile">
+				<div class="profile-circle">P</div>
+			</a>
+		</nav>
+	</div>
+</header>
 
-		<main>
-			<section class="hero">
-				<h1>Sales History</h1>
-				<p class="muted">View the records of vegetables you've sold. Entries are stored locally in your browser.</p>
+<!-- ── MAIN ────────────────────────────────────────── -->
+<div class="container">
 
-				<div class="history-card">
-					<div class="controls">
-						<!-- <button onclick="addDemoEntry()" class="analyze-btn">Add Demo Entry</button> -->
-						<!-- <button onclick="clearHistory()" class="try-again-btn">Clear History</button> -->
-					</div>
-
-					<table class="history" id="historyTable">
-						<thead>
-							<tr>
-								<th>Date</th>
-								<th>Item</th>
-								<th>Quantity</th>
-								<th>Price / unit</th>
-								<th>Buyer</th>
-								<th>Total</th>
-							</tr>
-						</thead>
-						<tbody id="historyBody">
-							<!-- rows inserted by JS -->
-						</tbody>
-					</table>
-
-					<p id="emptyState" class="muted" style="display:none; margin-top:12px;">No history yet. Use the <strong>Add Demo Entry</strong> button to add a sample record.</p>
-				</div>
-			</section>
-		</main>
-
-		<footer class="footer">
-			<p>VEGEGRADE &copy; 2023. AI-Powered Vegetable Quality Assessment System.</p>
-		</footer>
+	<!-- Page Title -->
+	<div class="page-title-row">
+		<div>
+			<h1>Transaction History</h1>
+			<p>View all your vegetable sales and transactions recorded on the blockchain.</p>
+		</div>
 	</div>
 
-	<script>
-		/* ==========================
-							 History integration notes
-							 - This page should fetch history for a specific farmer from the backend.
-							 - Decide how to provide farmerId to this page:
-								 1) Server-rendered: inject a JS variable like window.FARMER_ID = 'F-0001' into the page.
-								 2) Query parameter: open /history.html?farmerId=F-0001 and use getFarmerId() below.
-							 - Backend endpoint convention (example): GET /api/farmers/{farmerId}/history
-								 Response shape expected: JSON array of objects with keys: date, item, quantity, price, buyer, total
-							 - Authentication: set an Authorization header (Bearer token) in fetch() if needed.
-							 - Replace the URL and headers in fetchHistoryFromBackend() with your actual backend details.
-							 ========================== */
+	<!-- Summary Stats -->
+	<div class="stats-row" id="statsRow" style="display:none;">
+		<div class="stat-box">
+			<div class="stat-val" id="statTotal">—</div>
+			<div class="stat-lbl">Total Transactions</div>
+		</div>
+		<div class="stat-box">
+			<div class="stat-val" id="statRevenue">—</div>
+			<div class="stat-lbl">Total Revenue</div>
+		</div>
+		<div class="stat-box">
+			<div class="stat-val" id="statGradeA">—</div>
+			<div class="stat-lbl">Grade A Items</div>
+		</div>
+		<div class="stat-box">
+			<div class="stat-val" id="statVerified">—</div>
+			<div class="stat-lbl">Verified on Chain</div>
+		</div>
+	</div>
 
-		function formatDate(iso){ const d = new Date(iso); return d.toLocaleString(); }
+	<!-- Controls Bar -->
+	<div class="controls-bar">
+		<div class="controls-left">
+			<button onclick="syncHistory()" class="btn btn-primary">Refresh</button>
+			<span id="syncStatus" class="sync-status"></span>
+		</div>
+		<div>
+			<button onclick="clearLocalHistory()" class="btn btn-ghost">Clear Local Cache</button>
+		</div>
+	</div>
 
-		// Utility: try to read farmerId from window variable or query param
-		function getFarmerId(){
-			// Option A: server inserts window.FARMER_ID before this script runs
-			if(window.FARMER_ID) return window.FARMER_ID;
-			// Option B: read from query param ?farmerId=
-			const params = new URLSearchParams(window.location.search);
-			if(params.has('farmerId')) return params.get('farmerId');
-			// Fallback: null (no farmer id provided)
-			return null;
-		}
+	<!-- Loading -->
+	<div id="loadingSpinner" class="loading-spinner" style="display:none;">
+		<div class="spinner"></div>
+		<p style="color:var(--muted); font-size:14px;">Loading transaction history…</p>
+	</div>
 
-		// Fetch history from backend for a given farmerId.
-		// TODO: replace the URL and headers with your real backend endpoint and auth.
-		async function fetchHistoryFromBackend(farmerId){
-			if(!farmerId) return [];
-			try{
-				const url = '/api/farmers/' + encodeURIComponent(farmerId) + '/history'; // example endpoint
-				const res = await fetch(url, {
-					method: 'GET',
-					headers: {
-						'Content-Type': 'application/json',
-						// 'Authorization': 'Bearer <TOKEN>', // add auth if required
-					}
-				});
-				if(!res.ok) throw new Error('Network response was not ok');
-				const data = await res.json();
-				// Expecting an array; validate minimally
-				if(Array.isArray(data)) return data;
-				return [];
-			}catch(err){
-				console.error('Failed to fetch history from backend:', err);
-				return [];
-			}
-		}
+	<!-- Error -->
+	<div id="errorMessage" class="error-message" style="display:none;"></div>
 
-		// Render list of history entries into the table body
-		function renderHistory(list){
-			const body = document.getElementById('historyBody');
-			const empty = document.getElementById('emptyState');
-			body.innerHTML = '';
-			if(!list || !list.length){ empty.style.display = 'block'; return; }
-			empty.style.display = 'none';
-			list.forEach(entry => {
-				const tr = document.createElement('tr');
-				var row = '';
-				row += '<td>' + formatDate(entry.date) + '</td>';
-				row += '<td>' + (entry.item || '') + '</td>';
-				row += '<td>' + (entry.quantity || '') + '</td>';
-				row += '<td>₹' + (entry.price || '') + '</td>';
-				row += '<td>' + (entry.buyer || '-') + '</td>';
-				row += '<td>₹' + (entry.total || '') + '</td>';
-				tr.innerHTML = row;
-				body.appendChild(tr);
+	<!-- Table -->
+	<div class="table-wrap" id="tableWrap" style="display:none;">
+		<table class="history-table" id="historyTable">
+			<thead>
+				<tr>
+					<th>#</th>
+					<th>Date</th>
+					<th>Transaction ID</th>
+					<th>Item</th>
+					<th>Grade</th>
+					<th>Quantity</th>
+					<th>Price / kg</th>
+					<th>Total</th>
+					<th>Status</th>
+				</tr>
+			</thead>
+			<tbody id="historyBody">
+				<!-- rows inserted by JS -->
+			</tbody>
+		</table>
+	</div>
+
+	<!-- Empty State -->
+	<div id="emptyState" class="empty-state" style="display:none;">
+		<div class="empty-icon"></div>
+		<h3>No Transactions Yet</h3>
+		<p>No transaction history found. Create your first transaction from the dashboard!</p>
+	</div>
+
+</div>
+
+<!-- ── FOOTER ───────────────────────────────────────── -->
+<footer class="site-footer">
+	VEGEGRADE &copy; 2023. AI-Powered Vegetable Quality Assessment System.
+</footer>
+
+<script>
+	// Format date to readable format
+	function formatDate(iso) {
+		const d = new Date(iso);
+		return d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
+	}
+
+	// Format currency
+	function formatCurrency(amount) {
+		return new Intl.NumberFormat('en-IN', {
+			style: 'currency',
+			currency: 'INR'
+		}).format(amount);
+	}
+
+	// Get grade badge HTML
+	function getGradeBadge(grade) {
+		const gradeUpper = (grade || 'N/A').toUpperCase();
+		const map = { A: 'a', B: 'b', C: 'c', ROTTEN: 'r' };
+		const cls = map[gradeUpper] || 'b';
+		return `<span class="hist-pill pill-grade-${cls}">${gradeUpper}</span>`;
+	}
+
+	// Get status badge HTML
+	function getStatusBadge(status) {
+		const s = (status || 'completed').toLowerCase();
+		return `<span class="hist-pill pill-status-${s}">${s}</span>`;
+	}
+
+	// Fetch history from backend blockchain API
+	async function fetchHistoryFromBackend() {
+		try {
+			const response = await fetch('/api/blockchain/history', {
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json'
+				}
 			});
-		}
 
-		// Keep demo/local helpers for offline testing
-		function addDemoEntry(){
-			const list = JSON.parse(localStorage.getItem('vegegrade_history') || '[]');
-			const demo = { date: new Date().toISOString(), item: 'Tomato', quantity: '10 kg', price: 40, buyer: 'Local Market', total: 400 };
-			list.unshift(demo);
-			localStorage.setItem('vegegrade_history', JSON.stringify(list));
-			renderHistory(list);
-		}
-
-		function clearHistory(){
-			if(!confirm('Clear local demo history?')) return;
-			localStorage.removeItem('vegegrade_history');
-			renderHistory([]);
-		}
-
-		// Public: synchronize with backend and render results.
-		async function syncHistory(){
-			const farmerId = getFarmerId();
-			if(!farmerId){
-				// If no farmerId available, show local demo history as fallback
-				const local = JSON.parse(localStorage.getItem('vegegrade_history') || '[]');
-				renderHistory(local);
-				console.warn('No farmerId supplied. Provide farmerId via window.FARMER_ID or ?farmerId=');
-				return;
+			if (!response.ok) {
+				if (response.status === 401) {
+					throw new Error('Not authenticated. Please log in.');
+				}
+				throw new Error('Failed to fetch transaction history');
 			}
-			// Fetch from backend and render. Replace endpoint/auth as required.
-			const remoteList = await fetchHistoryFromBackend(farmerId);
-			if(remoteList && remoteList.length){
-				renderHistory(remoteList);
-			}else{
-				// Optional: fallback to local cache
-				const local = JSON.parse(localStorage.getItem('vegegrade_history') || '[]');
-				renderHistory(local);
-			}
+
+			const data = await response.json();
+			return data.transactions || data || [];
+		} catch (err) {
+			console.error('Backend fetch error:', err);
+			throw err;
+		}
+	}
+
+	// Get the farmer-specific localStorage key to prevent cross-account cache bleed
+	function getHistoryKey() {
+		const farmerId = localStorage.getItem('farmerId') || 'guest';
+		return 'vegegrade_history_' + farmerId;
+	}
+
+	// Get local history from localStorage (fallback)
+	function getLocalHistory() {
+		return JSON.parse(localStorage.getItem(getHistoryKey()) || '[]');
+	}
+
+	// Update summary stats
+	function updateStats(list) {
+		if (!list || !list.length) {
+			document.getElementById('statsRow').style.display = 'none';
+			return;
+		}
+		document.getElementById('statsRow').style.display = 'flex';
+
+		const total = list.length;
+		const revenue = list.reduce((sum, e) => {
+			const qty = parseFloat(e.quantity || 0);
+			const price = parseFloat(e.price || 0);
+			return sum + (e.total || qty * price || 0);
+		}, 0);
+		const gradeA = list.filter(e => (e.ai_grade || e.grade || '').toUpperCase() === 'A').length;
+		const verified = list.filter(e => (e.status || '').toLowerCase() === 'verified').length;
+
+		document.getElementById('statTotal').textContent = total;
+		document.getElementById('statRevenue').textContent = formatCurrency(revenue);
+		document.getElementById('statGradeA').textContent = gradeA;
+		document.getElementById('statVerified').textContent = verified;
+	}
+
+	// Render history entries into the table
+	function renderHistory(list) {
+		const tableWrap = document.getElementById('tableWrap');
+		const body = document.getElementById('historyBody');
+		const empty = document.getElementById('emptyState');
+		const spinner = document.getElementById('loadingSpinner');
+
+		spinner.style.display = 'none';
+		body.innerHTML = '';
+
+		if (!list || !list.length) {
+			tableWrap.style.display = 'none';
+			empty.style.display = 'block';
+			updateStats([]);
+			return;
 		}
 
-		// Wire UI control buttons (if present) to actions
-		document.addEventListener('DOMContentLoaded', ()=>{
-			// If you want server-side rendering to inject FARMER_ID, set window.FARMER_ID before this script.
-			// Example server-side injection (Node/Express EJS/Pug):
-			// <script>window.FARMER_ID = '<%= farmer.id %>';</script>
+		empty.style.display = 'none';
+		tableWrap.style.display = 'block';
+		updateStats(list);
 
-			// Attach optional control buttons if you uncomment them in the markup
-			const addBtn = document.querySelector('.controls .analyze-btn');
-			if(addBtn) addBtn.addEventListener('click', addDemoEntry);
-			const clearBtn = document.querySelector('.controls .try-again-btn');
-			if(clearBtn) clearBtn.addEventListener('click', clearHistory);
+		list.forEach((entry, idx) => {
+			const tr = document.createElement('tr');
 
-			// Primary action: sync from backend for the current farmer
-			syncHistory();
+			// Handle both backend format and local storage format
+			const date = entry.created_at || entry.date || new Date().toISOString();
+			const txId = entry.id || entry.transactionId || 'N/A';
+			const item = entry.produce_name || entry.item || 'N/A';
+			const grade = entry.ai_grade || entry.grade || 'N/A';
+			const quantity = entry.quantity || entry.quantity || '0';
+			const price = entry.price || entry.price || 0;
+			const total = entry.total || (parseFloat(quantity) * parseFloat(price)) || 0;
+			const status = entry.status || 'completed';
+
+			// Handle txId - could be number or string
+			const txIdDisplay = txId ? String(txId).substring(0, 8) + '...' : 'N/A';
+
+			tr.innerHTML = `
+				<td class="row-num">${idx + 1}</td>
+				<td>${formatDate(date)}</td>
+				<td class="tx-id">${txIdDisplay}</td>
+				<td><strong>${item}</strong></td>
+				<td>${getGradeBadge(grade)}</td>
+				<td>${quantity} kg</td>
+				<td>${formatCurrency(price)}</td>
+				<td class="amount-strong">${formatCurrency(total)}</td>
+				<td>${getStatusBadge(status)}</td>
+			`;
+
+			body.appendChild(tr);
 		});
-	</script>
+	}
+
+	// Show error message
+	function showError(message) {
+		const errorDiv = document.getElementById('errorMessage');
+		errorDiv.textContent = '❌ ' + message;
+		errorDiv.style.display = 'block';
+		document.getElementById('loadingSpinner').style.display = 'none';
+	}
+
+	// Hide error message
+	function hideError() {
+		document.getElementById('errorMessage').style.display = 'none';
+	}
+
+	// Sync history from backend (primary) or localStorage (fallback)
+	// Replace syncHistory() in history.html with this:
+	async function syncHistory() {
+		hideError();
+		document.getElementById('loadingSpinner').style.display = 'block';
+		document.getElementById('tableWrap').style.display = 'none';
+		document.getElementById('emptyState').style.display = 'none';
+		document.getElementById('syncStatus').textContent = '';
+
+		const localHistory = getLocalHistory();
+
+		try {
+			const backendHistory = await fetchHistoryFromBackend();
+
+			// Build a set of known backend IDs
+			const backendIds = new Set(
+					(backendHistory || []).map(t => String(t.id || t.transactionId || ''))
+							.filter(id => id && id !== 'N/A')
+			);
+
+			// Merge: backend first, then any local entries not already in backend
+			const localOnly = localHistory.filter(entry => {
+				const id = String(entry.transactionId || entry.id || '');
+				return !id || !backendIds.has(id);
+			});
+
+			const merged = [...(backendHistory || []), ...localOnly];
+
+			if (merged.length > 0) {
+				renderHistory(merged);
+				document.getElementById('syncStatus').textContent =
+						backendHistory && backendHistory.length > 0
+								? '✓ Synced from blockchain'
+								: '⚠ Showing local cache (offline)';
+				// Update localStorage with merged data (farmer-specific key)
+				localStorage.setItem(getHistoryKey(), JSON.stringify(merged));
+			} else {
+				renderHistory([]);
+			}
+		} catch (err) {
+			console.error('Sync error:', err);
+			showError(err.message);
+
+			if (localHistory.length > 0) {
+				renderHistory(localHistory);
+				document.getElementById('syncStatus').textContent =
+						'⚠ Showing local cache (error fetching from server)';
+			} else {
+				renderHistory([]);
+			}
+		}
+	}
+
+
+	// Clear local history cache
+	function clearLocalHistory() {
+		if (!confirm('Clear local transaction cache? This will not delete blockchain records.')) {
+			return;
+		}
+
+		localStorage.removeItem(getHistoryKey());
+		document.getElementById('syncStatus').textContent = '✓ Local cache cleared';
+
+		// Refresh from backend
+		syncHistory();
+	}
+
+	// Initialize on page load
+	document.addEventListener('DOMContentLoaded', () => {
+		// Check if user is authenticated
+		fetch('/api/auth/profile')
+				.then(res => {
+					if (!res.ok) {
+						// Not authenticated, redirect to login
+						window.location.href = '/';
+						return;
+					}
+					return res.json();
+				})
+				.then(data => {
+					if (data && data.user) {
+						const incomingId = data.user.farmerId || data.user.id || '';
+						const cachedId   = localStorage.getItem('farmerId') || '';
+
+						// If farmer changed, wipe the old farmer's cached history key
+						// (the new farmer's key, if any, is a separate key — no bleed)
+						if (incomingId && cachedId && incomingId !== cachedId) {
+							// Remove the OLD farmer's cache entry so it doesn't hang around
+							localStorage.removeItem('vegegrade_history_' + cachedId);
+						}
+
+						// Always refresh farmerId so getHistoryKey() resolves correctly
+						if (incomingId) {
+							localStorage.setItem('farmerId', incomingId);
+						}
+						if (data.user.fullName) {
+							localStorage.setItem('farmerName', data.user.fullName);
+						}
+
+						// Now sync using the correct farmer's history key
+						syncHistory();
+					}
+				})
+				.catch(err => {
+					console.error('Auth check error:', err);
+					// Fallback to local history (uses whatever farmerId is cached)
+					const localHistory = getLocalHistory();
+					renderHistory(localHistory);
+				});
+	});
+</script>
 </body>
 </html>
