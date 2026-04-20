@@ -6,7 +6,7 @@
 	<title>VEGEGRADE - Transaction History</title>
 	<link rel="stylesheet" href="history.css">
 	<style>
-		/* ── CSS VARIABLES (gov theme) ─────────────────── */
+		/* -- CSS VARIABLES (gov theme) ------------------- */
 		:root {
 			--gov-navy:   #0b2545;
 			--gov-blue:   #1a56db;
@@ -27,7 +27,7 @@
 			min-height: 100vh;
 		}
 
-		/* ── HEADER ───────────────────────────────────── */
+		/* -- HEADER ------------------------------------- */
 		.site-header {
 			background: var(--gov-navy);
 			border-bottom: 3px solid var(--gov-blue);
@@ -92,14 +92,14 @@
 			font-size: 15px;
 		}
 
-		/* ── PAGE WRAPPER ─────────────────────────────── */
+		/* -- PAGE WRAPPER ------------------------------- */
 		.container {
 			max-width: 1200px;
 			margin: 0 auto;
 			padding: 28px 24px 60px;
 		}
 
-		/* ── PAGE TITLE ───────────────────────────────── */
+		/* -- PAGE TITLE --------------------------------- */
 		.page-title-row {
 			display: flex;
 			align-items: flex-end;
@@ -124,7 +124,7 @@
 			margin-top: 4px;
 		}
 
-		/* ── BUTTONS ──────────────────────────────────── */
+		/* -- BUTTONS ------------------------------------ */
 		.btn {
 			display: inline-flex;
 			align-items: center;
@@ -155,7 +155,7 @@
 
 		.btn-ghost:hover { background: var(--gov-sky); color: var(--gov-navy); }
 
-		/* ── STATS ROW ────────────────────────────────── */
+		/* -- STATS ROW ---------------------------------- */
 		.stats-row {
 			display: flex;
 			gap: 16px;
@@ -189,7 +189,7 @@
 			letter-spacing: 0.4px;
 		}
 
-		/* ── CONTROLS BAR ─────────────────────────────── */
+		/* -- CONTROLS BAR ------------------------------- */
 		.controls-bar {
 			display: flex;
 			justify-content: space-between;
@@ -214,7 +214,7 @@
 			font-weight: 600;
 		}
 
-		/* ── TABLE ────────────────────────────────────── */
+		/* -- TABLE -------------------------------------- */
 		.table-wrap {
 			overflow-x: auto;
 			border: 1px solid var(--border);
@@ -271,7 +271,7 @@
 			color: var(--gov-navy);
 		}
 
-		/* ── GRADE PILLS ──────────────────────────────── */
+		/* -- GRADE PILLS -------------------------------- */
 		.hist-pill {
 			display: inline-block;
 			padding: 3px 10px;
@@ -289,7 +289,7 @@
 		.pill-status-pending   { background: #fff3cd; color: #7a5000; }
 		.pill-status-completed { background: #dbeeff; color: #004488; }
 
-		/* ── LOADING / ERROR / EMPTY ──────────────────── */
+		/* -- LOADING / ERROR / EMPTY -------------------- */
 		.loading-spinner {
 			text-align: center;
 			padding: 60px 20px;
@@ -339,7 +339,7 @@
 			margin: 0 auto;
 		}
 
-		/* ── FOOTER ───────────────────────────────────── */
+		/* -- FOOTER ------------------------------------- */
 		.site-footer {
 			background: var(--gov-navy);
 			color: rgba(255,255,255,0.5);
@@ -349,7 +349,7 @@
 			margin-top: 40px;
 		}
 
-		/* ── RESPONSIVE ───────────────────────────────── */
+		/* -- RESPONSIVE --------------------------------- */
 		@media (max-width: 760px) {
 			.controls-bar { flex-direction: column; align-items: flex-start; }
 			.stats-row { flex-direction: column; }
@@ -360,7 +360,7 @@
 </head>
 <body>
 
-<!-- ── HEADER ──────────────────────────────────────── -->
+<!-- -- HEADER ---------------------------------------- -->
 <header class="site-header">
 	<div class="header-inner">
 		<div>
@@ -378,7 +378,7 @@
 	</div>
 </header>
 
-<!-- ── MAIN ────────────────────────────────────────── -->
+<!-- -- MAIN ------------------------------------------ -->
 <div class="container">
 
 	<!-- Page Title -->
@@ -392,19 +392,19 @@
 	<!-- Summary Stats -->
 	<div class="stats-row" id="statsRow" style="display:none;">
 		<div class="stat-box">
-			<div class="stat-val" id="statTotal">—</div>
+			<div class="stat-val" id="statTotal">-</div>
 			<div class="stat-lbl">Total Transactions</div>
 		</div>
 		<div class="stat-box">
-			<div class="stat-val" id="statRevenue">—</div>
+			<div class="stat-val" id="statRevenue">-</div>
 			<div class="stat-lbl">Total Revenue</div>
 		</div>
 		<div class="stat-box">
-			<div class="stat-val" id="statGradeA">—</div>
+			<div class="stat-val" id="statGradeA">-</div>
 			<div class="stat-lbl">Grade A Items</div>
 		</div>
 		<div class="stat-box">
-			<div class="stat-val" id="statVerified">—</div>
+			<div class="stat-val" id="statVerified">-</div>
 			<div class="stat-lbl">Verified on Chain</div>
 		</div>
 	</div>
@@ -460,7 +460,7 @@
 
 </div>
 
-<!-- ── FOOTER ───────────────────────────────────────── -->
+<!-- -- FOOTER ----------------------------------------- -->
 <footer class="site-footer">
 	VEGEGRADE &copy; 2023. AI-Powered Vegetable Quality Assessment System.
 </footer>
@@ -704,7 +704,7 @@
 						const cachedId   = localStorage.getItem('farmerId') || '';
 
 						// If farmer changed, wipe the old farmer's cached history key
-						// (the new farmer's key, if any, is a separate key — no bleed)
+						// (the new farmer's key, if any, is a separate key - no bleed)
 						if (incomingId && cachedId && incomingId !== cachedId) {
 							// Remove the OLD farmer's cache entry so it doesn't hang around
 							localStorage.removeItem('vegegrade_history_' + cachedId);

@@ -90,7 +90,7 @@ const contract = new ethers.Contract(
 
 class BlockchainService {
 
-  // ── Check if a record ID already exists on-chain ──────────────────────
+  // -- Check if a record ID already exists on-chain ----------------------
   static async recordExists(id) {
     try {
       const record = await contract.records(id);
@@ -101,7 +101,7 @@ class BlockchainService {
     }
   }
 
-  // ── Anchor ledger entry to Sepolia ────────────────────────────────────
+  // -- Anchor ledger entry to Sepolia ------------------------------------
   static async anchorLedger(id, hash, farmerName) {
     try {
       // Guard: skip if this ID is already anchored on-chain

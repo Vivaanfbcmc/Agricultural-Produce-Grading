@@ -108,7 +108,7 @@
 	// Show error message
 	function showError(message) {
 		const errorDiv = document.getElementById('errorMessage');
-		errorDiv.textContent = '❌ ' + message;
+		errorDiv.textContent = ' ' + message;
 		errorDiv.style.display = 'block';
 		document.getElementById('loadingSpinner').style.display = 'none';
 	}
@@ -150,8 +150,8 @@
 				renderHistory(merged);
 				document.getElementById('syncStatus').textContent =
 						backendHistory && backendHistory.length > 0
-								? '✓ Synced from blockchain'
-								: '⚠ Showing local cache (offline)';
+								? ' Synced from blockchain'
+								: ' Showing local cache (offline)';
 				// Update localStorage with merged data (farmer-specific key)
 				localStorage.setItem(getHistoryKey(), JSON.stringify(merged));
 			} else {
@@ -164,7 +164,7 @@
 			if (localHistory.length > 0) {
 				renderHistory(localHistory);
 				document.getElementById('syncStatus').textContent =
-						'⚠ Showing local cache (error fetching from server)';
+						' Showing local cache (error fetching from server)';
 			} else {
 				renderHistory([]);
 			}
@@ -179,7 +179,7 @@
 		}
 
 		localStorage.removeItem(getHistoryKey());
-		document.getElementById('syncStatus').textContent = '✓ Local cache cleared';
+		document.getElementById('syncStatus').textContent = ' Local cache cleared';
 
 		// Refresh from backend
 		syncHistory();

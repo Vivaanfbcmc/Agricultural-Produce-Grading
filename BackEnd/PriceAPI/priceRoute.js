@@ -44,10 +44,10 @@ async function handlePriceRequest(params, res) {
     return res.json({
         success:             true,
         grade:               g,
-        // Main price output — this is what you want
+        // Main price output - this is what you want
         price:               selected,
         price_type:          type,
-        price_display:       `₹${selected.toLocaleString('en-IN')} per quintal`,
+        price_display:       `Rs. ${selected.toLocaleString('en-IN')} per quintal`,
         // All 3 prices for reference
         min_price:           min,
         modal_price:         modal,

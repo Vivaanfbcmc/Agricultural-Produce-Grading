@@ -1,15 +1,15 @@
 /**
- * ╔══════════════════════════════════════════════════════════╗
- * ║         CEDA Smart Price Guesser | Single File           ║
- * ║                  Runs on port 3002                       ║
- * ╠══════════════════════════════════════════════════════════╣
- * ║  FLOW:                                                   ║
- * ║  1. ML Model (port 5001) detects grade -> A / B / C      ║
- * ║  2. Frontend POSTs grade + commodity_id to /price        ║
- * ║  3. This server fetches May–Oct 2025 data from CEDA      ║
- * ║  4. Smart price calc (IQR + weighted avg) on that grade  ║
- * ║  5. Returns price to frontend                            ║
- * ╚══════════════════════════════════════════════════════════╝
+ * ============================================================
+ * |         CEDA Smart Price Guesser | Single File           |
+ * |                  Runs on port 3002                       |
+ * |==========================================================|
+ * |  FLOW:                                                   |
+ * |  1. ML Model (port 5001) detects grade -> A / B / C      |
+ * |  2. Frontend POSTs grade + commodity_id to /price        |
+ * |  3. This server fetches May–Oct 2025 data from CEDA      |
+ * |  4. Smart price calc (IQR + weighted avg) on that grade  |
+ * |  5. Returns price to frontend                            |
+ * ============================================================
  *
  *  Grade logic:
  *    A (premium)  -> smart price from max_price   column
@@ -22,9 +22,9 @@ import express   from "express";
 import cors      from "cors";
 import bodyParser from "body-parser";
 
-// ══════════════════════════════════════════════════════════
+// ==========================================================
 //  CONFIG | fill these in
-// ══════════════════════════════════════════════════════════
+// ==========================================================
 const CEDA_TOKEN      = "a2adc32917a957efb954ecf46ecc2ae5f4ebe3cccbef48a820d76776073f74c5";
 const CEDA_API_URL    = "https://api.ceda.ashoka.edu.in/v1/agmarknet/prices";
 
@@ -42,12 +42,12 @@ const PORT            = 3002;
 // debug logger | every log prefixed [CW]
 const cw = (...a) => console.log("[CW]", ...a);
 
-// ══════════════════════════════════════════════════════════
+// ==========================================================
 //  STEP 1 | Call CEDA API
 //  POST https://api.ceda.ashoka.edu.in/v1/agmarknet/prices
 //  Bearer token in Authorization header
 //  Returns: { data: [ { date, min_price, max_price, modal_price, ... } ] }
-// ══════════════════════════════════════════════════════════
+// ==========================================================
 async function fetchCedaRecords(commodity_id) {
     const body = {
         commodity_id: Number(commodity_id),
@@ -58,7 +58,7 @@ async function fetchCedaRecords(commodity_id) {
         to_date:      SEASON_TO
     };
 
-    cw("── CEDA REQUEST ──────────────────────────────");
+    cw("-- CEDA REQUEST ------------------------------");
     cw("URL  ->", CEDA_API_URL);
     cw("Body ->", JSON.stringify(body));
 
@@ -88,7 +88,7 @@ async function fetchCedaRecords(commodity_id) {
     return records;
 }
 
-// ══════════════════════════════════════════════════════════
+// ==========================================================
 //  STEP 2 | Smart Price Calculation
 //
 //  Given an array of daily price records and a grade:
@@ -103,9 +103,9 @@ async function fetchCedaRecords(commodity_id) {
 //  d) Sort remaining records oldest -> newest
 //  e) Recency-Weighted Average:
 //       - weight = index + 1  (Oct data weighs more than May)
-//       - weighted_price = Σ(price × weight) / Σ(weight)
+//       - weighted_price = sum(price x weight) / sum(weight)
 //  f) Return the weighted avg for the grade's price column
-// ══════════════════════════════════════════════════════════
+// ==========================================================
 function computeSmartPrice(records, grade) {
     const g = grade.toUpperCase();
 
@@ -115,7 +115,7 @@ function computeSmartPrice(records, grade) {
             g === "B" ? "modal" :
                 "min";
 
-    cw(`── SMART PRICE CALC (grade=${g}, column=${priceKey}_price) ──`);
+    cw(`-- SMART PRICE CALC (grade=${g}, column=${priceKey}_price) --`);
 
     // Parse all records
     const parsed = records.map(r => ({
@@ -183,9 +183,9 @@ function computeSmartPrice(records, grade) {
     };
 }
 
-// ══════════════════════════════════════════════════════════
+// ==========================================================
 //  EXPRESS SERVER
-// ══════════════════════════════════════════════════════════
+// ==========================================================
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
@@ -198,7 +198,7 @@ app.get("/", (req, res) => res.json({
     token_set:  CEDA_TOKEN ? "✓ YES" : "✗ NO | fill CEDA_TOKEN",
     season:     `${SEASON_FROM} to ${SEASON_TO}`,
     location:   { state_id: STATE_ID, district_id: DISTRICT_ID, market_id: MARKET_ID },
-    grades:     { A: "max_price (premium)", B: "modal_price (standard)", C: "min_price (lower)", rotten: "rejected ₹0" },
+    grades:     { A: "max_price (premium)", B: "modal_price (standard)", C: "min_price (lower)", rotten: "rejected Rs. 0" },
     endpoints:  {
         POST: `POST http://localhost:${PORT}/price`,
         body: { commodity_id: 23, grade: "A" },
@@ -206,9 +206,9 @@ app.get("/", (req, res) => res.json({
     }
 }));
 
-// ── Main /price endpoint ──────────────────────────────────
+// -- Main /price endpoint ----------------------------------
 app.post("/price", async (req, res) => {
-    cw("══════════════════════════════════════════════");
+    cw("==============================================");
     cw("POST /price ->", req.body);
 
     const { commodity_id, grade } = req.body || {};
@@ -265,8 +265,8 @@ app.post("/price", async (req, res) => {
         }
 
         const price = result.smartPrice;
-        cw(`FINAL PRICE: Grade ${grade.toUpperCase()} = ₹${price} per quintal`);
-        cw("══════════════════════════════════════════════");
+        cw(`FINAL PRICE: Grade ${grade.toUpperCase()} = Rs. ${price} per quintal`);
+        cw("==============================================");
 
         return res.json({
             success:          true,
@@ -308,14 +308,14 @@ app.get("/price", async (req, res) => {
     app._router.handle({ ...req, method: "POST", url: "/price", body: req.query }, res, () => {});
 });
 
-// ── Start ─────────────────────────────────────────────────
+// -- Start -------------------------------------------------
 app.listen(PORT, () => {
-    cw("══════════════════════════════════════════════");
+    cw("==============================================");
     cw(`CEDA Smart Price Guesser | http://localhost:${PORT}`);
     cw(`    Season   : ${SEASON_FROM} -> ${SEASON_TO}`);
     cw(`    Location : state=${STATE_ID} district=${DISTRICT_ID} market=${MARKET_ID}`);
     cw(`    Token    : ${CEDA_TOKEN ? "SET" : "NOT SET | open file and fill CEDA_TOKEN"}`);
     cw(`    ML Model : http://localhost:5001/analyze  (POST image)`);
     cw(`    Price    : http://localhost:${PORT}/price  (POST { commodity_id, grade })`);
-    cw("══════════════════════════════════════════════");
+    cw("==============================================");
 });

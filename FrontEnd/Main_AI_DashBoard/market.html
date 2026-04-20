@@ -3,7 +3,7 @@
 <head>
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>VEGEGRADE — Market Prices</title>
+	<title>VEGEGRADE - Market Prices</title>
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700&family=Source+Serif+Pro:wght@400;600&display=swap" rel="stylesheet">
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -493,13 +493,13 @@
 
 		<div class="notice-banner">
 			<div>
-				Prices sourced from <strong>Agmarknet / data.gov.in</strong> — India's official agricultural marketing information network. Wholesale modal prices in ₹/Quintal. Data refreshed daily.
+				Prices sourced from <strong>Agmarknet / data.gov.in</strong> - India's official agricultural marketing information network. Wholesale modal prices in Rs. /Quintal. Data refreshed daily.
 			</div>
 		</div>
 
 		<div class="page-title-strip">
 			<h2>Daily Vegetable Mandi Prices</h2>
-			<p>Live wholesale prices from regulated Indian markets (Mandis) — sourced from Agmarknet Portal.</p>
+			<p>Live wholesale prices from regulated Indian markets (Mandis) - sourced from Agmarknet Portal.</p>
 		</div>
 
 		<div class="content-card">
@@ -550,30 +550,30 @@
 			<!-- Summary stats -->
 			<div class="stats-strip" id="statsStrip">
 				<div class="stat-cell">
-					<div class="stat-val" id="statModal">—</div>
-					<div class="stat-lbl">Modal Price (₹/Qtl)</div>
+					<div class="stat-val" id="statModal">-</div>
+					<div class="stat-lbl">Modal Price (Rs. /Qtl)</div>
 				</div>
 				<div class="stat-cell">
-					<div class="stat-val" id="statMin">—</div>
-					<div class="stat-lbl">Min Price (₹/Qtl)</div>
+					<div class="stat-val" id="statMin">-</div>
+					<div class="stat-lbl">Min Price (Rs. /Qtl)</div>
 				</div>
 				<div class="stat-cell">
-					<div class="stat-val" id="statMax">—</div>
-					<div class="stat-lbl">Max Price (₹/Qtl)</div>
+					<div class="stat-val" id="statMax">-</div>
+					<div class="stat-lbl">Max Price (Rs. /Qtl)</div>
 				</div>
 				<div class="stat-cell">
-					<div class="stat-val" id="statMarkets">—</div>
+					<div class="stat-val" id="statMarkets">-</div>
 					<div class="stat-lbl">Markets Reporting</div>
 				</div>
 				<div class="stat-cell">
-					<div class="stat-val" id="statChange">—</div>
+					<div class="stat-val" id="statChange">-</div>
 					<div class="stat-lbl">vs Yesterday</div>
 				</div>
 			</div>
 
 			<!-- Chart -->
 			<div class="chart-section">
-				<div class="section-label" id="chartTitle">Price Trend — Tomato (Last 14 Days)</div>
+				<div class="section-label" id="chartTitle">Price Trend - Tomato (Last 14 Days)</div>
 				<div class="chart-wrap">
 					<canvas id="priceChart"></canvas>
 				</div>
@@ -581,7 +581,7 @@
 
 			<!-- Table -->
 			<div class="content-card-body" style="padding-bottom:0;">
-				<div class="section-label" id="tableTitle">Market-wise Prices — Tomato</div>
+				<div class="section-label" id="tableTitle">Market-wise Prices - Tomato</div>
 			</div>
 
 			<div class="loading-block" id="loadingBlock">
@@ -598,9 +598,9 @@
 							<th>State</th>
 							<th>District</th>
 							<th>Variety</th>
-							<th class="num">Min (₹)</th>
-							<th class="num">Max (₹)</th>
-							<th class="num">Modal (₹)</th>
+							<th class="num">Min (Rs. )</th>
+							<th class="num">Max (Rs. )</th>
+							<th class="num">Modal (Rs. )</th>
 							<th>Grade</th>
 							<th>Date</th>
 						</tr>
@@ -641,7 +641,7 @@
 		<div class="sidebar-box">
 			<div class="sb-head">7-Day Trend</div>
 			<div class="mini-chart-wrap">
-				<div class="mini-chart-title" id="miniChartTitle">Tomato — National Avg</div>
+				<div class="mini-chart-title" id="miniChartTitle">Tomato - National Avg</div>
 				<div style="position:relative; width:100%; height:110px;">
 					<canvas id="miniChart"></canvas>
 				</div>
@@ -656,8 +656,8 @@
 				<div class="info-row"><span class="lbl">Ministry</span><span class="val">MoA &amp; FW</span></div>
 				<div class="info-row"><span class="lbl">Markets</span><span class="val">3,000+</span></div>
 				<div class="info-row"><span class="lbl">Updated</span><span class="val">Daily</span></div>
-				<div class="info-row"><span class="lbl">Unit</span><span class="val">₹ / Quintal</span></div>
-				<div class="info-row"><span class="lbl">As of</span><span class="val" id="asOfDate">—</span></div>
+				<div class="info-row"><span class="lbl">Unit</span><span class="val">Rs.  / Quintal</span></div>
+				<div class="info-row"><span class="lbl">As of</span><span class="val" id="asOfDate">-</span></div>
 			</div>
 		</div>
 
@@ -665,7 +665,7 @@
 		<div class="sidebar-box">
 			<div class="sb-head">Highest Prices Today</div>
 			<div class="sb-body" id="topMarkets" style="font-size:13px;">
-				<div style="color:var(--muted); font-size:12px;">Loading…</div>
+				<div style="color:var(--muted); font-size:12px;">Loading...</div>
 			</div>
 		</div>
 
@@ -718,7 +718,7 @@
 <script>
 // ─────────────────────────────────────────────────
 // REALISTIC SEED DATA (used as fallback / base)
-// Real approximate mandi prices (₹/quintal) for India
+// Real approximate mandi prices (Rs. /quintal) for India
 // ─────────────────────────────────────────────────
 const SEED = {
 	Tomato:      { base: 1800, markets: ['Lasalgaon','Nashik','Bangalore','Azadpur','Kolar'] },
@@ -825,7 +825,7 @@ function generateTrend(commodity, days = 14) {
 		d.setDate(d.getDate() - i);
 		labels.push(d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }));
 
-		// Mean-reverting random walk — always pulls back toward base
+		// Mean-reverting random walk - always pulls back toward base
 		const drift   = (base - price) * 0.18;          // pull toward base
 		const noise   = (Math.random() - 0.5) * base * 0.07; // symmetric noise
 		price = Math.max(base * 0.5, Math.min(base * 1.5, Math.round(price + drift + noise)));
@@ -852,7 +852,7 @@ function renderMainChart(commodity) {
 		data: {
 			labels,
 			datasets: [{
-				label: `${commodity} Modal Price (₹/Qtl)`,
+				label: `${commodity} Modal Price (Rs. /Qtl)`,
 				data,
 				borderColor: '#0066CC',
 				backgroundColor: 'rgba(0,102,204,0.08)',
@@ -872,7 +872,7 @@ function renderMainChart(commodity) {
 				legend: { display: false },
 				tooltip: {
 					callbacks: {
-						label: ctx => `  ₹ ${ctx.parsed.y.toLocaleString('en-IN')} / Qtl`
+						label: ctx => `  Rs.  ${ctx.parsed.y.toLocaleString('en-IN')} / Qtl`
 					}
 				}
 			},
@@ -889,7 +889,7 @@ function renderMainChart(commodity) {
 					ticks: {
 						font: { family: "'Source Sans Pro', Verdana, sans-serif", size: 11 },
 						color: '#556688',
-						callback: v => '₹' + v.toLocaleString('en-IN')
+						callback: v => 'Rs. ' + v.toLocaleString('en-IN')
 					}
 				}
 			}
@@ -926,7 +926,7 @@ function renderMiniChart(commodity) {
 			maintainAspectRatio: false,
 			animation: { duration: 400 },
 			plugins: { legend: { display: false }, tooltip: {
-				callbacks: { label: c => '₹' + c.parsed.y.toLocaleString('en-IN') }
+				callbacks: { label: c => 'Rs. ' + c.parsed.y.toLocaleString('en-IN') }
 			}},
 			scales: {
 				x: { display: false },
@@ -935,7 +935,7 @@ function renderMiniChart(commodity) {
 					ticks: {
 						font: { size: 10 }, color: '#556688',
 						maxTicksLimit: 4,
-						callback: v => '₹' + (v/1000).toFixed(1) + 'k'
+						callback: v => 'Rs. ' + (v/1000).toFixed(1) + 'k'
 					},
 					grid: { color: 'rgba(0,0,0,0.04)' }
 				}
@@ -972,9 +972,9 @@ async function fetchLiveData(commodity, stateFilter, limit) {
 	return {
 		live: true,
 		rows: records.map(r => ({
-			market:    r.market      || r['market name'] || '—',
-			state:     r.state       || '—',
-			district:  r.district    || '—',
+			market:    r.market      || r['market name'] || '-',
+			state:     r.state       || '-',
+			district:  r.district    || '-',
 			commodity: r.commodity   || commodity,
 			variety:   r.variety     || 'Local',
 			min:       parseFloat(r.min_price  || r['min price']  || 0),
@@ -1018,9 +1018,9 @@ function renderTable(rows, commodity, isLive) {
 			<td>${r.state}</td>
 			<td>${r.district}</td>
 			<td>${r.variety}</td>
-			<td class="num">₹${min.toLocaleString('en-IN')}</td>
-			<td class="num">₹${max.toLocaleString('en-IN')}</td>
-			<td class="num modal-price">₹${modal.toLocaleString('en-IN')}</td>
+			<td class="num">Rs. ${min.toLocaleString('en-IN')}</td>
+			<td class="num">Rs. ${max.toLocaleString('en-IN')}</td>
+			<td class="num modal-price">Rs. ${modal.toLocaleString('en-IN')}</td>
 			<td><span class="status-pill ${pillCls}">${grade}</span></td>
 			<td style="font-size:12.5px;color:var(--muted);">${r.date}</td>
 		`;
@@ -1033,9 +1033,9 @@ function renderTable(rows, commodity, isLive) {
 	const avgMin   = Math.round(rows.map(r=>r.min).reduce((a,b)=>a+b,0) / rows.length) || 0;
 	const avgMax   = Math.round(rows.map(r=>r.max).reduce((a,b)=>a+b,0) / rows.length) || 0;
 
-	document.getElementById('statModal').textContent   = '₹' + avgModal.toLocaleString('en-IN');
-	document.getElementById('statMin').textContent     = '₹' + avgMin.toLocaleString('en-IN');
-	document.getElementById('statMax').textContent     = '₹' + avgMax.toLocaleString('en-IN');
+	document.getElementById('statModal').textContent   = 'Rs. ' + avgModal.toLocaleString('en-IN');
+	document.getElementById('statMin').textContent     = 'Rs. ' + avgMin.toLocaleString('en-IN');
+	document.getElementById('statMax').textContent     = 'Rs. ' + avgMax.toLocaleString('en-IN');
 	document.getElementById('statMarkets').textContent = rows.length;
 
 	// Simulated change vs yesterday
@@ -1048,7 +1048,7 @@ function renderTable(rows, commodity, isLive) {
 	// Source note
 	note.style.display = 'block';
 	note.textContent = isLive
-		? `✓ Live data from data.gov.in Agmarknet API — ${rows.length} records for ${commodity} as of ${new Date().toLocaleDateString('en-IN')}`
+		? `✓ Live data from data.gov.in Agmarknet API - ${rows.length} records for ${commodity} as of ${new Date().toLocaleDateString('en-IN')}`
 		: `⚠ Showing representative Agmarknet mandi data (API key required for live feed). Data is indicative of real market ranges.`;
 
 	// Top markets sidebar
@@ -1057,14 +1057,14 @@ function renderTable(rows, commodity, isLive) {
 	topEl.innerHTML = sorted.map(r =>
 		`<div class="info-row">
 			<span class="lbl">${r.market}, ${r.state.substring(0,3)}.</span>
-			<span class="val">₹${r.modal.toLocaleString('en-IN')}</span>
+			<span class="val">Rs. ${r.modal.toLocaleString('en-IN')}</span>
 		</div>`
 	).join('');
 
 	// Labels
-	document.getElementById('chartTitle').textContent  = `Price Trend — ${commodity} (Last 14 Days, Avg ₹/Qtl)`;
-	document.getElementById('tableTitle').textContent  = `Market-wise Prices — ${commodity}`;
-	document.getElementById('miniChartTitle').textContent = `${commodity} — National Avg`;
+	document.getElementById('chartTitle').textContent  = `Price Trend - ${commodity} (Last 14 Days, Avg Rs. /Qtl)`;
+	document.getElementById('tableTitle').textContent  = `Market-wise Prices - ${commodity}`;
+	document.getElementById('miniChartTitle').textContent = `${commodity} - National Avg`;
 	document.getElementById('asOfDate').textContent = new Date().toLocaleDateString('en-IN');
 }
 
@@ -1083,7 +1083,7 @@ async function loadPrices() {
 
 	// Reset stats
 	['statModal','statMin','statMax','statMarkets','statChange'].forEach(id =>
-		document.getElementById(id).textContent = '—'
+		document.getElementById(id).textContent = '-'
 	);
 
 	// Render charts immediately (don't wait for API)

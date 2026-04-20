@@ -1,9 +1,9 @@
-/* ═══════════════════════════════════════════════
+/* ===============================================
    VEGEGRADE — History Page Styles
    Extends AIIndex.css
-   ═══════════════════════════════════════════════ */
+   =============================================== */
 
-/* ── CONTROLS BAR ─────────────────────────────── */
+/* -- CONTROLS BAR ------------------------------- */
 .controls-bar {
   display: flex;
   justify-content: space-between;
@@ -28,7 +28,7 @@
   font-weight: 600;
 }
 
-/* ── SUMMARY STATS ────────────────────────────── */
+/* -- SUMMARY STATS ------------------------------ */
 .stats-row {
   display: flex;
   gap: 16px;
@@ -62,7 +62,7 @@
   letter-spacing: 0.4px;
 }
 
-/* ── TABLE ────────────────────────────────────── */
+/* -- TABLE -------------------------------------- */
 .table-wrap {
   overflow-x: auto;
   border: 1px solid var(--border);
@@ -122,7 +122,7 @@
   color: var(--gov-navy);
 }
 
-/* ── GRADE PILLS ──────────────────────────────── */
+/* -- GRADE PILLS -------------------------------- */
 .hist-pill {
   display: inline-block;
   padding: 3px 10px;
@@ -141,7 +141,7 @@
 .pill-status-pending   { background: #fff3cd; color: #7a5000; }
 .pill-status-completed { background: #dbeeff; color: #004488; }
 
-/* ── EMPTY STATE ──────────────────────────────── */
+/* -- EMPTY STATE -------------------------------- */
 .empty-state {
   text-align: center;
   padding: 60px 20px;
@@ -166,7 +166,7 @@
   margin: 0 auto;
 }
 
-/* ── RESPONSIVE ───────────────────────────────── */
+/* -- RESPONSIVE --------------------------------- */
 @media (max-width: 760px) {
   .controls-bar { flex-direction: column; align-items: flex-start; }
   .stats-row { flex-direction: column; }

@@ -1,8 +1,8 @@
-/* ═══════════════════════════════════════════════
-   VEGEGRADE — Government Portal Stylesheet
-   ═══════════════════════════════════════════════ */
+/* ===============================================
+   VEGEGRADE - Government Portal Stylesheet
+   =============================================== */
 
-/* ── RESET & BASE ─────────────────────────────── */
+/* -- RESET & BASE ------------------------------- */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
@@ -32,7 +32,7 @@ body {
 a { color: var(--gov-blue); text-decoration: none; }
 a:hover { text-decoration: underline; color: var(--gov-navy); }
 
-/* ── TOP STRIP ────────────────────────────────── */
+/* -- TOP STRIP ---------------------------------- */
 .top-strip {
   background: var(--gov-navy);
   color: #aec6e8;
@@ -42,7 +42,7 @@ a:hover { text-decoration: underline; color: var(--gov-navy); }
   letter-spacing: 0.4px;
 }
 
-/* ── HEADER ───────────────────────────────────── */
+/* -- HEADER ------------------------------------- */
 .site-header {
   background: var(--white);
   border-bottom: 4px solid var(--gov-blue);
@@ -99,7 +99,7 @@ a:hover { text-decoration: underline; color: var(--gov-navy); }
   font-size: 15px;
 }
 
-/* ── NAV BAR ──────────────────────────────────── */
+/* -- NAV BAR ------------------------------------ */
 .nav-bar { background: var(--gov-navy); }
 
 .nav-inner {
@@ -129,7 +129,7 @@ a:hover { text-decoration: underline; color: var(--gov-navy); }
 
 .nav-bar a:first-child { border-left: 1px solid rgba(255,255,255,0.1); }
 
-/* ── BREADCRUMB ───────────────────────────────── */
+/* -- BREADCRUMB --------------------------------- */
 .breadcrumb-bar {
   background: var(--gov-sky);
   border-bottom: 1px solid var(--border);
@@ -147,7 +147,7 @@ a:hover { text-decoration: underline; color: var(--gov-navy); }
 .breadcrumb-bar a { color: var(--gov-blue); }
 .breadcrumb-bar span { margin: 0 6px; }
 
-/* ── PAGE LAYOUT ──────────────────────────────── */
+/* -- PAGE LAYOUT -------------------------------- */
 .page-body {
   max-width: 1100px;
   margin: 24px auto;
@@ -164,7 +164,7 @@ a:hover { text-decoration: underline; color: var(--gov-navy); }
   flex-shrink: 0;
 }
 
-/* ── NOTICE BANNER ────────────────────────────── */
+/* -- NOTICE BANNER ------------------------------ */
 .notice-banner {
   background: #FFF8E1;
   border: 1px solid #FFD54F;
@@ -184,7 +184,7 @@ a:hover { text-decoration: underline; color: var(--gov-navy); }
   margin-top: 1px;
 }
 
-/* ── PAGE TITLE STRIP ─────────────────────────── */
+/* -- PAGE TITLE STRIP --------------------------- */
 .page-title-strip {
   background: var(--gov-blue);
   color: white;
@@ -205,7 +205,7 @@ a:hover { text-decoration: underline; color: var(--gov-navy); }
   margin-top: 3px;
 }
 
-/* ── CONTENT CARD ─────────────────────────────── */
+/* -- CONTENT CARD ------------------------------- */
 .content-card {
   background: var(--white);
   border: 1px solid var(--border);
@@ -216,7 +216,7 @@ a:hover { text-decoration: underline; color: var(--gov-navy); }
 
 .content-card-body { padding: 24px; }
 
-/* ── UPLOAD ZONE ──────────────────────────────── */
+/* -- UPLOAD ZONE -------------------------------- */
 .upload-zone {
   border: 2px dashed #90b4d8;
   background: var(--gov-sky);
@@ -254,7 +254,7 @@ a:hover { text-decoration: underline; color: var(--gov-navy); }
 /* Hidden file input */
 #fileInput { display: none; }
 
-/* ── BUTTONS ──────────────────────────────────── */
+/* -- BUTTONS ------------------------------------ */
 .btn-primary {
   background: var(--gov-blue);
   color: white;
@@ -306,7 +306,7 @@ a:hover { text-decoration: underline; color: var(--gov-navy); }
 
 .btn-amber:hover { background: #a86200; }
 
-/* ── PREVIEW SECTION ──────────────────────────── */
+/* -- PREVIEW SECTION ---------------------------- */
 .preview-section {
   display: none;
   margin-top: 20px;
@@ -358,7 +358,7 @@ a:hover { text-decoration: underline; color: var(--gov-navy); }
   white-space: nowrap;
 }
 
-/* ── ANALYZE STRIP ────────────────────────────── */
+/* -- ANALYZE STRIP ------------------------------ */
 .analyze-strip {
   background: var(--gov-sky);
   border-top: 1px solid var(--border);
@@ -366,7 +366,7 @@ a:hover { text-decoration: underline; color: var(--gov-navy); }
   text-align: center;
 }
 
-/* ── LOADING BLOCK ────────────────────────────── */
+/* -- LOADING BLOCK ------------------------------ */
 .loading-block {
   display: none;
   text-align: center;
@@ -387,7 +387,7 @@ a:hover { text-decoration: underline; color: var(--gov-navy); }
 
 .loading-block p { color: var(--muted); font-size: 14px; }
 
-/* ── STATUS PILLS ─────────────────────────────── */
+/* -- STATUS PILLS ------------------------------- */
 .status-pill {
   display: inline-block;
   padding: 3px 12px;
@@ -402,7 +402,7 @@ a:hover { text-decoration: underline; color: var(--gov-navy); }
 .pill-orange { background: #ffe0cc; color: #7a3000; }
 .pill-red    { background: #ffd6d6; color: #7a0000; }
 
-/* ── RESULT SECTION ───────────────────────────── */
+/* -- RESULT SECTION ----------------------------- */
 .result-section { display: none; margin-bottom: 24px; }
 
 .result-header {
@@ -516,7 +516,7 @@ a:hover { text-decoration: underline; color: var(--gov-navy); }
   flex-wrap: wrap;
 }
 
-/* ── SIDEBAR ──────────────────────────────────── */
+/* -- SIDEBAR ------------------------------------ */
 .sidebar-box {
   background: white;
   border: 1px solid var(--border);
@@ -559,7 +559,7 @@ a:hover { text-decoration: underline; color: var(--gov-navy); }
 .info-row .lbl { color: var(--muted); }
 .info-row .val { font-weight: 700; color: var(--gov-navy); }
 
-/* ── MODAL ────────────────────────────────────── */
+/* -- MODAL -------------------------------------- */
 .modal-overlay {
   display: none;
   position: fixed;
@@ -712,7 +712,7 @@ a:hover { text-decoration: underline; color: var(--gov-navy); }
   font-size: 13px;
 }
 
-/* ── FOOTER ───────────────────────────────────── */
+/* -- FOOTER ------------------------------------- */
 .site-footer {
   margin-top: 40px;
   background: var(--gov-navy);
@@ -751,7 +751,7 @@ a:hover { text-decoration: underline; color: var(--gov-navy); }
   color: #7a9bbf;
 }
 
-/* ── RESPONSIVE ───────────────────────────────── */
+/* -- RESPONSIVE --------------------------------- */
 @media (max-width: 760px) {
   .page-body { flex-direction: column; }
   .side-col { width: 100%; }

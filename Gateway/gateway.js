@@ -63,7 +63,7 @@ app.use('/images', express.static(imagesPath));
 
 // CEDA Smart Price (port 3002)
 app.post('/api/ceda-price', async (req, res) => {
-    console.log('💰 CEDA Price request:', req.body);
+    console.log(' CEDA Price request:', req.body);
     const result = await forwardRequest(
         process.env.CEDA_SERVICE_URL || 'http://localhost:3002',
         '/price',
@@ -94,7 +94,7 @@ Object.entries(SERVICES).forEach(([name, url]) => {
 async function forwardRequest(serviceUrl, path, options = {}) {
     try {
         const url = `${serviceUrl}${path}`;
-        console.log(`→ Forwarding to: ${url}`);
+        console.log(` Forwarding to: ${url}`);
 
         const response = await fetch(url, {
             ...options,
@@ -113,7 +113,7 @@ async function forwardRequest(serviceUrl, path, options = {}) {
             data = await response.text();
         }
 
-        console.log(`← Response from ${serviceUrl}: ${response.status}`);
+        console.log(` Response from ${serviceUrl}: ${response.status}`);
 
         return {
             status: response.status,
@@ -121,7 +121,7 @@ async function forwardRequest(serviceUrl, path, options = {}) {
             data
         };
     } catch (error) {
-        console.error(`✗ Error forwarding to ${serviceUrl}${path}:`, error.message);
+        console.error(` Error forwarding to ${serviceUrl}${path}:`, error.message);
         return {
             status: 503,
             ok: false,
@@ -134,16 +134,16 @@ async function forwardRequest(serviceUrl, path, options = {}) {
 
 // Register
 app.post('/api/auth/register', async (req, res) => {
-    console.log('📝 Registration request:', req.body.phone);
+    console.log(' Registration request:', req.body.phone);
     const result = await forwardRequest(SERVICES.AUTH, '/api/auth/register', {
         method: 'POST',
         body: JSON.stringify(req.body)
     });
 
     if (result.ok) {
-        console.log('✓ Registration successful');
+        console.log(' Registration successful');
     } else {
-        console.log('✗ Registration failed:', result.data);
+        console.log(' Registration failed:', result.data);
     }
 
     res.status(result.status).json(result.data);
@@ -151,7 +151,7 @@ app.post('/api/auth/register', async (req, res) => {
 
 // Login
 app.post('/api/auth/login', async (req, res) => {
-    console.log('🔐 Login request:', req.body.phone);
+    console.log(' Login request:', req.body.phone);
     const result = await forwardRequest(SERVICES.AUTH, '/api/auth/login', {
         method: 'POST',
         body: JSON.stringify(req.body)
@@ -161,9 +161,9 @@ app.post('/api/auth/login', async (req, res) => {
     if (result.ok && result.data.user) {
         req.session.isAuth = true;
         req.session.user = result.data.user;
-        console.log('✓ Login successful, session created for:', req.session.user.fullName);
+        console.log(' Login successful, session created for:', req.session.user.fullName);
     } else {
-        console.log('✗ Login failed:', result.data);
+        console.log(' Login failed:', result.data);
     }
 
     res.status(result.status).json(result.data);
@@ -171,7 +171,7 @@ app.post('/api/auth/login', async (req, res) => {
 
 // Get Profile
 app.get('/api/auth/profile', async (req, res) => {
-    console.log('👤 Profile request, session auth:', req.session.isAuth);
+    console.log(' Profile request, session auth:', req.session.isAuth);
 
     if (!req.session.isAuth || !req.session.user) {
         return res.status(401).json({ error: 'Not authenticated' });
@@ -182,7 +182,7 @@ app.get('/api/auth/profile', async (req, res) => {
 
 // Logout
 app.post('/api/auth/logout', (req, res) => {
-    console.log('👋 Logout request');
+    console.log(' Logout request');
     req.session.destroy((err) => {
         if (err) {
             return res.status(500).json({ error: 'Logout failed' });
@@ -195,7 +195,7 @@ app.post('/api/auth/logout', (req, res) => {
 
 // Analyze Image
 app.post('/api/ml/analyze', upload.single('image'), async (req, res) => {
-    console.log('🔬 ML Analysis request');
+    console.log(' ML Analysis request');
 
     if (!req.file) {
         return res.status(400).json({ success: false, message: 'No image uploaded' });
@@ -223,7 +223,7 @@ app.post('/api/ml/analyze', upload.single('image'), async (req, res) => {
         res.status(response.status).json(data);
 
     } catch (error) {
-        console.error('✗ ML service error:', error.message);
+        console.error(' ML service error:', error.message);
         res.status(500).json({
             success: false,
             message: 'ML service unavailable'
@@ -235,7 +235,7 @@ app.post('/api/ml/analyze', upload.single('image'), async (req, res) => {
 
 // Get Price
 app.post('/api/price', async (req, res) => {
-    console.log('💰 Price request:', req.body);
+    console.log(' Price request:', req.body);
     const result = await forwardRequest(SERVICES.PRICE, '/price', {
         method: 'POST',
         body: JSON.stringify(req.body)
@@ -248,7 +248,7 @@ app.post('/api/price', async (req, res) => {
 
 // Create Transaction
 app.post('/api/blockchain/transactions', async (req, res) => {
-    console.log('⛓️  Blockchain transaction request');
+    console.log('  Blockchain transaction request');
 
     if (!req.session.isAuth || !req.session.user) {
         return res.status(401).json({ error: 'Not authenticated' });
@@ -271,7 +271,7 @@ app.post('/api/blockchain/transactions', async (req, res) => {
 
 // Get Ledger
 app.get('/api/blockchain/ledger', async (req, res) => {
-    console.log('📖 Ledger request');
+    console.log(' Ledger request');
     const result = await forwardRequest(SERVICES.BLOCKCHAIN, '/api/ledger', {
         method: 'GET'
     });
@@ -281,7 +281,7 @@ app.get('/api/blockchain/ledger', async (req, res) => {
 
 // Verify Ledger
 app.get('/api/blockchain/verify', async (req, res) => {
-    console.log('✓ Verify ledger request');
+    console.log(' Verify ledger request');
     const result = await forwardRequest(SERVICES.BLOCKCHAIN, '/api/ledger/verify', {
         method: 'GET'
     });
@@ -317,7 +317,7 @@ app.get('/api/blockchain/history', async (req, res) => {
 // ==================== HEALTH CHECK ====================
 
 app.get('/api/health', async (req, res) => {
-    console.log('❤️  Health check');
+    console.log('  Health check');
 
     const health = {
         gateway: 'healthy',
@@ -350,12 +350,12 @@ app.get('/api/health', async (req, res) => {
 
 // Serve main pages
 app.get('/', (req, res) => {
-    console.log('🏠 Serving home page');
+    console.log(' Serving home page');
     res.sendFile(path.join(signinPath, 'Index.html'));
 });
 
 app.get('/dashboard', (req, res) => {
-    console.log('📊 Dashboard request, authenticated:', req.session.isAuth);
+    console.log(' Dashboard request, authenticated:', req.session.isAuth);
 
     if (!req.session.isAuth) {
         return res.redirect('/');
@@ -364,7 +364,7 @@ app.get('/dashboard', (req, res) => {
 });
 
 app.get('/profile', (req, res) => {
-    console.log('👤 Profile page request, authenticated:', req.session.isAuth);
+    console.log(' Profile page request, authenticated:', req.session.isAuth);
 
     if (!req.session.isAuth) {
         return res.redirect('/');
@@ -373,7 +373,7 @@ app.get('/profile', (req, res) => {
 });
 
 app.get('/history', (req, res) => {
-    console.log('📜 History page request, authenticated:', req.session.isAuth);
+    console.log(' History page request, authenticated:', req.session.isAuth);
 
     if (!req.session.isAuth) {
         return res.redirect('/');
@@ -384,12 +384,12 @@ app.get('/history', (req, res) => {
 // ==================== ERROR HANDLING ====================
 
 app.use((req, res) => {
-    console.log('⚠️  404 Not Found:', req.url);
+    console.log('  404 Not Found:', req.url);
     res.status(404).json({ error: 'Route not found' });
 });
 
 app.use((err, req, res, next) => {
-    console.error('❌ Gateway error:', err);
+    console.error(' Gateway error:', err);
     res.status(500).json({
         error: 'Internal server error',
         message: process.env.NODE_ENV === 'development' ? err.message : undefined
@@ -402,7 +402,7 @@ const PORT = process.env.GATEWAY_PORT || 4000;
 
 app.listen(PORT, () => {
     console.log('='.repeat(60));
-    console.log('🚀 API GATEWAY RUNNING');
+    console.log(' API GATEWAY RUNNING');
     console.log('='.repeat(60));
     console.log(`Gateway URL: http://localhost:${PORT}`);
     console.log('\nForwarding to services:');
@@ -411,7 +411,7 @@ app.listen(PORT, () => {
     console.log(`  Price:      ${SERVICES.PRICE}`);
     console.log(`  Blockchain: ${SERVICES.BLOCKCHAIN}`);
     console.log('='.repeat(60));
-    console.log('\n📝 Debug logging enabled');
+    console.log('\n Debug logging enabled');
     console.log('All requests will be logged to console\n');
 });
 

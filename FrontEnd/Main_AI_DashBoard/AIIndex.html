@@ -3,19 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VEGEGRADE — AI Vegetable Quality Assessment</title>
+  <title>VEGEGRADE - AI Vegetable Quality Assessment</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700&family=Source+Serif+Pro:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="AIIndex.css">
 </head>
 <body>
 
-<!-- ── TOP STRIP ──────────────────────────────────── -->
+<!-- -- TOP STRIP ------------------------------------ -->
 <!--<div class="top-strip">-->
 <!--  Government of India &nbsp;|&nbsp; Ministry of Agriculture &amp; Farmers Welfare &nbsp;|&nbsp; VEGEGRADE Portal-->
 <!--</div>-->
 
-<!-- ── HEADER ─────────────────────────────────────── -->
+<!-- -- HEADER --------------------------------------- -->
 <header class="site-header">
   <div class="header-inner">
     <div class="emblem">🌾</div>
@@ -25,12 +25,12 @@
     </div>
     <!--		<div class="header-right">-->
     <!--			<span class="helpline">Helpline: 1800-180-1551</span>-->
-    <!--			<span>Mon–Sat, 9 AM – 5 PM IST</span>-->
+    <!--			<span>Mon-Sat, 9 AM – 5 PM IST</span>-->
     <!--		</div>-->
   </div>
 </header>
 
-<!-- ── NAV BAR ────────────────────────────────────── -->
+<!-- -- NAV BAR -------------------------------------- -->
 <nav class="nav-bar">
   <div class="nav-inner">
     <a href="AIIndex.html" class="active">Home</a>
@@ -41,7 +41,7 @@
   </div>
 </nav>
 
-<!-- ── BREADCRUMB ──────────────────────────────────── -->
+<!-- -- BREADCRUMB ------------------------------------ -->
 <div class="breadcrumb-bar">
   <div class="inner">
     <a href="#">Home</a><span>›</span>
@@ -50,7 +50,7 @@
   </div>
 </div>
 
-<!-- ── PAGE BODY ───────────────────────────────────── -->
+<!-- -- PAGE BODY ------------------------------------- -->
 <div class="page-body">
 
   <!-- MAIN COLUMN -->
@@ -66,7 +66,7 @@
       </div>
     </div>
 
-    <!-- ── UPLOAD CARD ──────────────────────────────── -->
+    <!-- -- UPLOAD CARD -------------------------------- -->
     <div class="page-title-strip">
       <h2>Step 1: Upload Vegetable Image</h2>
       <p>Upload a clear photograph of your vegetables for AI-based quality assessment.</p>
@@ -94,9 +94,9 @@
           <div class="preview-flex">
             <img id="previewImage" class="preview-img" src="" alt="Preview">
             <table class="meta-table">
-              <tr><td>File Name</td>  <td id="fileName">—</td></tr>
-              <tr><td>File Size</td>  <td id="fileSize">—</td></tr>
-              <tr><td>Dimensions</td> <td id="fileDimensions">—</td></tr>
+              <tr><td>File Name</td>  <td id="fileName">-</td></tr>
+              <tr><td>File Size</td>  <td id="fileSize">-</td></tr>
+              <tr><td>Dimensions</td> <td id="fileDimensions">-</td></tr>
               <tr><td>Uploaded</td>   <td>Just now</td></tr>
               <tr><td>Status</td>
                   <td><span class="status-pill pill-green">Ready for Analysis</span></td></tr>
@@ -125,10 +125,10 @@
       </div>
     </div><!-- /content-card -->
 
-    <!-- ── RESULT SECTION ──────────────────────────── -->
+    <!-- -- RESULT SECTION ---------------------------- -->
     <div class="result-section" id="resultSection">
       <div class="result-header">
-        <span style="font-size:22px">✔</span>
+        <span style="font-size:22px"></span>
         <h2>AI Assessment Result</h2>
       </div>
       <div class="result-body">
@@ -147,7 +147,7 @@
             <div class="section-label">Grade &amp; Price Estimate</div>
             <div class="badge-row">
               <div class="grade-badge" id="gradeBadge">
-                Grade: <span id="gradeValue">—</span>
+                Grade: <span id="gradeValue">-</span>
               </div>
               <div class="price-badge">
                 <span id="priceValue">Fetching…</span>
@@ -168,7 +168,7 @@
             </table>
 
             <div class="btn-row">
-              <button class="btn-secondary" onclick="resetApp()">↺ Analyze Another</button>
+              <button class="btn-secondary" onclick="resetApp()"> Analyze Another</button>
               <button class="btn-amber"     onclick="openTransactionModal()">Create Transaction</button>
             </div>
           </div><!-- /result-details -->
@@ -179,7 +179,7 @@
 
   </div><!-- /main-col -->
 
-  <!-- ── SIDEBAR ──────────────────────────────────── -->
+  <!-- -- SIDEBAR ------------------------------------ -->
   <aside class="side-col">
 
     <div class="sidebar-box">
@@ -199,22 +199,22 @@
       <div class="sb-body">
         <div class="info-row">
           <span class="lbl">Grade A</span>
-          <span class="val" style="color:var(--gov-green)">₹2,400/qtl</span>
+          <span class="val" style="color:var(--gov-green)">Rs. 2,400/qtl</span>
         </div>
         <div class="info-row">
           <span class="lbl">Grade B</span>
-          <span class="val" style="color:#0077AA">₹1,800/qtl</span>
+          <span class="val" style="color:#0077AA">Rs. 1,800/qtl</span>
         </div>
         <div class="info-row">
           <span class="lbl">Grade C</span>
-          <span class="val" style="color:var(--gov-orange)">₹1,100/qtl</span>
+          <span class="val" style="color:var(--gov-orange)">Rs. 1,100/qtl</span>
         </div>
         <div class="info-row">
           <span class="lbl">Rotten</span>
           <span class="val" style="color:var(--gov-red)">Rejected</span>
         </div>
         <div style="font-size:11.5px; color:var(--muted); margin-top:8px;">
-          Source: CEDA — Updated daily
+          Source: CEDA - Updated daily
         </div>
       </div>
     </div>
@@ -238,7 +238,7 @@
 <!--        For technical issues contact:<br>-->
 <!--        <strong style="color:var(&#45;&#45;gov-navy)">support@vegegrade.gov.in</strong><br><br>-->
 <!--        Helpline: <strong style="color:var(&#45;&#45;gov-navy)">1800-180-1551</strong><br>-->
-<!--        (Mon–Sat, 6 AM to 10 PM)-->
+<!--        (Mon-Sat, 6 AM to 10 PM)-->
 <!--      </div>-->
 <!--    </div>-->
 
@@ -246,13 +246,13 @@
 
 </div><!-- /page-body -->
 
-<!-- ── TRANSACTION MODAL ─────────────────────────── -->
+<!-- -- TRANSACTION MODAL --------------------------- -->
 <div class="modal-overlay" id="transactionModal">
   <div class="modal-box">
 
     <div class="modal-title-bar">
       <h3>Create Blockchain Transaction</h3>
-      <button class="modal-close" onclick="closeTransactionModal()">×</button>
+      <button class="modal-close" onclick="closeTransactionModal()">x</button>
     </div>
 
     <div class="modal-inner">
@@ -261,7 +261,7 @@
 
       <div class="modal-loading" id="loadingModal">
         <div class="spinner"></div>
-        <p>Creating transaction and anchoring to Sepolia Testnet…</p>
+        <p>Creating transaction and anchoring to Sepolia Testnet...</p>
       </div>
 
       <div id="transactionFormWrap">
@@ -291,7 +291,7 @@
         </div>
 
         <div class="form-row">
-          <label>Price (₹ per kg) <span class="req">*</span></label>
+          <label>Price (Rs.  per kg) <span class="req">*</span></label>
           <input type="number" id="price" placeholder="Enter price per kg"
                  step="0.01" min="0" oninput="calculateTotal()">
           <div class="hint">Market price auto-filled if available</div>
@@ -308,7 +308,7 @@
 
         <div class="total-box">
           <span>Total Amount:</span>
-          <span class="total-val" id="totalAmount">₹ 0.00</span>
+          <span class="total-val" id="totalAmount">Rs.  0.00</span>
         </div>
 
         <div class="blockchain-note">
@@ -330,7 +330,7 @@
   </div><!-- /modal-box -->
 </div><!-- /modal-overlay -->
 
-<!-- ── FOOTER ──────────────────────────────────────── -->
+<!-- -- FOOTER ---------------------------------------- -->
 <footer class="site-footer">
   <div class="footer-inner">
     <div class="footer-col">

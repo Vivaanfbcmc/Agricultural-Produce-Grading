@@ -67,7 +67,7 @@ class AgmarknetPriceFetcher {
 
         const priceType = gradePriceMap[gradeUpper];
 
-        // Parse prices — API returns them as strings like "2000" or numbers
+        // Parse prices - API returns them as strings like "2000" or numbers
         const minPrice   = parseFloat(record.min_price)   || parseFloat(record.minimum_price)   || 0;
         const maxPrice   = parseFloat(record.max_price)   || parseFloat(record.maximum_price)   || 0;
         const modalPrice = parseFloat(record.modal_price) || parseFloat(record.modal_price_rs_qtl) || 0;
@@ -78,7 +78,7 @@ class AgmarknetPriceFetcher {
             gradeUpper === 'C' ? minPrice : modalPrice;
 
         if (selectedPrice === 0) {
-            console.warn("Price came out as 0 — check field names in record above");
+            console.warn("Price came out as 0 - check field names in record above");
         }
 
         return {

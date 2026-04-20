@@ -23,7 +23,7 @@ const PORT = 3002;
 const CEDA_API_URL = "https://api.ceda.ashoka.edu.in/v1/agmarknet/prices";
 const CEDA_API_TOKEN = "4face3859fdd510cb9b259c09cc8309f37bb574b57539ca6f36887742f890a84";  
 
-// ── Helpers ────────────────────────────────────────────────────────────────────
+// -- Helpers --------------------------------------------------------------------
 
 /** Returns "YYYY-MM-DD" string for a date offset by `daysAgo` from today */
 function dateOffset(daysAgo = 0) {
@@ -34,8 +34,8 @@ function dateOffset(daysAgo = 0) {
 
 /**
  * Fetch price records from CEDA for a date range.
- * commodity_id, state_id  → numbers
- * district_id, market_id  → arrays of numbers (API schema)
+ * commodity_id, state_id  -> numbers
+ * district_id, market_id  -> arrays of numbers (API schema)
  */
 async function fetchCedaPrices({ commodity_id, state_id, district_id, market_id, from_date, to_date, token }) {
     const body = {
@@ -106,9 +106,9 @@ function computeMeans(records) {
 
 /**
  * Pick the guessed price based on grade:
- *   A → mean_max   (premium quality)
- *   B → mean_modal (average quality)
- *   C → mean_min   (lower quality)
+ *   A -> mean_max   (premium quality)
+ *   B -> mean_modal (average quality)
+ *   C -> mean_min   (lower quality)
  */
 function selectByGrade(means, grade) {
     const g = grade.toString().toUpperCase();
@@ -120,7 +120,7 @@ function selectByGrade(means, grade) {
     return map[g] || map["B"];
 }
 
-// ── Core logic ─────────────────────────────────────────────────────────────────
+// -- Core logic -----------------------------------------------------------------
 
 async function guessPrice({ commodity_id, state_id, district_id, market_id, grade, token, days = 7 }) {
     // Validate required params
@@ -170,7 +170,7 @@ async function guessPrice({ commodity_id, state_id, district_id, market_id, grad
     };
 }
 
-// ── Routes ─────────────────────────────────────────────────────────────────────
+// -- Routes ---------------------------------------------------------------------
 
 // Health check
 app.get("/", (req, res) => {
@@ -178,8 +178,8 @@ app.get("/", (req, res) => {
         service: "Price Guesser API",
         status: "running",
         endpoints: {
-            POST: "/guess-price  → body: { commodity_id, state_id, district_id, market_id, grade, token? }",
-            GET:  "/guess-price  → query: ?commodity_id=&state_id=&district_id=&market_id=&grade=&token="
+            POST: "/guess-price  -> body: { commodity_id, state_id, district_id, market_id, grade, token? }",
+            GET:  "/guess-price  -> query: ?commodity_id=&state_id=&district_id=&market_id=&grade=&token="
         }
     });
 });
@@ -223,12 +223,12 @@ app.get("/guess-price", async (req, res) => {
     }
 });
 
-// ── Start ──────────────────────────────────────────────────────────────────────
+// -- Start ----------------------------------------------------------------------
 
 app.listen(PORT, () => {
     console.log(` Price Guesser API running on http://localhost:${PORT}`);
-    console.log(`   POST /guess-price  →  { commodity_id, state_id, district_id, market_id, grade }`);
-    console.log(`   GET  /guess-price  →  ?commodity_id=1&state_id=8&district_id=194&market_id=255&grade=A`);
+    console.log(`   POST /guess-price  ->  { commodity_id, state_id, district_id, market_id, grade }`);
+    console.log(`   GET  /guess-price  ->  ?commodity_id=1&state_id=8&district_id=194&market_id=255&grade=A`);
 });
 
 export default app;

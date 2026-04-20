@@ -4,7 +4,7 @@ import BlockchainService from './blockchain.service.js';
 
 class LedgerService {
 
-  // ── Shared helper: insert ledger + anchor blockchain + store proof ─────
+  // -- Shared helper: insert ledger + anchor blockchain + store proof -----
   static async #buildLedgerEntry(client, transactionData) {
 
     // 1. Get last ledger entry for hash chaining
@@ -35,7 +35,7 @@ class LedgerService {
     );
 
     if (existingProofResult.rows.length > 0) {
-      // Already anchored — reuse existing proof, skip blockchain write
+      // Already anchored - reuse existing proof, skip blockchain write
       console.warn(`Ledger ID ${insertedEntry.id} already has a proof record. Reusing.`);
       const existingProof = existingProofResult.rows[0];
       return {
@@ -57,7 +57,7 @@ class LedgerService {
 
     // 5. If anchor was skipped (already on-chain), fetch existing proof from DB or chain
     if (blockchainProof.skipped) {
-      console.warn(`Anchor skipped for ledger ID ${insertedEntry.id} — already on-chain.`);
+      console.warn(`Anchor skipped for ledger ID ${insertedEntry.id} - already on-chain.`);
 
       // Store a placeholder proof row so future calls don't retry
       await client.query(
@@ -87,7 +87,7 @@ class LedgerService {
     return { entry: insertedEntry, blockchainProof };
   }
 
-  // ── Create ledger entry only ───────────────────────────────────────────
+  // -- Create ledger entry only -------------------------------------------
   static async createLedgerEntry(transactionData) {
     const client = await pool.connect();
 
@@ -113,7 +113,7 @@ class LedgerService {
     }
   }
 
-  // ── Create full transaction (ledger + blockchain proof + transaction) ───
+  // -- Create full transaction (ledger + blockchain proof + transaction) ---
   static async createTransactionEntry(transactionData) {
     const client = await pool.connect();
 
@@ -160,7 +160,7 @@ class LedgerService {
     }
   }
 
-  // ── Get all ledger entries with blockchain proof ───────────────────────
+  // -- Get all ledger entries with blockchain proof -----------------------
   static async getAllEntries() {
     try {
       const result = await pool.query(
@@ -179,7 +179,7 @@ class LedgerService {
     }
   }
 
-  // ── Get all transactions (uses the view) ──────────────────────────────
+  // -- Get all transactions (uses the view) ------------------------------
   static async getAllTransactions() {
     try {
       const result = await pool.query(
@@ -191,7 +191,7 @@ class LedgerService {
     }
   }
 
-  // ── Get single transaction by ID ───────────────────────────────────────
+  // -- Get single transaction by ID ---------------------------------------
   static async getTransactionById(id) {
     try {
       const result = await pool.query(
@@ -209,7 +209,7 @@ class LedgerService {
     }
   }
 
-  // ── Get transactions by farmer ID ──────────────────────────────────────
+  // -- Get transactions by farmer ID --------------------------------------
   static async getTransactionsByFarmer(farmerId) {
     try {
       const result = await pool.query(
@@ -222,7 +222,7 @@ class LedgerService {
     }
   }
 
-  // ── Get transactions by grade ──────────────────────────────────────────
+  // -- Get transactions by grade ------------------------------------------
   static async getTransactionsByGrade(grade) {
     try {
       const result = await pool.query(
@@ -235,7 +235,7 @@ class LedgerService {
     }
   }
 
-  // ── Verify ledger entry against blockchain ─────────────────────────────
+  // -- Verify ledger entry against blockchain -----------------------------
   static async verifyEntry(id) {
     try {
       const result = await pool.query(

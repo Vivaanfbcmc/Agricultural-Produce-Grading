@@ -61,7 +61,7 @@ function handleFileSelect(event) {
 
         const img = new Image();
         img.onload = function() {
-            fileDimensions.textContent = `${img.width} × ${img.height}px`;
+            fileDimensions.textContent = `${img.width} x ${img.height}px`;
         };
         img.src = e.target.result;
     };
@@ -121,8 +121,8 @@ async function analyzeImage() {
         priceValue.textContent = "Fetching market price...";
 
         if (grade === 'ROTTEN') {
-            // Rotten produce — no price needed
-            priceValue.textContent = "₹0 — Rejected (rotten produce)";
+            // Rotten produce - no price needed
+            priceValue.textContent = "Rs. 0 — Rejected (rotten produce)";
             analysisResults.price = '0';
         } else {
             try {
@@ -259,7 +259,7 @@ function calculateTotal() {
     const quantity = parseFloat(document.getElementById('quantity').value) || 0;
     const price = parseFloat(document.getElementById('price').value) || 0;
     const total = quantity * price;
-    document.getElementById('totalAmount').textContent = `₹${total.toFixed(2)}`;
+    document.getElementById('totalAmount').textContent = `Rs. ${total.toFixed(2)}`;
 }
 
 async function openTransactionModal() {
@@ -284,7 +284,7 @@ async function openTransactionModal() {
 
     const grade = gradeValue.textContent;
 
-    // Use cleanly stored numeric price — no regex needed
+    // Use cleanly stored numeric price - no regex needed
     const price = analysisResults.price || '';
 
     analysisResults.grade = grade;
@@ -377,7 +377,7 @@ async function submitTransaction() {
 
 function showError(message) {
     const errorDiv = document.getElementById('errorMessage');
-    errorDiv.textContent = '❌ Error: ' + message;
+    errorDiv.textContent = 'Error: ' + message;
     errorDiv.style.display = 'block';
     errorDiv.scrollIntoView({ behavior: 'smooth' });
 }
