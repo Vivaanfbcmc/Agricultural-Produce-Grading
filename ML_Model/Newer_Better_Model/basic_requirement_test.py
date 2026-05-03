@@ -20,78 +20,32 @@ from tomatoAnalyzer import analyse_tomato
 # =============================================================================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# vivaan classification
 YOLO_DETECT_PATH_classification = os.path.join(
     BASE_DIR,
     "Basic_Requirement_Integration1",
     "Tomato_Detection_1",
-    "runs",
-    "classify",
-    "runs",
-    "classify",
-    "tomato_binary_balanced_e60",
-    "weights",
-    "best.pt"
+    "runs", "classify", "runs", "classify",
+    "tomato_binary_balanced_e60", "weights", "best.pt"
 )
-# paratwar detection
 YOLO_DETECT_PATH = os.path.join(
     BASE_DIR,
     "Basic_Requirement_Integration1",
     "IS_NOT_Tomato_paratwar",
-    "train2-20260415T061513Z-3-001",
-    "train2",
-    "best.pt"
+    "train2-20260415T061513Z-3-001", "train2", "best.pt"
 )
+YOLO_BBOX_PATH    = os.path.join(BASE_DIR, "Tomato_BoundingBoxes", "best.pt")
+YOLO_COIN_PATH    = os.path.join(BASE_DIR, "CoinDetection", "Coin_Detection-main",
+                                 "Coin_Detection-main", "best.pt")
+FRESH_MODEL_PATH  = os.path.join(BASE_DIR, "Basic_Requirement_Integration1",
+                                 "rotten_fres", "rotten_fresh_mobilenet_pytorch.pth")
+PEST_MODEL_PATH   = os.path.join(BASE_DIR, "Basic_Requirement_Integration1",
+                                 "Pest_classifier", "pest_classifier.h5")
+CUT_MODEL_PATH    = os.path.join(BASE_DIR, "Basic_Requirement_Integration1", "Cut_notCut_model1",
+                                 "CutNotCutModel.pth")
+SAM_CHECKPOINT    = os.path.join(BASE_DIR, "sammodel", "checkpoints", "sam_vit_b_01ec64.pth")
+SAM_MODEL_TYPE    = "vit_b"
 
-# bounding boxes
-YOLO_BBOX_PATH = os.path.join(
-    BASE_DIR,
-    "Tomato_BoundingBoxes",
-    "best.pt"
-)
-
-# coin
-YOLO_COIN_PATH = os.path.join(
-    BASE_DIR,
-    "CoinDetection",
-    "Coin_Detection-main",
-    "Coin_Detection-main",
-    "best.pt"
-)
-
-# freshness
-FRESH_MODEL_PATH = os.path.join(
-    BASE_DIR,
-    "Basic_Requirement_Integration1",
-    "rotten_fres",
-    "rotten_fresh_mobilenet_pytorch.pth"
-)
-
-# pest
-PEST_MODEL_PATH = os.path.join(
-    BASE_DIR,
-    "Basic_Requirement_Integration1",
-    "Pest_classifier",
-    "pest_classifier.h5"
-)
-
-# cut
-CUT_MODEL_PATH = os.path.join(
-    BASE_DIR,
-    "Basic_Requirement_Integration1",
-    "CutNotCutModel.pth"
-)
-
-# SAM
-SAM_CHECKPOINT = os.path.join(
-    BASE_DIR,
-    "sammodel",
-    "sam_vit_b_01ec64.pth"
-)
-
-SAM_MODEL_TYPE = "vit_b"
-
-COIN_REAL_DIAMETER_MM = 22.0   # reference coin diameter in mm
+COIN_REAL_DIAMETER_MM = 22.0
 COIN_CONF_THRESHOLD   = 0.2
 
 INPUT_FOLDER     = "inputer"
@@ -107,9 +61,8 @@ FRESH_CONF_THRESHOLD  = 0.6
 PEST_CONF_THRESHOLD   = 0.7
 CUT_CONF_THRESHOLD    = 0.6
 
-SAM_RESIZE = 500      # longest side; image is letterboxed to this
-
-VALID_EXT = (".jpg", ".jpeg", ".png", ".bmp")
+SAM_RESIZE = 500
+VALID_EXT  = (".jpg", ".jpeg", ".png", ".bmp")
 
 # =============================================================================
 # DEVICE
@@ -132,8 +85,7 @@ print(f"[INFO] YOLO coin      : {yolo_coin_model.names}", file=sys.stderr)
 print("[INFO] Loading SAM model...", file=sys.stderr)
 if not os.path.exists(SAM_CHECKPOINT):
     raise FileNotFoundError(
-        f"SAM checkpoint not found at {os.path.abspath(SAM_CHECKPOINT)}. "
-        "Place sam_vit_b_01ec64.pth inside sammodel/checkpoints/"
+        f"SAM checkpoint not found at {os.path.abspath(SAM_CHECKPOINT)}."
     )
 sam = sam_model_registry[SAM_MODEL_TYPE](checkpoint=SAM_CHECKPOINT)
 sam.to(device=device)
@@ -191,16 +143,13 @@ for folder in [GOOD_FOLDER, BAD_FOLDER, ANNOTATED_FOLDER, GRADED_FOLDER, DEBUG_F
 def save_debug(img_bgr, img_name, step_tag, label=""):
     stem, _ = os.path.splitext(img_name)
     out_path = os.path.join(DEBUG_FOLDER, f"{stem}__{step_tag}.jpg")
-
     vis = img_bgr.copy()
     if label:
         cv2.rectangle(vis, (0, 0), (min(600, vis.shape[1]), 28), (20, 20, 20), -1)
         cv2.putText(vis, label, (6, 20),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 230, 0), 1, cv2.LINE_AA)
-
     cv2.imwrite(out_path, vis)
     print(f"    [DEBUG] Saved {out_path}", file=sys.stderr)
-
 
 # =============================================================================
 # PREPROCESSING
@@ -229,15 +178,14 @@ def preprocess_torch(img_bgr):
     tensor  = torch.tensor(np.transpose(img_rgb, (2, 0, 1)), dtype=torch.float32)
     return tensor.unsqueeze(0).to(device)
 
-
 # =============================================================================
-# LETTERBOX RESIZE  (preserve aspect ratio)
+# LETTERBOX RESIZE
 # =============================================================================
 def _resize_letterbox(img_bgr: np.ndarray, target: int) -> np.ndarray:
-    h, w   = img_bgr.shape[:2]
-    scale  = target / max(h, w)
-    new_w  = int(round(w * scale))
-    new_h  = int(round(h * scale))
+    h, w    = img_bgr.shape[:2]
+    scale   = target / max(h, w)
+    new_w   = int(round(w * scale))
+    new_h   = int(round(h * scale))
     resized = cv2.resize(img_bgr, (new_w, new_h), interpolation=cv2.INTER_AREA)
     canvas  = np.zeros((target, target, 3), dtype=np.uint8)
     y_off   = (target - new_h) // 2
@@ -245,73 +193,43 @@ def _resize_letterbox(img_bgr: np.ndarray, target: int) -> np.ndarray:
     canvas[y_off:y_off + new_h, x_off:x_off + new_w] = resized
     return canvas
 
-
 # =============================================================================
-# COIN COLOR FILTER  (reject non-silver / non-gold detections)
+# COIN COLOR FILTER
 # =============================================================================
 def _is_coin_color(img_bgr, x1, y1, x2, y2, min_ratio=0.25):
     crop = img_bgr[y1:y2, x1:x2]
     if crop.size == 0:
         return False
-    hsv = cv2.cvtColor(crop, cv2.COLOR_BGR2HSV)
+    hsv    = cv2.cvtColor(crop, cv2.COLOR_BGR2HSV)
     silver = cv2.inRange(hsv, np.array([0,   0, 100]), np.array([180, 55, 255]))
     gold   = cv2.inRange(hsv, np.array([15,  40,  80]), np.array([40, 220, 255]))
     ratio  = (cv2.countNonZero(silver) + cv2.countNonZero(gold)) / (crop.shape[0] * crop.shape[1])
     return ratio >= min_ratio
 
-
 # =============================================================================
-# STEP 1 - TOMATO CLASSIFICATION
+# STEP 1 - TOMATO DETECTION
 # =============================================================================
-def step1_is_tomato_Classification(img_bgr, img_name):
-    results = yolo_model(img_bgr, verbose=False)[0]
-    probs = results.probs
-
-    if probs is None:
-        print("  [Step 1] WARNING: probs is None", file=sys.stderr)
-        return None
-
-    top_class = yolo_model.names[int(probs.top1)].lower()
-    top_conf  = float(probs.top1conf)
-
-    print(f"  [Step 1] YOLO classify -> '{top_class}' ({top_conf:.2f})", file=sys.stderr)
-
-    dbg = img_bgr.copy()
-    label = f"[1] {top_class} {top_conf:.2f}"
-    colour = (0, 200, 0) if top_class == "tomato" else (0, 0, 220)
-
-    cv2.rectangle(dbg, (0, 0), (300, 28), (20, 20, 20), -1)
-    cv2.putText(dbg, label, (6, 20),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.6, colour, 1, cv2.LINE_AA)
-
-    save_debug(dbg, img_name, "step1_classify", label)
-
-    if top_class != "tomato" or top_conf < TOMATO_CONF_THRESHOLD:
-        return None
-
-    return img_bgr.copy()
-
-
 def step1_is_tomato(img_bgr, img_name):
     results = yolo_model(img_bgr, verbose=False)[0]
 
     if results.boxes is None or len(results.boxes) == 0:
         print("  [Step 1] No object detected", file=sys.stderr)
-        return None
+        return None, "Step 1 (Tomato Detection): No object detected in the image"
 
-    best_idx = int(torch.argmax(results.boxes.conf).item())
-    conf = float(results.boxes.conf[best_idx])
-    cls_id = int(results.boxes.cls[best_idx])
-
+    best_idx  = int(torch.argmax(results.boxes.conf).item())
+    conf      = float(results.boxes.conf[best_idx])
+    cls_id    = int(results.boxes.cls[best_idx])
     top_class = yolo_model.names[cls_id].lower()
 
     print(f"  [Step 1] DETECT -> '{top_class}' ({conf:.2f})", file=sys.stderr)
 
-    if top_class != "tomato" or conf < TOMATO_CONF_THRESHOLD:
-        return None
+    if top_class != "tomato":
+        return None, f"Step 1 (Tomato Detection): Image classified as '{top_class}' — not a tomato (confidence {conf:.0%})"
 
-    return img_bgr.copy()
+    if conf < TOMATO_CONF_THRESHOLD:
+        return None, f"Step 1 (Tomato Detection): Tomato detected but confidence too low ({conf:.0%} < {TOMATO_CONF_THRESHOLD:.0%} threshold)"
 
+    return img_bgr.copy(), None
 
 # =============================================================================
 # STEP 2 - LETTERBOX RESIZE
@@ -323,17 +241,15 @@ def step2_letterbox(img_bgr, img_name):
     print(f"  [Step 2] Letterboxed to {SAM_RESIZE}x{SAM_RESIZE}", file=sys.stderr)
     return resized
 
-
 # =============================================================================
-# STEP 3 - COIN DETECTION -> px/cm SCALE
+# STEP 3 - COIN DETECTION
 # =============================================================================
 def step3_coin_scale(img_bgr, img_name):
-    h, w  = img_bgr.shape[:2]
-    results = yolo_coin_model(img_bgr, verbose=False)[0]
-    boxes   = results.boxes
-
-    dbg        = img_bgr.copy()
-    mm_per_px  = None
+    h, w     = img_bgr.shape[:2]
+    results  = yolo_coin_model(img_bgr, verbose=False)[0]
+    boxes    = results.boxes
+    dbg      = img_bgr.copy()
+    mm_per_px = None
 
     if boxes is None or len(boxes) == 0:
         print("  [Step 3] No coin detected - scale unavailable", file=sys.stderr)
@@ -347,30 +263,20 @@ def step3_coin_scale(img_bgr, img_name):
         cls_name = yolo_coin_model.names[int(box.cls[0])].lower()
         if conf < COIN_CONF_THRESHOLD:
             continue
-
         x1, y1, x2, y2 = box.xyxy[0].cpu().numpy().astype(int)
         x1, y1 = max(0, x1), max(0, y1)
         x2, y2 = min(w, x2), min(h, y2)
-
         if not _is_coin_color(img_bgr, x1, y1, x2, y2):
-            print(f"  [Step 3] SKIP non-coin color  class='{cls_name}' conf={conf:.2f}", file=sys.stderr)
             continue
-
         box_w          = x2 - x1
         box_h          = y2 - y1
         pixel_diameter = (box_w + box_h) / 2.0
         pixel_radius   = pixel_diameter / 2.0
         x_center       = (x1 + x2) / 2.0
         y_center       = (y1 + y2) / 2.0
-
-        px_per_mm  = pixel_diameter / COIN_REAL_DIAMETER_MM
-        px_per_cm  = px_per_mm * 10.0
-        _mm_per_px = 1.0 / px_per_mm
-
-        print(f"  [Step 3] Coin '{cls_name}' conf={conf:.2f}  "
-              f"dia={pixel_diameter:.1f}px  scale={px_per_cm:.2f}px/cm  "
-              f"mm/px={_mm_per_px:.4f}", file=sys.stderr)
-
+        px_per_mm      = pixel_diameter / COIN_REAL_DIAMETER_MM
+        px_per_cm      = px_per_mm * 10.0
+        _mm_per_px     = 1.0 / px_per_mm
         if best_coin_data is None or conf > best_coin_data["conf"]:
             best_coin_data = dict(
                 conf=conf, x_center=x_center, y_center=y_center,
@@ -380,41 +286,17 @@ def step3_coin_scale(img_bgr, img_name):
             )
 
     if best_coin_data is None:
-        print("  [Step 3] All detections rejected by color filter - scale unavailable", file=sys.stderr)
         save_debug(dbg, img_name, "step3_coin", "[3] Color filter: no coin")
         return dbg, None
 
-    d    = best_coin_data
+    d         = best_coin_data
     mm_per_px = d["mm_per_px"]
-
-    cv2.circle(dbg, (int(d["x_center"]), int(d["y_center"])),
-               int(d["pixel_radius"]), (0, 255, 0), 2)
-    cv2.circle(dbg, (int(d["x_center"]), int(d["y_center"])), 4, (255, 0, 0), -1)
-    cv2.line(dbg,
-             (int(d["x_center"] - d["pixel_radius"]), int(d["y_center"])),
-             (int(d["x_center"] + d["pixel_radius"]), int(d["y_center"])),
-             (0, 255, 255), 2)
-
-    coin_label = (f"[3] coin '{d['cls_name']}' | "
-                  f"D={d['pixel_diameter']:.0f}px | "
-                  f"{d['px_per_cm']:.1f}px/cm | "
-                  f"{mm_per_px:.4f}mm/px")
-    (tw, th), _ = cv2.getTextSize(coin_label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
-    label_y     = max(int(d["y_center"] - d["pixel_radius"]) - 8, th + 4)
-    cv2.rectangle(dbg,
-                  (int(d["x_center"] - d["pixel_radius"]), label_y - th - 4),
-                  (int(d["x_center"] - d["pixel_radius"]) + tw + 6, label_y),
-                  (0, 0, 0), -1)
-    cv2.putText(dbg, coin_label,
-                (int(d["x_center"] - d["pixel_radius"]) + 3, label_y - 2),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
-
-    save_debug(dbg, img_name, "step3_coin", coin_label)
+    cv2.circle(dbg, (int(d["x_center"]), int(d["y_center"])), int(d["pixel_radius"]), (0, 255, 0), 2)
+    save_debug(dbg, img_name, "step3_coin", f"[3] coin scale={d['px_per_cm']:.1f}px/cm")
     return dbg, mm_per_px
 
-
 # =============================================================================
-# STEP 4 - YOLO BBOX -> BLACK BACKGROUND CROP
+# STEP 4 - YOLO BBOX
 # =============================================================================
 def step4_bbox_blackout(img_bgr, img_name):
     h, w    = img_bgr.shape[:2]
@@ -422,15 +304,12 @@ def step4_bbox_blackout(img_bgr, img_name):
 
     if results.boxes is None or len(results.boxes) == 0:
         print("  [Step 4] No box found - using full image", file=sys.stderr)
-        save_debug(img_bgr, img_name, "step4_bbox", "[4] No bbox - full image")
         return img_bgr.copy(), None
 
     best_idx = int(torch.argmax(results.boxes.conf).item())
     conf     = float(results.boxes.conf[best_idx])
 
     if conf < BBOX_CONF_THRESHOLD:
-        print(f"  [Step 4] Low bbox conf ({conf:.2f}) - using full image", file=sys.stderr)
-        save_debug(img_bgr, img_name, "step4_bbox", f"[4] Low conf {conf:.2f}")
         return img_bgr.copy(), None
 
     box             = results.boxes.xyxy[best_idx].cpu().numpy().astype(int)
@@ -438,93 +317,66 @@ def step4_bbox_blackout(img_bgr, img_name):
     x1, y1 = max(0, x1), max(0, y1)
     x2, y2 = min(w, x2), min(h, y2)
 
-    print(f"  [Step 4] BBox ({x1},{y1})->({x2},{y2})  conf={conf:.2f}", file=sys.stderr)
-
     black_bg                = np.zeros_like(img_bgr)
     black_bg[y1:y2, x1:x2] = img_bgr[y1:y2, x1:x2]
 
     dbg = img_bgr.copy()
     cv2.rectangle(dbg, (x1, y1), (x2, y2), (0, 200, 255), 2)
-    save_debug(dbg, img_name, "step4_bbox",
-               f"[4] bbox ({x1},{y1})->({x2},{y2}) conf={conf:.2f}")
-
+    save_debug(dbg, img_name, "step4_bbox", f"[4] bbox conf={conf:.2f}")
     return black_bg, (x1, y1, x2, y2)
 
-
 # =============================================================================
-# STEP 5 - SAM SEGMENTATION -> BLACK BACKGROUND
+# STEP 5 - SAM SEGMENTATION
 # =============================================================================
 def _pick_best_mask(masks, image_center, h, w, image_hsv):
     image_area = h * w
     scored     = []
-
     for m in masks:
         seg  = m["segmentation"]
         area = m["area"]
-
         if area < 500 or area > image_area * 0.95:
             continue
-
         mean_sat = float(image_hsv[:, :, 1][seg].mean())
         if mean_sat < 30:
             continue
-
         moments = cv2.moments(seg.astype(np.uint8))
         if moments["m00"] == 0:
             continue
         cx   = moments["m10"] / moments["m00"]
         cy   = moments["m01"] / moments["m00"]
         dist = np.linalg.norm(np.array([cx, cy]) - image_center) / np.linalg.norm([w, h])
-
-        contours, _ = cv2.findContours(
-            seg.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
-        )
+        contours, _ = cv2.findContours(seg.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         if not contours:
             continue
         perimeter   = cv2.arcLength(contours[0], True)
         circularity = min((4 * np.pi * area / (perimeter ** 2)) if perimeter > 0 else 0, 1.0)
-
-        sat_score  = mean_sat / 255.0
-        size_score = min(area / image_area, 0.5) * 2
-        score      = (sat_score * 0.50) + (circularity * 0.25) + ((1 - dist) * 0.15) + (size_score * 0.10)
+        sat_score   = mean_sat / 255.0
+        size_score  = min(area / image_area, 0.5) * 2
+        score       = (sat_score * 0.50) + (circularity * 0.25) + ((1 - dist) * 0.15) + (size_score * 0.10)
         scored.append((score, m))
-
     if not scored:
         return max(masks, key=lambda m: float(image_hsv[:, :, 1][m["segmentation"]].mean()))
-
     scored.sort(key=lambda x: x[0], reverse=True)
     return scored[0][1]
-
 
 def step5_segment_and_blackout(img_bgr, img_name):
     h, w         = img_bgr.shape[:2]
     image_rgb    = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
     image_hsv    = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
     image_center = np.array([w / 2, h / 2])
-
-    masks = sam_mask_generator.generate(image_rgb)
+    masks        = sam_mask_generator.generate(image_rgb)
     print(f"  [Step 5] SAM -> {len(masks)} segments", file=sys.stderr)
-
     if not masks:
-        print("  [Step 5] No segments - using bbox result as-is", file=sys.stderr)
-        save_debug(img_bgr, img_name, "step5_sam", "[5] SAM: no mask")
         return img_bgr
-
     best        = _pick_best_mask(masks, image_center, h, w, image_hsv)
     binary_mask = best["segmentation"].astype(np.uint8)
-    print(f"  [Step 5] Best mask area: {int(best['area'])} px", file=sys.stderr)
-
-    mask_3ch = np.stack([binary_mask] * 3, axis=2)
-    result   = np.where(mask_3ch == 1, img_bgr, 0).astype(np.uint8)
-
+    mask_3ch    = np.stack([binary_mask] * 3, axis=2)
+    result      = np.where(mask_3ch == 1, img_bgr, 0).astype(np.uint8)
     dbg = img_bgr.copy()
     contours, _ = cv2.findContours(binary_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     cv2.drawContours(dbg, contours, -1, (0, 255, 0), 2)
-    save_debug(dbg, img_name, "step5_sam",
-               f"[5] SAM mask area={int(best['area'])}px")
-
+    save_debug(dbg, img_name, "step5_sam", f"[5] SAM mask area={int(best['area'])}px")
     return result
-
 
 # =============================================================================
 # STEP 6a - FRESH / ROTTEN
@@ -547,16 +399,25 @@ def step6a_fresh_rotten(img_bgr, img_name):
                 f"Freshness: {label.upper()}  {confidence*100:.1f}%",
                 (12, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.85, colour, 2, cv2.LINE_AA)
     prob_str = "  |  ".join([f"{fresh_idx_to_class[i]}: {probs[i]*100:.1f}%"
-                              for i in range(len(probs))])
+                             for i in range(len(probs))])
     cv2.putText(annotated, prob_str,
                 (12, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (200, 200, 200), 1, cv2.LINE_AA)
     cv2.rectangle(annotated, (5, 5), (w - 5, h - 5), colour, 5)
-    save_debug(annotated, img_name, "step6a_fresh",
-               f"[6a] {label} {confidence:.2f}")
+    save_debug(annotated, img_name, "step6a_fresh", f"[6a] {label} {confidence:.2f}")
 
     is_rotten = (label == "rotten" and confidence >= FRESH_CONF_THRESHOLD)
-    return is_rotten, annotated
 
+    # ── Build human-readable reason ──────────────────────────────────────────
+    # Include both class probabilities so the farmer understands the certainty
+    fresh_pct  = float(probs[fresh_class_to_idx.get("fresh",  0)].item()) * 100
+    rotten_pct = float(probs[fresh_class_to_idx.get("rotten", 1)].item()) * 100
+    reason = (
+        f"Step 6a (Freshness Classifier): Tomato classified as ROTTEN "
+        f"with {rotten_pct:.1f}% confidence "
+        f"(fresh: {fresh_pct:.1f}%, rotten: {rotten_pct:.1f}%)"
+    ) if is_rotten else None
+
+    return is_rotten, annotated, reason
 
 # =============================================================================
 # STEP 6b - PEST
@@ -574,8 +435,12 @@ def step6b_pest(img_bgr, img_name):
                 (6, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.55, colour, 1, cv2.LINE_AA)
     save_debug(dbg, img_name, "step6b_pest")
 
-    return found
+    reason = (
+        f"Step 6b (Pest Classifier): Pest damage detected "
+        f"(score: {pest_pred:.2f}, threshold: {PEST_CONF_THRESHOLD})"
+    ) if found else None
 
+    return found, reason
 
 # =============================================================================
 # STEP 6c - CUT
@@ -597,76 +462,70 @@ def step6c_cut(img_bgr, img_name):
                 (6, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.55, colour, 1, cv2.LINE_AA)
     save_debug(dbg, img_name, "step6c_cut")
 
-    return found
+    reason = (
+        f"Step 6c (Cut/Damage Classifier): Physical cut or damage detected "
+        f"(confidence: {cut_conf:.0%})"
+    ) if found else None
 
+    return found, reason
 
 # =============================================================================
 # FULL PIPELINE
 # =============================================================================
 def check_tomato_quality(img_bgr, img_name):
     """
-    Returns (result_str, annotated_img, masked_img, mm_per_px)
+    Returns (result_str, rejection_reason, annotated_img, masked_img, mm_per_px)
 
-    Pipeline order:
-      1. Tomato detection
-      2. Letterbox resize
-      3. Coin detection     -> mm_per_px
-      4. YOLO bbox crop
-      5. SAM segmentation
-      6a. Fresh/Rotten
-      6b. Pest
-      6c. Cut
-      7. Grade (caller)
+    rejection_reason is None when result == "GOOD", otherwise a human-readable
+    string explaining exactly which ML step caused rejection and why.
     """
 
-    # -- 1. Is it a tomato? ----------------------------------------------------
-    tomato_img = step1_is_tomato(img_bgr, img_name)
+    # -- 1. Is it a tomato? --------------------------------------------------
+    tomato_img, reason = step1_is_tomato(img_bgr, img_name)
     if tomato_img is None:
         print("  RESULT -> REJECTED (NOT A TOMATO)", file=sys.stderr)
-        return "REJECTED", None, None, None
+        return "REJECTED", reason, None, None, None
 
-    # -- 2. Letterbox resize ---------------------------------------------------
+    # -- 2. Letterbox resize -------------------------------------------------
     lb_img = step2_letterbox(tomato_img, img_name)
 
-    # -- 3. Coin detection -> scale ---------------------------------------------
+    # -- 3. Coin detection -> scale ------------------------------------------
     _, mm_per_px = step3_coin_scale(lb_img, img_name)
-    if mm_per_px is not None:
-        print(f"  Scale established: {mm_per_px:.4f} mm/px", file=sys.stderr)
-    else:
-        print("  No coin found - analyser will run without real-world scale", file=sys.stderr)
 
-    # -- 4. YOLO bbox -> black background --------------------------------------
+    # -- 4. YOLO bbox --------------------------------------------------------
     bbox_img, box_coords = step4_bbox_blackout(lb_img, img_name)
 
-    # -- 5. SAM segmentation ---------------------------------------------------
+    # -- 5. SAM segmentation -------------------------------------------------
     masked_img = step5_segment_and_blackout(bbox_img, img_name)
 
-    # -- 6a. Freshness ---------------------------------------------------------
-    rotten, annotated = step6a_fresh_rotten(masked_img, img_name)
+    # -- 6a. Freshness -------------------------------------------------------
+    rotten, annotated, reason = step6a_fresh_rotten(masked_img, img_name)
     if rotten:
         print("  RESULT -> REJECTED (ROTTEN)", file=sys.stderr)
-        return "REJECTED", annotated, masked_img, mm_per_px
+        return "REJECTED", reason, annotated, masked_img, mm_per_px
 
-    # -- 6b. Pest --------------------------------------------------------------
-    if step6b_pest(masked_img, img_name):
+    # -- 6b. Pest ------------------------------------------------------------
+    pest_found, reason = step6b_pest(masked_img, img_name)
+    if pest_found:
         print("  RESULT -> REJECTED (PEST)", file=sys.stderr)
-        return "REJECTED", annotated, masked_img, mm_per_px
+        return "REJECTED", reason, annotated, masked_img, mm_per_px
 
-    # -- 6c. Cut ---------------------------------------------------------------
-    if step6c_cut(masked_img, img_name):
+    # -- 6c. Cut -------------------------------------------------------------
+    cut_found, reason = step6c_cut(masked_img, img_name)
+    if cut_found:
         print("  RESULT -> REJECTED (CUT)", file=sys.stderr)
-        return "REJECTED", annotated, masked_img, mm_per_px
+        return "REJECTED", reason, annotated, masked_img, mm_per_px
 
-    print("  RESULT -> GOOD ", file=sys.stderr)
-    return "GOOD", annotated, masked_img, mm_per_px
+    print("  RESULT -> GOOD", file=sys.stderr)
+    return "GOOD", None, annotated, masked_img, mm_per_px
 
 
 # =============================================================================
-# SINGLE IMAGE MODE  (called by Flask API via --image flag)
+# SINGLE IMAGE MODE  (called by Flask / gateway via --image flag)
 # =============================================================================
 def run_single_image(img_path: str):
     img_name = os.path.basename(img_path)
-    img = cv2.imread(img_path)
+    img      = cv2.imread(img_path)
 
     if img is None:
         print(json.dumps({"success": False, "message": f"Could not load image: {img_path}"}))
@@ -675,29 +534,28 @@ def run_single_image(img_path: str):
     print(f"\n{'-'*50}", file=sys.stderr)
     print(f"  Image: {img_name}", file=sys.stderr)
 
-    result, annotated, masked_img, mm_per_px = check_tomato_quality(img, img_name)
+    result, rejection_reason, annotated, masked_img, mm_per_px = \
+        check_tomato_quality(img, img_name)
 
     output = {
-        "result": result,
-        "mm_per_px": mm_per_px,
+        "result":           result,
+        "mm_per_px":        mm_per_px,
+        # Always include rejection_reason key; null when GOOD
+        "rejection_reason": rejection_reason,
     }
 
     if result == "GOOD" and masked_img is not None:
         pixels_per_cm = (10.0 / mm_per_px) if (mm_per_px and mm_per_px > 0) else 50.0
-        analysis = analyse_tomato(masked_img, debug=False, pixels_per_cm=pixels_per_cm)
-        output["grade"] = analysis.grade
+        analysis      = analyse_tomato(masked_img, debug=False, pixels_per_cm=pixels_per_cm)
+        output["grade"]         = analysis.grade
         output["grade_reasons"] = analysis.grade_reasons if analysis.grade_reasons else []
 
-        # Save graded output image
         if analysis.annotated_image is not None:
-            grade_path = os.path.join(GRADED_FOLDER, img_name)
-            cv2.imwrite(grade_path, analysis.annotated_image)
+            cv2.imwrite(os.path.join(GRADED_FOLDER, img_name), analysis.annotated_image)
 
-    # Save annotated image
     if annotated is not None:
         cv2.imwrite(os.path.join(ANNOTATED_FOLDER, img_name), annotated)
 
-    # Save to good/bad folder
     if result == "GOOD" and masked_img is not None:
         cv2.imwrite(os.path.join(GOOD_FOLDER, img_name), masked_img)
     elif masked_img is not None:
@@ -705,12 +563,12 @@ def run_single_image(img_path: str):
     else:
         cv2.imwrite(os.path.join(BAD_FOLDER, img_name), img)
 
-    # Flask reads the LAST stdout line as JSON - must be the final print
+    # Flask reads the LAST stdout line as JSON
     print(json.dumps(output))
 
 
 # =============================================================================
-# FOLDER BATCH MODE  (original behaviour - reads from INPUT_FOLDER)
+# FOLDER BATCH MODE
 # =============================================================================
 def run_folder_mode():
     total = good = bad = failed = 0
@@ -731,7 +589,8 @@ def run_folder_mode():
         print(f"\n{'-'*50}")
         print(f"  Image: {img_name}")
 
-        result, annotated, masked_img, mm_per_px = check_tomato_quality(img, img_name)
+        result, rejection_reason, annotated, masked_img, mm_per_px = \
+            check_tomato_quality(img, img_name)
 
         if annotated is not None and masked_img is not None:
             cv2.imwrite(os.path.join(ANNOTATED_FOLDER, img_name), annotated)
@@ -739,41 +598,23 @@ def run_folder_mode():
         if result == "GOOD":
             good += 1
             cv2.imwrite(os.path.join(GOOD_FOLDER, img_name), masked_img)
-
-            if mm_per_px is not None and mm_per_px > 0:
-                pixels_per_cm = 10.0 / mm_per_px
-            else:
-                pixels_per_cm = 50.0  # fallback default
-
-            analysis = analyse_tomato(masked_img, debug=True, pixels_per_cm=pixels_per_cm)
+            pixels_per_cm = (10.0 / mm_per_px) if (mm_per_px and mm_per_px > 0) else 50.0
+            analysis      = analyse_tomato(masked_img, debug=True, pixels_per_cm=pixels_per_cm)
             print(f"  AGMARK GRADE   -> {analysis.grade}")
             if analysis.grade_reasons:
                 for reason in analysis.grade_reasons:
                     print(f"                   {reason}")
             if analysis.annotated_image is not None:
-                grade_path = os.path.join(GRADED_FOLDER, img_name)
-                cv2.imwrite(grade_path, analysis.annotated_image)
-                save_debug(analysis.annotated_image, img_name, "step7_grade",
-                           f"[7] Grade={analysis.grade}  mm/px={mm_per_px:.4f}" if mm_per_px else f"[7] Grade={analysis.grade}")
+                cv2.imwrite(os.path.join(GRADED_FOLDER, img_name), analysis.annotated_image)
         else:
             bad += 1
+            print(f"  REJECTION REASON -> {rejection_reason}")
             save_img = masked_img if masked_img is not None else img
             cv2.imwrite(os.path.join(BAD_FOLDER, img_name), save_img)
 
     print(f"\n{'='*50}")
-    print("  SUMMARY")
-    print(f"{'='*50}")
-    print(f"  Total          : {total}")
-    print(f"  Good           : {good}")
-    print(f"  Rejected       : {bad}")
-    print(f"  Failed to load : {failed}")
-    print(f"{'='*50}")
-    print(f"  Good      -> {GOOD_FOLDER}/")
-    print(f"  Bad       -> {BAD_FOLDER}/")
-    print(f"  Annotated -> {ANNOTATED_FOLDER}/")
-    print(f"  Graded    -> {GRADED_FOLDER}/")
-    print(f"  Debug     -> {DEBUG_FOLDER}/")
-    print("\nDone.")
+    print(f"  Total: {total}  Good: {good}  Rejected: {bad}  Failed: {failed}")
+    print("Done.")
 
 
 # =============================================================================
@@ -781,13 +622,8 @@ def run_folder_mode():
 # =============================================================================
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Tomato Quality Pipeline")
-    parser.add_argument(
-        "--image",
-        type=str,
-        default=None,
-        help="Path to a single image file (used by Flask API). "
-             "Omit to run in batch folder mode."
-    )
+    parser.add_argument("--image", type=str, default=None,
+                        help="Path to a single image file. Omit for batch folder mode.")
     args = parser.parse_args()
 
     if args.image:
