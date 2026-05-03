@@ -233,7 +233,7 @@ def _extract_tomato_mask(img_bgr: np.ndarray) -> np.ndarray:
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
     _, mask = cv2.threshold(blurred, 15, 255, cv2.THRESH_BINARY)
 
-    # Close fills holes, open removes pepper noise on the edges
+    # Close fills holes, open removes  noise on the edge
     k_close = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (11, 11))
     k_open  = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
     mask    = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, k_close)
@@ -528,6 +528,7 @@ def _analyse_defects(img_bgr: np.ndarray,
     combined = cv2.bitwise_and(combined, tomato_mask)
     k_close  = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 9))
     combined = cv2.morphologyEx(combined, cv2.MORPH_CLOSE, k_close)
+    
 
     defect_cnts, _ = cv2.findContours(
         combined, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
@@ -633,9 +634,13 @@ def _analyse_defects(img_bgr: np.ndarray,
     return report
 
 
+# MOD 4 - SCAR AND CRACK ANALYSIS
 # =============================================================================
-# MODULE 4 - SCAR AND CRACK ANALYSIS
-# =============================================================================
+
+## add new colours of scar basiclaly like skin colour, cream colour, and shates of white
+## also add new colour of crack like dark red, dark brown, and black
+#
+
 
 def _analyse_scars(img_bgr: np.ndarray,
                    tomato_mask: np.ndarray,

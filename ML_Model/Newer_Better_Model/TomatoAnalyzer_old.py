@@ -716,7 +716,7 @@ def _annotate_image(img_bgr:  np.ndarray,
         "CLASS1": "CLASS  I",
         "CLASS2": "CLASS  II",
     }.get(result.grade, result.grade)
-    put(f"GRADE:  {badge_label}", row, grade_colour, 0.55, True); row += step + 6
+    put(f"GRADE:  {badge_label}", row, grade_colour, 0.5, True); row += step + 6
     cv2.line(canvas, (w + 5, row), (w + panel_w - 5, row), (60, 60, 60), 1); row += 8
 
     c = result.colour
