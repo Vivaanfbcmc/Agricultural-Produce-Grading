@@ -1,0 +1,669 @@
+/**
+ * ╔══════════════════════════════════════════════════════════╗
+ * ║         data.gov.in Smart Price Guesser                  ║
+ * ║                  Runs on port 3002                       ║
+ * ╠══════════════════════════════════════════════════════════╣
+ * ║  FLOW:                                                   ║
+ * ║  1. ML Model (port 5001) detects grade -> A / B / C      ║
+ * ║  2. Frontend POSTs grade + commodity to /price           ║
+ * ║  3. This server fetches from data.gov.in (AGMARKNET)     ║
+ * ║  4. Filters to last 10 days IN JS after fetch            ║
+ * ║     (API has no working date range param — see note)     ║
+ * ║  5. Smart price calc (IQR + recency-weighted avg)        ║
+ * ║  6. Returns price to frontend                            ║
+ * ╠══════════════════════════════════════════════════════════╣
+ * ║  WHY NO DATE FILTER IN THE API CALL:                     ║
+ * ║  data.gov.in's filters[arrival_date] param is broken /   ║
+ * ║  silently ignored server-side. The API always returns    ║
+ * ║  the most recent records (sorted desc). We fetch         ║
+ * ║  limit=1000 (their maximum) and then filter to last      ║
+ * ║  LOOKBACK_DAYS days ourselves in JS after the response.  ║
+ * ║  For Tomato+Maharashtra+Solapur 1000 records covers      ║
+ * ║  well over 10 days — so this works reliably.             ║
+ * ╠══════════════════════════════════════════════════════════╣
+ * ║  Grade → price column mapping:                           ║
+ * ║    A (premium)  → max_price                              ║
+ * ║    B (standard) → modal_price                            ║
+ * ║    C (lower)    → min_price                              ║
+ * ║    rotten       → ₹0, rejected                           ║
+ * ╚══════════════════════════════════════════════════════════╝
+ */
+
+import express    from "express";
+import cors       from "cors";
+import bodyParser from "body-parser";
+
+// ══════════════════════════════════════════════════════════
+//  CONFIG  ← only edit this section
+// ══════════════════════════════════════════════════════════
+
+const DATAGOV_API_KEY  = "579b464db66ec23bdd0000016d9e846424cb4606761ea1f01aac3b02";
+const DATAGOV_BASE_URL = "https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070";
+
+const DEFAULT_STATE     = "Maharashtra";
+const DEFAULT_DISTRICT  = "Sholapur";   // set "" to get all districts
+const DEFAULT_COMMODITY = "Tomato";
+
+// How many days back to keep after fetching
+// We fetch 1000 records from API, then slice to this window in JS
+const LOOKBACK_DAYS = 10;
+
+// data.gov.in hard max per request is 1000
+const FETCH_LIMIT = 1000;
+
+const PORT = 3002;
+
+// ══════════════════════════════════════════════════════════
+//  DEBUG LOGGER
+//  All logs prefixed [PG HH:MM:SS.mmm] with colour coding
+//  Colours only show in terminals that support ANSI codes
+// ══════════════════════════════════════════════════════════
+
+function ts() { return new Date().toISOString().slice(11, 23); }
+
+const cw = {
+    info:  (...a) => console.log (`\x1b[36m[PG ${ts()}]\x1b[0m`, ...a),
+    warn:  (...a) => console.warn(`\x1b[33m[PG ${ts()}] WARN\x1b[0m`, ...a),
+    error: (...a) => console.error(`\x1b[31m[PG ${ts()}] ERR \x1b[0m`, ...a),
+    sep:   ()     => console.log (`\x1b[36m[PG ${ts()}]\x1b[0m`, "─".repeat(52)),
+    ok:    (...a) => console.log (`\x1b[32m[PG ${ts()}] ✓\x1b[0m`, ...a),
+};
+
+// ══════════════════════════════════════════════════════════
+//  DATE HELPERS
+// ══════════════════════════════════════════════════════════
+
+/**
+ * Parse "DD/MM/YYYY" string → JS Date object
+ * data.gov.in uses this format in Arrival_Date field
+ */
+function parseDate(str) {
+    if (!str || typeof str !== "string") return new Date(0);
+    const parts = str.split("/");
+    if (parts.length !== 3) return new Date(0);
+    const [dd, mm, yyyy] = parts;
+    const d = new Date(`${yyyy}-${mm.padStart(2,"0")}-${dd.padStart(2,"0")}`);
+    return isNaN(d.getTime()) ? new Date(0) : d;
+}
+
+/**
+ * Format a Date as "DD/MM/YYYY" for log messages
+ */
+function fmtDate(d) {
+    const dd   = String(d.getDate()).padStart(2, "0");
+    const mm   = String(d.getMonth() + 1).padStart(2, "0");
+    const yyyy = d.getFullYear();
+    return `${dd}/${mm}/${yyyy}`;
+}
+
+// ══════════════════════════════════════════════════════════
+//  FIELD NORMALISER
+//
+//  data.gov.in field names are inconsistent — same resource
+//  can return "Min Price" one day and "Min_Price" another.
+//  This helper tries every known variant so we never get 0
+//  just because of a field name casing issue.
+// ══════════════════════════════════════════════════════════
+
+function getPrice(record, type) {
+    const variants = {
+        min:   ["Min Price",   "Min_Price",   "min_price",   "min"],
+        max:   ["Max Price",   "Max_Price",   "max_price",   "max"],
+        modal: ["Modal Price", "Modal_Price", "modal_price", "modal"],
+    };
+    for (const key of (variants[type] || [])) {
+        const val = record[key];
+        if (val !== undefined && val !== null && val !== "") {
+            const n = Number(val);
+            if (!isNaN(n)) return n;
+        }
+    }
+    return 0;
+}
+
+// ══════════════════════════════════════════════════════════
+//  STEP 1 — FETCH FROM data.gov.in
+//
+//  API: GET https://api.data.gov.in/resource/<id>
+//  Auth: api-key as query param (NOT a Bearer token)
+//
+//  Supported filters (that actually work):
+//    filters[commodity]  = "Tomato"
+//    filters[state]      = "Maharashtra"
+//    filters[district]   = "Sholapur"   (optional)
+//
+//  NOT supported (silently ignored by their server):
+//    filters[arrival_date]   ← DOES NOT WORK
+//    filters[from_date]      ← DOES NOT WORK
+//    filters[to_date]        ← DOES NOT WORK
+//
+//  So we fetch 1000 records and do date filtering in JS.
+// ══════════════════════════════════════════════════════════
+
+async function fetchDataGovRecords({ commodity, state, district } = {}) {
+    commodity = commodity || DEFAULT_COMMODITY;
+    state     = state     || DEFAULT_STATE;
+    district  = district  !== undefined ? district : DEFAULT_DISTRICT;
+
+    cw.sep();
+    cw.info("STEP 1 — Fetching from data.gov.in");
+    cw.info("  Commodity :", commodity);
+    cw.info("  State     :", state);
+    cw.info("  District  :", district || "(all — no district filter)");
+    cw.info("  Limit     :", FETCH_LIMIT, "(API max — we filter dates after fetching)");
+
+    // Build query params
+    // Note: NO arrival_date filter here — it doesn't work on their API
+    const params = new URLSearchParams({
+        "api-key":            DATAGOV_API_KEY,
+        "format":             "json",
+        "limit":              String(FETCH_LIMIT),
+        "offset":             "0",
+        "filters[commodity]": commodity,
+        "filters[state]":     state,
+    });
+
+    if (district) {
+        params.append("filters[district]", district);
+        cw.info("  District filter:", district);
+    } else {
+        cw.info("  No district filter — getting all districts in state");
+    }
+
+    const fullURL   = `${DATAGOV_BASE_URL}?${params.toString()}`;
+    const maskedURL = fullURL.replace(DATAGOV_API_KEY, "***KEY***");
+    cw.info("  Request URL:", maskedURL);
+
+    // ── Make the HTTP request ──────────────────────────────
+    let res;
+    try {
+        cw.info("  Sending GET request...");
+        res = await fetch(fullURL, {
+            method:  "GET",
+            headers: { "Accept": "application/json" },
+        });
+    } catch (networkErr) {
+        cw.error("Network-level failure — DNS / timeout / no internet");
+        cw.error("Error:", networkErr.message);
+        throw new Error(`Network error: ${networkErr.message}`);
+    }
+
+    cw.info("  HTTP status:", res.status, res.statusText);
+
+    // ── Handle specific HTTP errors ────────────────────────
+    if (res.status === 401 || res.status === 403) {
+        cw.error("Auth failed — DATAGOV_API_KEY is wrong or expired");
+        cw.error("Go to https://data.gov.in → My Account → API Keys → regenerate");
+        throw new Error("Unauthorized — invalid api-key");
+    }
+    if (res.status === 429) {
+        cw.warn("Rate limited — data.gov.in allows ~100 requests/hour");
+        cw.warn("Wait 60 seconds and retry");
+        throw new Error("Rate limit — retry after 60s");
+    }
+    if (res.status === 404) {
+        cw.error("Resource not found — check DATAGOV_BASE_URL constant in config");
+        throw new Error("Resource 404 — wrong resource ID");
+    }
+    if (!res.ok) {
+        const body = await res.text().catch(() => "(unreadable)");
+        cw.error("Unexpected HTTP error:", res.status);
+        cw.error("Response body:", body.slice(0, 400));
+        throw new Error(`data.gov.in HTTP ${res.status}`);
+    }
+
+    // ── Parse JSON ─────────────────────────────────────────
+    let json;
+    try {
+        json = await res.json();
+    } catch (parseErr) {
+        cw.error("Response is not valid JSON:", parseErr.message);
+        throw new Error("data.gov.in returned invalid JSON");
+    }
+
+    cw.info("  Response keys      :", Object.keys(json).join(", "));
+    cw.info("  Total on server    :", json.total ?? "unknown");
+    cw.info("  Count in response  :", json.count  ?? "unknown");
+
+    const records = json.records || [];
+
+    if (records.length === 0) {
+        cw.warn("!! API returned 0 records !!");
+        cw.warn("Common causes:");
+        cw.warn("  1. Commodity must be 'Tomato' — exact spelling, capital T");
+        cw.warn("  2. State must be 'Maharashtra' — exact, no abbreviations");
+        cw.warn("  3. District name wrong — try district='' to remove filter");
+        cw.warn("  4. API delay — data.gov.in can be 24-48h behind");
+        cw.warn("  → Debug: hit GET /debug?commodity=Tomato&state=Maharashtra&limit=3");
+        return [];
+    }
+
+    // ── Show field names from first record ─────────────────
+    // This is the most important debug line — tells u exact field names
+    // so u know if it's "Min Price" or "Min_Price" or something else
+    cw.info("  sample record[0] field names:", Object.keys(records[0]).join(" | "));
+    cw.info("  sample record[0] values     :", JSON.stringify(records[0]));
+
+    // ── Date distribution — how many records per date ──────
+    const dateCounts = {};
+    records.forEach(r => {
+        const d = r.Arrival_Date || r.arrival_date || "no-date";
+        dateCounts[d] = (dateCounts[d] || 0) + 1;
+    });
+    const allDates = Object.keys(dateCounts).sort();
+    cw.info(`  Unique dates in response: ${allDates.length}`);
+    // Show the 5 most recent dates in the response
+    allDates.slice(-5).forEach(d => cw.info(`    ${d}  → ${dateCounts[d]} record(s)`));
+    if (allDates.length > 5) cw.info(`    ... and ${allDates.length - 5} older date(s) not shown`);
+
+    // ── POST-FETCH DATE FILTER — this is our "last 10 days" ─
+    //
+    // How it works:
+    //   cutoff = today - LOOKBACK_DAYS
+    //   keep only records where Arrival_Date >= cutoff
+    //
+    // If 0 records pass (API is behind), we fall back to
+    // returning all 1000 records — stale data is still
+    // better than no data for price estimation.
+    // ────────────────────────────────────────────────────────
+    const now    = new Date();
+    const cutoff = new Date(now);
+    cutoff.setDate(now.getDate() - LOOKBACK_DAYS);
+    cutoff.setHours(0, 0, 0, 0);
+
+    cw.info(`  Cutoff (last ${LOOKBACK_DAYS} days): ${fmtDate(cutoff)}  to  ${fmtDate(now)}`);
+
+    const filtered = records.filter(r => {
+        const dateStr = r.Arrival_Date || r.arrival_date || "";
+        if (!dateStr) return true;            // no date field → keep
+        const d = parseDate(dateStr);
+        if (d.getTime() === 0) return true;   // unparseable date → keep
+        return d >= cutoff;
+    });
+
+    cw.info(`  Records passing date filter : ${filtered.length} / ${records.length}`);
+
+    // ── Fallback if date filter wipes everything ───────────
+    if (filtered.length === 0) {
+        cw.warn("!! No records within last " + LOOKBACK_DAYS + " days !!");
+        cw.warn("data.gov.in is probably 2-4 days behind (common on weekends/holidays)");
+        cw.warn("FALLBACK: using all " + records.length + " fetched records for price estimation");
+        cw.warn("Prices will be from: " + (allDates[allDates.length-1] || "unknown") + " (most recent available)");
+        return records;
+    }
+
+    cw.ok(`Returning ${filtered.length} records for price calculation`);
+    return filtered;
+}
+
+// ══════════════════════════════════════════════════════════
+//  STEP 2 — SMART PRICE CALCULATION
+//
+//  Given filtered records and a grade:
+//    a) Parse all price fields, drop rows where all prices = 0
+//    b) Sort oldest → newest
+//    c) IQR outlier removal on the grade's target column
+//       removes freak spike/crash days automatically
+//    d) Recency-weighted average
+//       weight = index+1 so most recent data weighs more
+// ══════════════════════════════════════════════════════════
+
+function computeSmartPrice(records, grade) {
+    const g        = grade.toUpperCase();
+    const priceKey = g === "A" ? "max" : g === "B" ? "modal" : "min";
+
+    cw.sep();
+    cw.info(`STEP 2 — Smart price calculation`);
+    cw.info(`  Grade      : ${g}`);
+    cw.info(`  Price col  : ${priceKey}_price (A=max, B=modal, C=min)`);
+    cw.info(`  Input rows : ${records.length}`);
+
+    // ── a) Parse + drop all-zero rows ─────────────────────
+    const parsed = records.map((r, idx) => ({
+        idx,
+        date:   r.Arrival_Date || r.arrival_date || "",
+        market: r.Market       || r.market       || "unknown",
+        min:    getPrice(r, "min"),
+        max:    getPrice(r, "max"),
+        modal:  getPrice(r, "modal"),
+    })).filter(r => r.min > 0 || r.max > 0 || r.modal > 0);
+
+    cw.info(`  Valid rows (price > 0) : ${parsed.length} / ${records.length}`);
+
+    if (parsed.length === 0) {
+        cw.error("All price values are 0 — price computation impossible");
+        cw.error("Check sample record[0] field names logged above in STEP 1");
+        return null;
+    }
+
+    // ── b) Sort oldest → newest ────────────────────────────
+    parsed.sort((a, b) => parseDate(a.date) - parseDate(b.date));
+    cw.info(`  Date range : ${parsed[0].date}  →  ${parsed[parsed.length-1].date}`);
+
+    // Show first + last 2 rows for context
+    cw.info("  First 2 rows:");
+    parsed.slice(0, 2).forEach(r =>
+        cw.info(`    [${r.date}] ${r.market} | min=${r.min}  modal=${r.modal}  max=${r.max}`)
+    );
+    cw.info("  Last 2 rows:");
+    parsed.slice(-2).forEach(r =>
+        cw.info(`    [${r.date}] ${r.market} | min=${r.min}  modal=${r.modal}  max=${r.max}`)
+    );
+    if (parsed.length > 4) cw.info(`  ... (${parsed.length - 4} rows in between)`);
+
+    // ── c) IQR outlier removal ─────────────────────────────
+    const vals  = parsed.map(r => r[priceKey]).filter(v => v > 0).sort((a, b) => a - b);
+    const q1    = vals[Math.floor(vals.length * 0.25)] ?? 0;
+    const q3    = vals[Math.floor(vals.length * 0.75)] ?? Infinity;
+    const iqr   = q3 - q1;
+    const lower = q1 - 1.5 * iqr;
+    const upper = q3 + 1.5 * iqr;
+
+    cw.info(`  IQR  →  Q1=${q1}  Q3=${q3}  IQR=${iqr}`);
+    cw.info(`  Bounds: [${Math.round(lower)}, ${Math.round(upper)}]`);
+
+    const clean   = parsed.filter(r => {
+        const v = r[priceKey];
+        return v === 0 || (v >= lower && v <= upper);
+    });
+    const removed = parsed.length - clean.length;
+
+    cw.info(`  Outliers removed : ${removed}  |  Clean rows : ${clean.length}`);
+
+    if (removed > 0) {
+        const outliers = parsed.filter(r => {
+            const v = r[priceKey];
+            return v > 0 && (v < lower || v > upper);
+        });
+        outliers.forEach(r =>
+            cw.warn(`    Outlier: [${r.date}] ${r.market}  ${priceKey}=${r[priceKey]}`)
+        );
+    }
+
+    if (clean.length === 0) {
+        cw.error("IQR filter removed ALL records — should not happen, check data");
+        return null;
+    }
+
+    // ── d) Recency-weighted average ────────────────────────
+    // weight = index + 1
+    // oldest record gets weight 1, most recent gets weight N
+    // so ₹price from today matters more than ₹price from 10 days ago
+    let wSum   = 0, wTotal = 0;
+    let wMin   = 0, wMax   = 0, wModal = 0, wT2 = 0;
+
+    clean.forEach((r, i) => {
+        const w  = i + 1;
+        wSum    += r[priceKey] * w;
+        wTotal  += w;
+        wMin    += r.min   * w;
+        wMax    += r.max   * w;
+        wModal  += r.modal * w;
+        wT2     += w;
+    });
+
+    const smartPrice    = Math.round(wSum   / wTotal);
+    const weightedMin   = Math.round(wMin   / wT2);
+    const weightedMax   = Math.round(wMax   / wT2);
+    const weightedModal = Math.round(wModal / wT2);
+
+    cw.ok(`Smart price → Grade ${g} = ₹${smartPrice} / quintal`);
+    cw.info(`  All 3 cols → min:₹${weightedMin}  modal:₹${weightedModal}  max:₹${weightedMax}`);
+
+    return {
+        smartPrice,
+        priceColumn:     `${priceKey}_price`,
+        weightedMin,
+        weightedMax,
+        weightedModal,
+        recordsUsed:     clean.length,
+        totalFetched:    parsed.length,
+        outliersRemoved: removed,
+        dateFrom:        parsed[0]?.date || "",
+        dateTo:          parsed[parsed.length - 1]?.date || "",
+    };
+}
+
+// ══════════════════════════════════════════════════════════
+//  EXPRESS SERVER
+// ══════════════════════════════════════════════════════════
+
+const app = express();
+app.use(cors());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// ── GET /  —  health check ────────────────────────────────
+app.get("/", (req, res) => {
+    res.json({
+        service:       "data.gov.in Smart Price Guesser",
+        status:        "running",
+        api_key_set:   DATAGOV_API_KEY ? "✓ YES" : "✗ NO",
+        resource_id:   "9ef84268-d588-465a-a308-a864a43d0070",
+        default_state: DEFAULT_STATE,
+        default_dist:  DEFAULT_DISTRICT || "(all districts)",
+        commodity:     DEFAULT_COMMODITY,
+        lookback_days: LOOKBACK_DAYS,
+        date_filter_note: "data.gov.in API has no working date filter — we fetch 1000 records and filter in JS",
+        grades: {
+            A:      "uses max_price   (premium tomatoes)",
+            B:      "uses modal_price (standard tomatoes)",
+            C:      "uses min_price   (lower grade)",
+            rotten: "rejected, price = ₹0",
+        },
+        endpoints: {
+            health:    `GET  http://localhost:${PORT}/`,
+            price:     `POST http://localhost:${PORT}/price`,
+            price_get: `GET  http://localhost:${PORT}/price?commodity=Tomato&grade=B&state=Maharashtra`,
+            debug:     `GET  http://localhost:${PORT}/debug?commodity=Tomato&state=Maharashtra&limit=3`,
+        },
+        curl_example: `curl -X POST http://localhost:${PORT}/price -H "Content-Type: application/json" -d '{"commodity":"Tomato","grade":"B","state":"Maharashtra","district":"Sholapur"}'`,
+    });
+});
+
+// ── POST /price  —  main endpoint ────────────────────────
+//  Body fields (all optional except grade):
+//    grade      "A" | "B" | "C" | "rotten"   ← required
+//    commodity  default = "Tomato"
+//    state      default = "Maharashtra"
+//    district   default = "Sholapur"  (set "" to get all)
+// ─────────────────────────────────────────────────────────
+app.post("/price", async (req, res) => {
+    cw.sep();
+    cw.info("POST /price  →  body:", JSON.stringify(req.body));
+
+    const {
+        commodity = DEFAULT_COMMODITY,
+        grade,
+        state     = DEFAULT_STATE,
+        district  = DEFAULT_DISTRICT,
+    } = req.body || {};
+
+    // ── Validate grade ─────────────────────────────────────
+    if (!grade) {
+        cw.warn("Missing 'grade' field in request body");
+        return res.status(400).json({
+            success: false,
+            message: "Missing required field: grade  (send A / B / C / rotten)",
+            received: req.body,
+        });
+    }
+
+    cw.info(`  commodity=${commodity}  grade=${grade}  state=${state}  district=${district || "(all)"}`);
+
+    // ── Rotten → instant reject ────────────────────────────
+    if (grade.toLowerCase() === "rotten") {
+        cw.ok("Grade=rotten → rejected, ₹0");
+        return res.json({
+            success:       true,
+            grade:         "rotten",
+            price:         0,
+            price_display: "₹0 — Rejected (rotten)",
+            message:       "Tomato is rotten and cannot be sold",
+        });
+    }
+
+    // ── Validate grade value ───────────────────────────────
+    if (!["A", "B", "C"].includes(grade.toUpperCase())) {
+        cw.warn("Invalid grade:", grade);
+        return res.status(400).json({
+            success: false,
+            message: `Invalid grade "${grade}" — must be A, B, C, or rotten`,
+        });
+    }
+
+    try {
+        // STEP 1 — fetch
+        const records = await fetchDataGovRecords({ commodity, state, district });
+
+        if (!records || records.length === 0) {
+            cw.warn("No records returned from API");
+            return res.status(404).json({
+                success: false,
+                message: `No data for commodity="${commodity}" state="${state}" district="${district || "all"}"`,
+                debug_tips: [
+                    "Check spelling: commodity='Tomato' state='Maharashtra'",
+                    "Try district='' to remove district filter",
+                    "data.gov.in can be 24-48h behind — try again tomorrow",
+                    "Hit GET /debug to see raw API response",
+                ],
+            });
+        }
+
+        // STEP 2 — compute
+        const result = computeSmartPrice(records, grade);
+
+        if (!result) {
+            cw.error("computeSmartPrice returned null");
+            return res.status(500).json({
+                success: false,
+                message: "Price computation failed — all price fields were zero",
+                debug_tips: [
+                    "Check terminal: look for 'sample record[0] field names' log line",
+                    "Field names must be 'Min Price' / 'Max Price' / 'Modal Price'",
+                    "Hit GET /debug to inspect raw record structure",
+                ],
+            });
+        }
+
+        cw.sep();
+        cw.ok(`FINAL → Grade ${grade.toUpperCase()} = ₹${result.smartPrice} / quintal`);
+        cw.sep();
+
+        return res.json({
+            success:          true,
+            grade:            grade.toUpperCase(),
+            price:            result.smartPrice,          // ← use this in frontend
+            price_display:    `₹${result.smartPrice.toLocaleString("en-IN")} per quintal`,
+            price_column:     result.priceColumn,
+
+            // all 3 weighted prices for reference
+            min_price:        result.weightedMin,
+            modal_price:      result.weightedModal,
+            max_price:        result.weightedMax,
+
+            // stats for debugging
+            records_used:     result.recordsUsed,
+            total_fetched:    result.totalFetched,
+            outliers_removed: result.outliersRemoved,
+            data_date_range:  `${result.dateFrom} → ${result.dateTo}`,
+            lookback_days:    LOOKBACK_DAYS,
+            source:           "data.gov.in / AGMARKNET",
+            location:         { state, district: district || "all" },
+            timestamp:        new Date().toISOString(),
+            message:          `Grade ${grade.toUpperCase()} smart price from ${result.recordsUsed} clean records`,
+        });
+
+    } catch (err) {
+        cw.error("Unhandled error:", err.message);
+        cw.error("Stack:", err.stack?.split("\n").slice(0,4).join("\n"));
+        return res.status(500).json({
+            success:    false,
+            message:    err.message,
+            debug_tips: [
+                "Watch terminal for [PG] logs — every step is traced",
+                "Try GET /debug?commodity=Tomato&state=Maharashtra&limit=3",
+                "Check DATAGOV_API_KEY is valid at https://data.gov.in",
+            ],
+        });
+    }
+});
+
+// ── GET /price  —  browser / Postman quick test ──────────
+app.get("/price", (req, res) => {
+    req.body = req.query;
+    app._router.handle(
+        { ...req, method: "POST", url: "/price", body: req.query },
+        res, () => {}
+    );
+});
+
+// ── GET /debug  —  raw API passthrough ───────────────────
+// Use this to see the exact field names data.gov.in is returning.
+// Very useful when prices come back as 0 — just hit this endpoint
+// and look at what records[0] looks like.
+//
+// Example: GET /debug?commodity=Tomato&state=Maharashtra&limit=3
+// ─────────────────────────────────────────────────────────
+app.get("/debug", async (req, res) => {
+    cw.info("GET /debug — raw data.gov.in passthrough");
+
+    const commodity = req.query.commodity || DEFAULT_COMMODITY;
+    const state     = req.query.state     || DEFAULT_STATE;
+    const district  = req.query.district  !== undefined ? req.query.district : DEFAULT_DISTRICT;
+    const limit     = req.query.limit     || "5";
+
+    const params = new URLSearchParams({
+        "api-key":            DATAGOV_API_KEY,
+        "format":             "json",
+        "limit":              limit,
+        "offset":             "0",
+        "filters[commodity]": commodity,
+        "filters[state]":     state,
+    });
+    if (district) params.append("filters[district]", district);
+
+    const url       = `${DATAGOV_BASE_URL}?${params.toString()}`;
+    const maskedURL = url.replace(DATAGOV_API_KEY, "***KEY***");
+
+    cw.info("Debug URL:", maskedURL);
+
+    try {
+        const r    = await fetch(url);
+        const json = await r.json();
+        return res.json({
+            debug:             true,
+            http_status:       r.status,
+            note:              "Raw response from data.gov.in — check records[0] for exact field names",
+            url_used:          maskedURL,
+            field_names_in_r0: json.records?.[0] ? Object.keys(json.records[0]) : "no records",
+            response:          json,
+        });
+    } catch (e) {
+        cw.error("Debug endpoint error:", e.message);
+        return res.status(500).json({ debug: true, error: e.message });
+    }
+});
+
+// ── Start server ──────────────────────────────────────────
+app.listen(PORT, () => {
+    cw.sep();
+    cw.ok(`data.gov.in Smart Price Guesser  →  http://localhost:${PORT}`);
+    cw.info(`  API key  : ${DATAGOV_API_KEY.slice(0,8)}...${DATAGOV_API_KEY.slice(-4)}`);
+    cw.info(`  State    : ${DEFAULT_STATE}`);
+    cw.info(`  District : ${DEFAULT_DISTRICT || "(all)"}`);
+    cw.info(`  Commodity: ${DEFAULT_COMMODITY}`);
+    cw.info(`  Lookback : last ${LOOKBACK_DAYS} days (post-fetch JS filter)`);
+    cw.sep();
+    cw.info("  Endpoints:");
+    cw.info(`    GET  http://localhost:${PORT}/`);
+    cw.info(`    POST http://localhost:${PORT}/price`);
+    cw.info(`    GET  http://localhost:${PORT}/price?commodity=Tomato&grade=B&state=Maharashtra`);
+    cw.info(`    GET  http://localhost:${PORT}/debug?commodity=Tomato&state=Maharashtra&limit=3`);
+    cw.sep();
+    cw.info("  Test curl:");
+    cw.info(`    curl -X POST http://localhost:${PORT}/price \\`);
+    cw.info(`      -H "Content-Type: application/json" \\`);
+    cw.info(`      -d '{"grade":"B"}'`);
+    cw.sep();
+});
