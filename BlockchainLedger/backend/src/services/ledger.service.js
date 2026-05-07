@@ -50,7 +50,6 @@ class LedgerService {
 
     // 4. Anchor to Sepolia blockchain (blockchain.service guards against on-chain duplicates)
     const blockchainProof = await BlockchainService.anchorLedger(
-      insertedEntry.id,
       insertedEntry.hash,
       farmerName
     );

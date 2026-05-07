@@ -1,11 +1,17 @@
 import { ethers } from "ethers";
 import dotenv from "dotenv";
+
 dotenv.config();
 
 const provider = new ethers.JsonRpcProvider(process.env.SEPOLIA_RPC);
-const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
 
-// Full Contract ABI for VegetableHash
+const wallet = new ethers.Wallet(
+    process.env.PRIVATE_KEY,
+    provider
+);
+
+// ================= CONTRACT ABI =================
+
 const contractABI = [
   {
     "inputs": [],
@@ -82,45 +88,79 @@ const contractABI = [
   }
 ];
 
+// ================= CONTRACT =================
+
 const contract = new ethers.Contract(
-  process.env.CONTRACT_ADDRESS,
-  contractABI,
-  wallet
+    process.env.CONTRACT_ADDRESS,
+    contractABI,
+    wallet
 );
+
+// ================= BLOCKCHAIN SERVICE =================
 
 class BlockchainService {
 
-  // -- Check if a record ID already exists on-chain ----------------------
+  // Generate UNIQUE blockchain ID every time
+  static generateUniqueBlockchainId() {
+
+    // timestamp + random number
+    return Number(
+        `${Date.now()}${Math.floor(Math.random() * 1000)}`
+    );
+  }
+
+  // Check if record exists
   static async recordExists(id) {
     try {
       const record = await contract.records(id);
       return record.exists === true;
     } catch (err) {
-      console.warn(`Could not check record existence for ID ${id}:`, err.message);
+      console.warn("Existence check failed:", err.message);
       return false;
     }
   }
 
-  // -- Anchor ledger entry to Sepolia ------------------------------------
-  static async anchorLedger(id, hash, farmerName) {
+  // Store hash on blockchain
+  static async anchorLedger(hash, farmerName) {
+
     try {
-      // Guard: skip if this ID is already anchored on-chain
-      const exists = await BlockchainService.recordExists(id);
-      if (exists) {
-        console.warn(`Record ID ${id} already exists on-chain. Skipping anchor.`);
-        return { skipped: true, reason: 'already_anchored' };
+
+      // ================= UNIQUE ID =================
+      let blockchainId;
+      let exists = true;
+
+      // Keep generating until unique
+      while (exists) {
+
+        blockchainId = this.generateUniqueBlockchainId();
+
+        exists = await this.recordExists(blockchainId);
       }
 
-      console.log(`Anchoring to Sepolia: ID=${id}, Farmer=${farmerName}`);
+      console.log("=================================");
+      console.log("ANCHORING TO BLOCKCHAIN");
+      console.log("Blockchain ID:", blockchainId);
+      console.log("Farmer:", farmerName);
+      console.log("=================================");
 
-      const tx = await contract.storeHash(id, hash, farmerName);
-      console.log(`Transaction sent: ${tx.hash}`);
+      // Send transaction
+      const tx = await contract.storeHash(
+          blockchainId,
+          hash,
+          farmerName
+      );
 
+      console.log("Transaction sent:", tx.hash);
+
+      // Wait for confirmation
       const receipt = await tx.wait();
-      console.log(`Confirmed in block: ${receipt.blockNumber}`);
+
+      console.log("Transaction confirmed!");
+      console.log("Block Number:", receipt.blockNumber);
 
       return {
-        skipped: false,
+        success: true,
+        blockchain_id: blockchainId,
         txHash: receipt.hash,
         blockNumber: receipt.blockNumber,
         from: receipt.from,
@@ -129,58 +169,85 @@ class BlockchainService {
       };
 
     } catch (err) {
-      console.error('Blockchain anchoring error:', err.message);
-      throw new Error(`Failed to anchor to Sepolia: ${err.message}`);
+
+      console.error("BLOCKCHAIN ERROR:");
+      console.error(err);
+
+      throw new Error(
+          `Failed to anchor ledger: ${err.message}`
+      );
     }
   }
 
-  // Alias for backward compatibility
-  static async sendToSepolia(id, hash, farmerName) {
-    return this.anchorLedger(id, hash, farmerName);
-  }
-
-  // Verify hash stored on blockchain
+  // Verify hash
   static async verifyHashOnChain(id, hash) {
+
     try {
-      const isValid = await contract.verifyHash(id, hash);
-      return isValid;
+
+      return await contract.verifyHash(id, hash);
+
     } catch (err) {
-      console.error('Verification error:', err.message);
-      throw new Error(`Failed to verify hash: ${err.message}`);
+
+      console.error("Verification error:", err.message);
+
+      throw new Error(
+          `Failed to verify hash: ${err.message}`
+      );
     }
   }
 
-  // Retrieve full record from blockchain
+  // Get full record
   static async getRecordFromChain(id) {
+
     try {
-      const [hashValue, timestamp, farmerName] = await contract.getRecord(id);
+
+      const [hashValue, timestamp, farmerName] =
+          await contract.getRecord(id);
+
       return {
+        id,
         hashValue,
         timestamp: timestamp.toString(),
-        farmerName,
-        id
+        farmerName
       };
+
     } catch (err) {
-      console.error('Fetch error:', err.message);
-      throw new Error(`Failed to fetch record: ${err.message}`);
+
+      console.error("Fetch error:", err.message);
+
+      throw new Error(
+          `Failed to fetch record: ${err.message}`
+      );
     }
   }
 
-  // Get just the hash
+  // Get hash only
   static async getHashFromChain(id) {
+
     try {
+
       return await contract.getHash(id);
+
     } catch (err) {
-      throw new Error(`Failed to fetch hash: ${err.message}`);
+
+      throw new Error(
+          `Failed to fetch hash: ${err.message}`
+      );
     }
   }
 
-  // Get contract owner (who deployed it)
+  // Contract owner
   static async getContractOwner() {
+
     try {
+
       return await contract.owner();
+
     } catch (err) {
-      throw new Error(`Failed to fetch owner: ${err.message}`);
+
+      throw new Error(
+          `Failed to fetch owner: ${err.message}`
+      );
     }
   }
 }

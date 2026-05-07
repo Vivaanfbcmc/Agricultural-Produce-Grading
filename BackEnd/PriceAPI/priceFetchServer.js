@@ -25,7 +25,7 @@ import bodyParser from "body-parser";
 // ==========================================================
 //  CONFIG | fill these in
 // ==========================================================
-const CEDA_TOKEN      = "a2adc32917a957efb954ecf46ecc2ae5f4ebe3cccbef48a820d76776073f74c5";
+const CEDA_TOKEN      = "41b21601ef2c76b6ba6a5d3a786c062fd9dcf9c1affe92fde9fec3a1a92cc2cf";
 const CEDA_API_URL    = "https://api.ceda.ashoka.edu.in/v1/agmarknet/prices";
 
 // Hardcoded location (Maharashtra / Solapur / market)
@@ -61,6 +61,7 @@ async function fetchCedaRecords(commodity_id) {
     cw("-- CEDA REQUEST ------------------------------");
     cw("URL  ->", CEDA_API_URL);
     cw("Body ->", JSON.stringify(body));
+    cw("APIKEY: " + CEDA_TOKEN);
 
     const res = await fetch(CEDA_API_URL, {
         method:  "POST",
