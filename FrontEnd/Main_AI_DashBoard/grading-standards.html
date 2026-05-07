@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Grading Standards - VEGEGRADE</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700&family=Source+Serif+Pro:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="AIIndex.css">
+    <style>
+        /* -- Parameter Cards -------------------------- */
+        .param-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin: 16px 0 28px;
+        }
+        .param-card {
+            border: 1px solid var(--border);
+            background: var(--white);
+            padding: 18px 16px;
+            border-top: 4px solid var(--gov-blue);
+        }
+        .param-card .param-icon { font-size: 28px; margin-bottom: 10px; }
+        .param-card h4 {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--gov-navy);
+            margin-bottom: 6px;
+        }
+        .param-card p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+        /* -- Grade Cards ------------------------------ */
+        .grade-cards { display: flex; flex-direction: column; gap: 20px; margin: 16px 0 28px; }
+
+        .grade-card {
+            border: 1px solid var(--border);
+            background: var(--white);
+            overflow: hidden;
+        }
+
+        .grade-card-head {
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            color: white;
+        }
+
+        .grade-card-head.grade-a { background: var(--gov-green); }
+        .grade-card-head.grade-b { background: #0077AA; }
+        .grade-card-head.grade-c { background: var(--gov-orange); }
+        .grade-card-head.grade-rot { background: var(--gov-red); }
+
+        .grade-tag {
+            background: rgba(255,255,255,0.25);
+            border: 2px solid rgba(255,255,255,0.6);
+            font-size: 22px;
+            font-weight: 700;
+            padding: 4px 16px;
+            letter-spacing: 1px;
+            border-radius: 3px;
+            white-space: nowrap;
+        }
+
+        .grade-card-head-text h3 { font-size: 17px; font-weight: 700; }
+        .grade-card-head-text p { font-size: 13px; opacity: 0.85; margin-top: 2px; }
+
+        .grade-price-pill {
+            margin-left: auto;
+            background: rgba(0,0,0,0.2);
+            border-radius: 3px;
+            padding: 6px 14px;
+            font-size: 14px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .grade-card-body {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        @media (max-width: 600px) {
+            .grade-card-body { grid-template-columns: 1fr; }
+            .do-dont-grid { grid-template-columns: 1fr; }
+        }
+
+        .grade-param-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13.5px;
+            grid-column: 1 / -1;
+        }
+        .grade-param-table thead tr { background: var(--gov-navy); color: white; }
+        .grade-param-table thead td {
+            padding: 8px 12px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 700;
+        }
+        .grade-param-table tbody tr:nth-child(odd)  { background: var(--gov-sky); }
+        .grade-param-table tbody tr:nth-child(even) { background: white; }
+        .grade-param-table tbody td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+        .grade-param-table tbody td:first-child { font-weight: 600; color: var(--gov-navy); width: 140px; }
+
+        .grade-uses { font-size: 13px; color: var(--text); line-height: 1.7; }
+        .grade-uses strong { color: var(--gov-navy); }
+
+        /* -- Process Flow ----------------------------- */
+        .process-flow {
+            display: flex;
+            align-items: flex-start;
+            gap: 0;
+            margin: 16px 0 24px;
+            flex-wrap: wrap;
+        }
+        .process-step {
+            flex: 1;
+            min-width: 120px;
+            text-align: center;
+            padding: 16px 10px;
+            background: var(--gov-sky);
+            border: 1px solid var(--border);
+            border-right: none;
+            position: relative;
+        }
+        .process-step:last-child { border-right: 1px solid var(--border); }
+        .process-step .ps-icon { font-size: 28px; margin-bottom: 8px; }
+        .process-step .ps-title { font-size: 12.5px; font-weight: 700; color: var(--gov-navy); }
+        .process-step .ps-desc { font-size: 11.5px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+
+        .process-arrow {
+            display: flex;
+            align-items: center;
+            padding: 0 4px;
+            color: var(--gov-blue);
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        /* -- Comparison Table ------------------------- */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13.5px;
+            margin: 16px 0;
+        }
+        .comparison-table thead tr { background: var(--gov-navy); color: white; }
+        .comparison-table thead td { padding: 10px 14px; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.4px; }
+        .comparison-table tbody tr:nth-child(odd)  { background: var(--gov-sky); }
+        .comparison-table tbody tr:nth-child(even) { background: white; }
+        .comparison-table tbody td { padding: 9px 14px; border-bottom: 1px solid var(--border); }
+        .comparison-table tbody td:first-child { font-weight: 600; color: var(--gov-navy); }
+
+        .dot-a   { color: var(--gov-green); font-weight: 700; }
+        .dot-b   { color: #0077AA; font-weight: 700; }
+        .dot-c   { color: var(--gov-orange); font-weight: 700; }
+        .dot-rot { color: var(--gov-red); font-weight: 700; }
+
+        .section-gap { margin-top: 28px; }
+        .sub-note {
+            font-size: 13px;
+            color: var(--muted);
+            background: var(--gov-sky);
+            border: 1px solid var(--border);
+            padding: 10px 16px;
+            margin-top: 16px;
+        }
+    </style>
+</head>
+<body>
+
+<header class="site-header">
+    <div class="header-inner">
+        <div class="emblem">🌾</div>
+        <div class="site-title-block">
+            <h1>VEGE<span>GRADE</span></h1>
+            <p>AI-Powered Vegetable Quality Assessment &amp; Marketplace Portal</p>
+        </div>
+        <!--		<div class="header-right">-->
+        <!--			<span class="helpline">Helpline: 1800-180-1551</span>-->
+        <!--			<span>Mon-Sat, 9 AM – 5 PM IST</span>-->
+        <!--		</div>-->
+    </div>
+</header>
+
+<nav class="nav-bar">
+    <div class="nav-inner">
+        <a href="AIIndex.html">Home</a>
+        <a href="history.html">Transaction History</a>
+        <a href="market.html">Market Prices</a>
+        <a href="guidelines.html">Guidelines</a>
+        <a href="profile.html">My Profile</a>
+    </div>
+</nav>
+
+<div class="breadcrumb-bar">
+    <div class="inner">
+        <a href="AIIndex.html">Home</a><span>›</span>
+        <a href="faq.html">Guidelines</a><span>›</span>
+        Grading Standards
+    </div>
+</div>
+
+<div class="page-body">
+
+    <div class="main-col">
+
+        <div class="page-title-strip">
+            <h2>AI Grading Standards</h2>
+            <p>How VEGEGRADE evaluates vegetable quality using computer vision and assigns grades.</p>
+        </div>
+
+        <div class="content-card">
+            <div class="content-card-body">
+
+                <!-- Overview -->
+                <div class="notice-banner">
+                    <div class="notice-icon"></div>
+                    <div>
+                        Vegetables are analyzed using <strong>computer vision techniques</strong> that evaluate visual features such as colour uniformity, size consistency, surface defects, and freshness indicators. Based on these parameters, the system automatically classifies produce into <strong>Grade A, Grade B, Grade C, or Rotten</strong> categories.
+                    </div>
+                </div>
+
+                <!-- How it Works -->
+                <div class="section-label">How the AI Assessment Works</div>
+                <p style="font-size:14px; line-height:1.75; color:var(--text); margin-bottom:16px;">
+                    When you upload an image, VEGEGRADE's ML Engine passes it through a multi-stage computer vision pipeline. The model was trained on thousands of labelled vegetable images representing all grade categories and a wide range of field conditions. Assessment is completed in seconds and is fully automated - no human intervention is involved in the grading decision.
+                </p>
+
+                <div class="process-flow">
+                    <div class="process-step">
+                        <div class="ps-icon">📸</div>
+                        <div class="ps-title">Image Input</div>
+                        <div class="ps-desc">User uploads photo via portal</div>
+                    </div>
+                    <div class="process-arrow">›</div>
+                    <div class="process-step">
+                        <div class="ps-icon">🔍</div>
+                        <div class="ps-title">Pre-processing</div>
+                        <div class="ps-desc">Normalisation, background segmentation</div>
+                    </div>
+                    <div class="process-arrow">›</div>
+                    <div class="process-step">
+                        <div class="ps-icon">🧠</div>
+                        <div class="ps-title">Feature Extraction</div>
+                        <div class="ps-desc">Colour, texture, defect detection</div>
+                    </div>
+                    <div class="process-arrow">›</div>
+                    <div class="process-step">
+                        <div class="ps-icon">⚖️</div>
+                        <div class="ps-title">Classification</div>
+                        <div class="ps-desc">Grade assigned by ML model</div>
+                    </div>
+                    <div class="process-arrow">›</div>
+                    <div class="process-step">
+                        <div class="ps-icon">✔</div>
+                        <div class="ps-title">Result</div>
+                        <div class="ps-desc">Grade &amp; price estimate returned</div>
+                    </div>
+                </div>
+
+                <!-- Visual Parameters -->
+                <div class="section-label section-gap">Visual Parameters Evaluated</div>
+                <p style="font-size:14px; line-height:1.75; color:var(--text); margin-bottom:16px;">
+                    The AI model evaluates four primary visual parameters. Each parameter is assessed independently and combined to produce an overall grade classification.
+                </p>
+                <div class="param-grid">
+                    <div class="param-card">
+                        <div class="param-icon">🎨</div>
+                        <h4>Colour Uniformity</h4>
+                        <p>Evaluates how consistent the colour is across the produce surface. Irregular patches, discolouration, or browning reduce the score.</p>
+                    </div>
+                    <div class="param-card">
+                        <div class="param-icon">📐</div>
+                        <h4>Size Consistency</h4>
+                        <p>Assesses whether the produce matches the expected size range for the commodity. Extreme undersizing or oversizing is penalised.</p>
+                    </div>
+                    <div class="param-card">
+                        <div class="param-icon">🔬</div>
+                        <h4>Surface Defects</h4>
+                        <p>Detects cracks, bruises, scabs, insect damage, physical injuries, and blemishes on the skin surface of the vegetable.</p>
+                    </div>
+                    <div class="param-card">
+                        <div class="param-icon">💧</div>
+                        <h4>Freshness Indicators</h4>
+                        <p>Identifies visual signs of wilting, shrivelling, moisture loss, and early decay that indicate reduced shelf life.</p>
+                    </div>
+                </div>
+
+                <!-- Grade Definitions -->
+                <div class="section-label section-gap">Grade Definitions &amp; Criteria</div>
+
+                <div class="grade-cards">
+
+                    <!-- Grade A -->
+                    <div class="grade-card">
+                        <div class="grade-card-head grade-a">
+                            <div class="grade-tag">Grade A</div>
+                            <div class="grade-card-head-text">
+                                <h3>Excellent Quality</h3>
+                                <p>Premium produce - highest market value</p>
+                            </div>
+                            <div class="grade-price-pill">Rs. 2,400 / qtl</div>
+                        </div>
+                        <div class="grade-card-body">
+                            <table class="grade-param-table">
+                                <thead>
+                                <tr>
+                                    <td>Parameter</td>
+                                    <td>Criteria</td>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td>Colour Uniformity</td>
+                                    <td>Highly uniform; rich, vibrant colour typical of the variety with no discolouration</td>
+                                </tr>
+                                <tr>
+                                    <td>Size Consistency</td>
+                                    <td>Within the standard size range for the commodity; well-formed and regular shape</td>
+                                </tr>
+                                <tr>
+                                    <td>Surface Defects</td>
+                                    <td>No visible cracks, bruises, or blemishes; skin is smooth and intact</td>
+                                </tr>
+                                <tr>
+                                    <td>Freshness</td>
+                                    <td>Firm, plump appearance; no signs of wilting or moisture loss</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                            <div class="grade-uses">
+                                <strong>Suitable for:</strong> Premium retail, supermarkets, direct consumer sale, and export. Commands highest wholesale and retail price in all major mandis.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Grade B -->
+                    <div class="grade-card">
+                        <div class="grade-card-head grade-b">
+                            <div class="grade-tag">Grade B</div>
+                            <div class="grade-card-head-text">
+                                <h3>Good Quality</h3>
+                                <p>Minor imperfections - suitable for general retail</p>
+                            </div>
+                            <div class="grade-price-pill">Rs. 1,800 / qtl</div>
+                        </div>
+                        <div class="grade-card-body">
+                            <table class="grade-param-table">
+                                <thead>
+                                <tr>
+                                    <td>Parameter</td>
+                                    <td>Criteria</td>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td>Colour Uniformity</td>
+                                    <td>Mostly uniform; minor colour variation or slight off-tone areas acceptable</td>
+                                </tr>
+                                <tr>
+                                    <td>Size Consistency</td>
+                                    <td>Slight variation from ideal size acceptable; shape mostly regular</td>
+                                </tr>
+                                <tr>
+                                    <td>Surface Defects</td>
+                                    <td>Minor surface blemishes or superficial marks permitted; no deep bruising</td>
+                                </tr>
+                                <tr>
+                                    <td>Freshness</td>
+                                    <td>Good firmness; no significant wilting; slight skin texture change acceptable</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                            <div class="grade-uses">
+                                <strong>Suitable for:</strong> Local retail markets, mandi direct sale, institutional buyers (hotels, canteens). Some buyers may grade downward; negotiate accordingly.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Grade C -->
+                    <div class="grade-card">
+                        <div class="grade-card-head grade-c">
+                            <div class="grade-tag">Grade C</div>
+                            <div class="grade-card-head-text">
+                                <h3>Average Quality</h3>
+                                <p>Noticeable defects - processing and secondary markets</p>
+                            </div>
+                            <div class="grade-price-pill">Rs. 1,100 / qtl</div>
+                        </div>
+                        <div class="grade-card-body">
+                            <table class="grade-param-table">
+                                <thead>
+                                <tr>
+                                    <td>Parameter</td>
+                                    <td>Criteria</td>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td>Colour Uniformity</td>
+                                    <td>Noticeable discolouration, yellow patches, or browning on significant surface area</td>
+                                </tr>
+                                <tr>
+                                    <td>Size Consistency</td>
+                                    <td>Noticeably small, oversized, or irregular shape; significant deviation from standard</td>
+                                </tr>
+                                <tr>
+                                    <td>Surface Defects</td>
+                                    <td>Visible bruises, cracks, scabs, or insect damage; more than minor surface blemishes</td>
+                                </tr>
+                                <tr>
+                                    <td>Freshness</td>
+                                    <td>Some wilting, softening, or shrivelling visible; reduced shelf life</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                            <div class="grade-uses">
+                                <strong>Suitable for:</strong> Industrial processing, juice and paste production, dehydration units, and price-sensitive secondary markets. Not recommended for direct retail.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Rotten -->
+                    <div class="grade-card">
+                        <div class="grade-card-head grade-rot">
+                            <div class="grade-tag">Rotten</div>
+                            <div class="grade-card-head-text">
+                                <h3>Rejected</h3>
+                                <p>Significant decay or damage - not accepted for trade</p>
+                            </div>
+                            <div class="grade-price-pill" style="background:rgba(0,0,0,0.3);">Not Tradeable</div>
+                        </div>
+                        <div class="grade-card-body">
+                            <table class="grade-param-table">
+                                <thead>
+                                <tr>
+                                    <td>Parameter</td>
+                                    <td>Criteria</td>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td>Colour Uniformity</td>
+                                    <td>Dark patches, widespread blackening, white mould growth, or severe discolouration</td>
+                                </tr>
+                                <tr>
+                                    <td>Size Consistency</td>
+                                    <td>Collapsed, shrivelled, or deformed beyond recognition of original shape</td>
+                                </tr>
+                                <tr>
+                                    <td>Surface Defects</td>
+                                    <td>Extensive decay, leaking fluids, mould, severe physical injury, or fungal growth</td>
+                                </tr>
+                                <tr>
+                                    <td>Freshness</td>
+                                    <td>Decomposition evident; produce no longer safe for food use in any form</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                            <div class="grade-uses">
+                                <strong>Action:</strong> Rotten produce is <strong>rejected by the system</strong> and cannot be recorded in a trade transaction. Segregate immediately to prevent spread of decay to Grade B/C stock.
+                            </div>
+                        </div>
+                    </div>
+
+                </div><!-- /grade-cards -->
+
+                <!-- Comparison Summary -->
+                <div class="section-label section-gap">At a Glance: Grade Comparison</div>
+                <table class="comparison-table">
+                    <thead>
+                    <tr>
+                        <td>Parameter</td>
+                        <td class="dot-a">Grade A</td>
+                        <td class="dot-b">Grade B</td>
+                        <td class="dot-c">Grade C</td>
+                        <td class="dot-rot">Rotten</td>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>Colour Uniformity</td>
+                        <td class="dot-a">Excellent</td>
+                        <td class="dot-b">Good</td>
+                        <td class="dot-c">Poor</td>
+                        <td class="dot-rot">Severely compromised</td>
+                    </tr>
+                    <tr>
+                        <td>Size &amp; Shape</td>
+                        <td class="dot-a">Standard</td>
+                        <td class="dot-b">Minor deviation</td>
+                        <td class="dot-c">Significant deviation</td>
+                        <td class="dot-rot">Collapsed / deformed</td>
+                    </tr>
+                    <tr>
+                        <td>Surface Defects</td>
+                        <td class="dot-a">None</td>
+                        <td class="dot-b">Superficial only</td>
+                        <td class="dot-c">Visible damage</td>
+                        <td class="dot-rot">Extensive decay / mould</td>
+                    </tr>
+                    <tr>
+                        <td>Freshness</td>
+                        <td class="dot-a">Excellent</td>
+                        <td class="dot-b">Good</td>
+                        <td class="dot-c">Reduced</td>
+                        <td class="dot-rot">Decomposed</td>
+                    </tr>
+                    <tr>
+                        <td>Market Use</td>
+                        <td class="dot-a">Retail / Export</td>
+                        <td class="dot-b">Retail / Mandi</td>
+                        <td class="dot-c">Processing only</td>
+                        <td class="dot-rot">Rejected</td>
+                    </tr>
+                    <tr>
+                        <td>Indicative Price</td>
+                        <td class="dot-a">Rs. 2,400/qtl</td>
+                        <td class="dot-b">Rs. 1,800/qtl</td>
+                        <td class="dot-c">Rs. 1,100/qtl</td>
+                        <td class="dot-rot">-</td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <div class="sub-note">
+                    <strong>Note:</strong> Prices are indicative wholesale rates sourced from CEDA and are updated daily. Final transaction prices depend on your local mandi conditions and buyer negotiation. Grade standards are aligned with AGMARK / FSSAI guidelines where applicable.
+                </div>
+
+                <!-- Limitations -->
+                <div class="section-label section-gap">Limitations of AI Grading</div>
+                <p style="font-size:14px; line-height:1.75; color:var(--text); margin-bottom:10px;">
+                    The VEGEGRADE AI model provides reliable results under standard conditions, but there are known limitations to be aware of:
+                </p>
+                <ul style="font-size:14px; line-height:1.8; color:var(--text); padding-left:22px;">
+                    <li>The model assesses <strong>visual surface quality only</strong>. It cannot detect internal defects, sugar content, firmness (hardness), or odour.</li>
+                    <li>Poor image quality - including blur, deep shadows, or cluttered backgrounds - may result in a lower grade or incorrect classification.</li>
+                    <li>Results are <strong>advisory, not legally binding</strong>. For official certification, contact your APMC office.</li>
+                    <li>The model is currently trained and validated for <strong>tomatoes only</strong>. Uploading images of other vegetables will produce unreliable results.</li>
+                    <li>Grade accuracy may vary for unusual or heirloom varieties not well-represented in the training dataset.</li>
+                </ul>
+
+            </div>
+        </div>
+
+    </div><!-- /main-col -->
+
+    <aside class="side-col">
+        <div class="sidebar-box">
+            <div class="sb-head">Quick Links</div>
+            <div class="sb-body">
+                <ul>
+                    <li><a href="grading-standards.html">Grading Standards (AGMARK)</a></li>
+                    <li><a href="guidelines.html">Upload Guidelines</a></li>
+                    <li><a href="market.html">Market Price Board</a></li>
+                    <li><a href="faq.html">FAQs</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="sidebar-box">
+            <div class="sb-head">Grading Criteria</div>
+            <div class="sb-body">
+                <div class="info-row"><span class="lbl">Grade A</span><span class="val" style="color:var(--gov-green)">Excellent</span></div>
+                <div class="info-row"><span class="lbl">Grade B</span><span class="val" style="color:#0077AA">Good</span></div>
+                <div class="info-row"><span class="lbl">Grade C</span><span class="val" style="color:var(--gov-orange)">Average</span></div>
+                <div class="info-row"><span class="lbl">Rotten</span><span class="val" style="color:var(--gov-red)">Rejected</span></div>
+            </div>
+        </div>
+
+        <div class="sidebar-box">
+            <div class="sb-head">Today's Rates (Tomato)</div>
+            <div class="sb-body">
+                <div class="info-row">
+                    <span class="lbl">Grade A</span>
+                    <span class="val" style="color:var(--gov-green)">Rs. 2,400/qtl</span>
+                </div>
+                <div class="info-row">
+                    <span class="lbl">Grade B</span>
+                    <span class="val" style="color:#0077AA">Rs. 1,800/qtl</span>
+                </div>
+                <div class="info-row">
+                    <span class="lbl">Grade C</span>
+                    <span class="val" style="color:var(--gov-orange)">Rs. 1,100/qtl</span>
+                </div>
+                <div class="info-row">
+                    <span class="lbl">Rotten</span>
+                    <span class="val" style="color:var(--gov-red)">Rejected</span>
+                </div>
+                <div style="font-size:11.5px; color:var(--muted); margin-top:8px;">
+                    Source: CEDA - Updated daily
+                </div>
+            </div>
+        </div>
+    </aside>
+
+</div>
+
+<footer class="site-footer">
+    <div class="footer-inner">
+        <div class="footer-col">
+            <h4>Related Services</h4>
+            <ul>
+                <li><a href="https://pmkisan.gov.in/">PM-KISAN Portal</a></li>
+                <li><a href="https://enam.gov.in/web/">eNAM Market</a></li>
+                <li><a href="https://www.soilhealth.dac.gov.in/home">Soil Health Card</a></li>
+                <li><a href="https://icar.org.in/en/krishi-vigyan-kendras">Krishi Vigyan Kendras</a></li>
+            </ul>
+        </div>
+        <div class="footer-col" style="flex:1; min-width:200px;">
+            <h4>About</h4>
+            <p style="font-size:13px; line-height:1.6;">
+                VEGEGRADE is a platform that uses AI to automatically grade vegetables based on visual quality. It records grading and trade data on blockchain to enable transparent and fair pricing.
+            </p>
+        </div>
+    </div>
+    <div class="footer-bottom">&nbsp;|&nbsp; Site Version 0.4</div>
+</footer>
+
+</body>
+</html>

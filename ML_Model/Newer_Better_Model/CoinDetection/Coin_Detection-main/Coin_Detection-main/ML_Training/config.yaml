@@ -1,0 +1,11 @@
+
+path: '/home/shauya/Downloads/YOLO' # dataset root dir
+train: images/train  # train images (relative to 'path')
+val: images/train  # val images (relative to 'path')
+
+# Classes
+names:
+  0: 1
+  1: 2
+  2: 5
+  3: 10

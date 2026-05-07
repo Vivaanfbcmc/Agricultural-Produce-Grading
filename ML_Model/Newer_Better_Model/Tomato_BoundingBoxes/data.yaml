@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 3
+names: ['0', '1', 'tomato']
+
+roboflow:
+  workspace: yas-workspace-rfjkr
+  project: detect-final-a5jit
+  version: 1
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/yas-workspace-rfjkr/detect-final-a5jit/dataset/1

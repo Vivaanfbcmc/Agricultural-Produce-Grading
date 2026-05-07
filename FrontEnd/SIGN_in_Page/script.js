@@ -1,5 +1,5 @@
 /* -------------------------
-   STATE → DISTRICT LOGIC
+   STATE -> DISTRICT LOGIC
 --------------------------*/
 const stateDropdown = document.getElementById("state");
 const districtDropdown = document.getElementById("district");
@@ -14,7 +14,7 @@ for (const stateName in stateDistricts) {
   stateDropdown.appendChild(option);
 }
 
-// When state changes → load districts
+// When state changes -> load districts
 stateDropdown.addEventListener("change", function () {
   const selectedState = this.value;
 

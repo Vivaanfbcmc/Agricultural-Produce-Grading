@@ -1,206 +1,357 @@
-// DOM Elements
-const uploadArea = document.getElementById('uploadArea');
-const fileInput = document.getElementById('fileInput');
-const previewContainer = document.getElementById('previewContainer');
-const previewImage = document.getElementById('previewImage');
-const fileName = document.getElementById('fileName');
-const fileSize = document.getElementById('fileSize');
-const fileDimensions = document.getElementById('fileDimensions');
-const analyzeBtn = document.getElementById('analyzeBtn');
-const loading = document.getElementById('loading');
-const resultSection = document.getElementById('resultSection');
-const resultImage = document.getElementById('resultImage');
-const gradeValue = document.getElementById('gradeValue');
-const priceValue = document.getElementById('priceValue');
-const analysisDetails = document.getElementById('analysisDetails');
+// ============================================================
+//  AIIndex.js  —  VEGEGRADE Frontend Logic
+//  Handles: file select → preview → ML analyse → price fetch → transaction modal
+// ============================================================
 
-// Current state
-let currentImage = null;
+// ── State ──────────────────────────────────────────────────────────────────────
+let currentGrade       = null;
+let currentPrice       = null;
+let currentProduceName = "Tomato";
+const COMMODITY_ID     = 23;   // Tomato
 
-// Default location and commodity
-const DEFAULT_STATE = 'Maharashtra';
-const DEFAULT_DISTRICT = 'Sholapur';
-const DEFAULT_COMMODITY = 'Tomato';
+// Map internal A/B/C price-grade keys to AGMARK display labels
+const GRADE_LABEL = { A: "Extra Class", B: "Class I", C: "Class II" };
 
-// Drag and drop functionality
-uploadArea.addEventListener('dragover', (e) => {
+// ── File Select / Drag-Drop ────────────────────────────────────────────────────
+const uploadArea = document.getElementById("uploadArea");
+
+uploadArea.addEventListener("dragover",  e => { e.preventDefault(); uploadArea.classList.add("drag-over"); });
+uploadArea.addEventListener("dragleave", ()  => uploadArea.classList.remove("drag-over"));
+uploadArea.addEventListener("drop", e => {
     e.preventDefault();
-    uploadArea.classList.add('drag-over');
+    uploadArea.classList.remove("drag-over");
+    const file = e.dataTransfer.files[0];
+    if (file) processFile(file);
 });
 
-uploadArea.addEventListener('dragleave', () => {
-    uploadArea.classList.remove('drag-over');
-});
-
-uploadArea.addEventListener('drop', (e) => {
-    e.preventDefault();
-    uploadArea.classList.remove('drag-over');
-    if (e.dataTransfer.files.length) {
-        handleFileSelect({ target: { files: e.dataTransfer.files } });
-    }
-});
-
-// Handle file selection
 function handleFileSelect(event) {
     const file = event.target.files[0];
-    if (!file || !file.type.startsWith('image/')) {
-        alert('Please select a valid image file (JPG, PNG, WebP).');
+    if (file) processFile(file);
+}
+
+function processFile(file) {
+    if (!file.type.startsWith("image/")) {
+        alert("Please upload a valid image file (JPG, PNG, WebP).");
         return;
     }
     if (file.size > 5 * 1024 * 1024) {
-        alert('File size should be less than 5MB.');
+        alert("File size must be under 5 MB.");
         return;
     }
 
-    currentImage = file;
-    fileName.textContent = file.name;
-    fileSize.textContent = formatFileSize(file.size);
-
     const reader = new FileReader();
-    reader.onload = function(e) {
-        previewImage.src = e.target.result;
-        resultImage.src = e.target.result;
+    reader.onload = e => {
+        document.getElementById("previewImage").src              = e.target.result;
+        document.getElementById("fileName").textContent          = file.name;
+        document.getElementById("fileSize").textContent          = (file.size / 1024).toFixed(1) + " KB";
 
         const img = new Image();
-        img.onload = function() {
-            fileDimensions.textContent = `${img.width} × ${img.height}px`;
+        img.onload = () => {
+            document.getElementById("fileDimensions").textContent = `${img.width} × ${img.height} px`;
         };
         img.src = e.target.result;
+
+        document.getElementById("previewContainer").style.display = "block";
+        document.getElementById("analyzeBtn").disabled            = false;
+
+        // Hide previous results when a new file is chosen
+        document.getElementById("resultSection").style.display    = "none";
     };
     reader.readAsDataURL(file);
-
-    previewContainer.style.display = 'block';
-    analyzeBtn.disabled = false;
 }
 
-function formatFileSize(bytes) {
-    if (bytes < 1024) return bytes + ' bytes';
-    else if (bytes < 1048576) return (bytes / 1024).toFixed(2) + ' KB';
-    else return (bytes / 1048576).toFixed(2) + ' MB';
-}
-
-// CHANGE: All API calls now go through gateway
+// ── Main: Analyse ──────────────────────────────────────────────────────────────
 async function analyzeImage() {
-    if (!currentImage) return;
+    const fileInput = document.getElementById("fileInput");
+    if (!fileInput.files[0]) { alert("Please select an image first."); return; }
 
-    loading.style.display = 'block';
-    analyzeBtn.disabled = true;
-    resultSection.style.display = 'none';
+    // Reset state
+    currentGrade = null;
+    currentPrice = null;
+    document.getElementById("resultSection").style.display = "none";
+    document.getElementById("loading").style.display       = "block";
+    document.getElementById("analyzeBtn").disabled         = true;
+
+    const formData = new FormData();
+    formData.append("image", fileInput.files[0]);
 
     try {
-        // Step 1: Get grade from ML service via gateway
-        const formData = new FormData();
-        formData.append("image", currentImage);
+        const response = await fetch("/api/ml/analyze", { method: "POST", body: formData });
+        const data     = await response.json();
 
-        const mlRes = await fetch("/api/ml/analyze", {
-            method: 'POST',
-            body: formData
-        });
+        document.getElementById("loading").style.display = "none";
 
-        if (!mlRes.ok) {
-            throw new Error(`ML service error: ${mlRes.status}`);
+        if (!response.ok) {
+            showError("Server error: " + (data.message || response.statusText));
+            return;
         }
 
-        const mlJson = await mlRes.json();
-
-        let grade = mlJson.grade || "Rotten";
-        if (grade.toUpperCase() === "D") grade = "Rotten";
-        grade = grade.toUpperCase();
-        gradeValue.textContent = grade;
-
-        // Step 2: Get price from price API via gateway
-        priceValue.textContent = "Fetching market price...";
-
-        const priceRes = await fetch("/api/price", {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                state: DEFAULT_STATE,
-                district: DEFAULT_DISTRICT,
-                commodity: DEFAULT_COMMODITY,
-                grade
-            })
-        });
-
-        const priceJson = await priceRes.json();
-
-        if (priceJson.success && typeof priceJson.selectedPrice === 'number') {
-            priceValue.textContent = `${new Intl.NumberFormat('en-IN', {
-                style: 'currency',
-                currency: 'INR'
-            }).format(priceJson.selectedPrice)} per unit (Grade ${grade})`;
-        } else {
-            priceValue.textContent = "Price not available for this grade.";
+        // ── Branch: REJECTED ──────────────────────────────────────────────────────
+        if (data.result === "REJECTED" || data.grade === "rotten") {
+            showRejectionResult(data);
+            return;
         }
 
-        generateAnalysisDetails(grade);
-        resultSection.style.display = 'block';
-        resultSection.scrollIntoView({ behavior: 'smooth' });
+        // ── Branch: GOOD — map AGMARK grade to A/B/C for price service ────────────
+        // tomatoAnalyzer returns EXTRA / CLASS1 / CLASS2
+        const gradeMap   = { EXTRA: "A", CLASS1: "B", CLASS2: "C" };
+        const mlGrade    = data.grade || "B";
+        const priceGrade = gradeMap[mlGrade] || mlGrade;
+        currentGrade     = priceGrade;
+        currentProduceName = "Tomato";
+
+        await showGoodResult(data, priceGrade);
 
     } catch (err) {
-        console.error('Analysis error:', err);
-        alert(`Error: ${err.message}`);
+        document.getElementById("loading").style.display = "none";
+        showError("Network error: " + err.message);
     } finally {
-        loading.style.display = 'none';
-        analyzeBtn.disabled = false;
+        document.getElementById("analyzeBtn").disabled = false;
     }
 }
 
-// Generate analysis details for each grade
-function generateAnalysisDetails(grade) {
-    analysisDetails.innerHTML = '';
+// ── Render: REJECTED ──────────────────────────────────────────────────────────
+function showRejectionResult(data) {
+    const section = document.getElementById("resultSection");
+    section.style.display = "block";
 
-    const detailsMap = {
-        'A': [
-            { label: 'Freshness', value: 'Excellent', color: '#059669' },
-            { label: 'Color', value: 'Vibrant & Uniform', color: '#059669' },
-            { label: 'Texture', value: 'Firm & Crisp', color: '#059669' },
-            { label: 'Size Consistency', value: 'Highly Consistent', color: '#059669' },
-            { label: 'Defects', value: 'Minimal to None', color: '#059669' }
-        ],
-        'B': [
-            { label: 'Freshness', value: 'Good', color: '#f59e0b' },
-            { label: 'Color', value: 'Slightly Faded', color: '#f59e0b' },
-            { label: 'Texture', value: 'Mostly Firm', color: '#f59e0b' },
-            { label: 'Size Consistency', value: 'Moderately Consistent', color: '#f59e0b' },
-            { label: 'Defects', value: 'Minor Blemishes', color: '#f59e0b' }
-        ],
-        'C': [
-            { label: 'Freshness', value: 'Average', color: '#f97316' },
-            { label: 'Color', value: 'Noticeably Faded', color: '#f97316' },
-            { label: 'Texture', value: 'Some Soft Spots', color: '#f97316' },
-            { label: 'Size Consistency', value: 'Inconsistent', color: '#f97316' },
-            { label: 'Defects', value: 'Visible Blemishes', color: '#f97316' }
-        ],
-        'ROTTEN': [
-            { label: 'Freshness', value: 'Poor', color: '#dc2626' },
-            { label: 'Color', value: 'Dull & Discolored', color: '#dc2626' },
-            { label: 'Texture', value: 'Soft & Wilted', color: '#dc2626' },
-            { label: 'Size Consistency', value: 'Highly Inconsistent', color: '#dc2626' },
-            { label: 'Defects', value: 'Significant Damage', color: '#dc2626' }
-        ]
-    };
+    // Grade badge — red
+    const gradeBadge     = document.getElementById("gradeBadge");
+    gradeBadge.className = "grade-badge grade-rejected";
+    gradeBadge.innerHTML = `Grade: <span id="gradeValue">REJECTED</span>`;
 
-    const gradeDetails = detailsMap[grade] || detailsMap['B'];
-    gradeDetails.forEach(detail => {
-        const li = document.createElement('li');
-        li.innerHTML = `<strong>${detail.label}:</strong> <span style="color: ${detail.color}">${detail.value}</span>`;
-        analysisDetails.appendChild(li);
-    });
+    document.getElementById("priceValue").textContent = "₹0 — Not eligible for sale";
+
+    // Show uploaded preview image (no annotated image returned for rejections)
+    const resultImage         = document.getElementById("resultImage");
+    resultImage.src           = data.annotated_image_url || document.getElementById("previewImage").src;
+    resultImage.style.display = "block";
+
+    // ── Rejection reason panel ─────────────────────────────────────────────────
+    const tbody = document.getElementById("analysisDetails");
+    tbody.innerHTML = "";
+
+    addRow(tbody, "Result", `<span class="status-pill pill-red">REJECTED</span>`);
+
+    const reason = data.rejection_reason || deriveReason(data);
+    addRow(tbody, "Rejection Reason",
+        `<span style="color:#b91c1c; font-weight:600;">${escHtml(reason)}</span>`);
+
+    if (data.grade_reasons && data.grade_reasons.length > 0) {
+        const ul = data.grade_reasons
+            .map(r => `<li style="margin-bottom:4px">${escHtml(r)}</li>`)
+            .join("");
+        addRow(tbody, "Detail", `<ul style="margin:0;padding-left:16px;">${ul}</ul>`);
+    }
+
+    addRow(tbody, "Recommended Action",
+        "This produce cannot be listed. Please separate it from healthy stock to prevent contamination.");
+
+    // Hide transaction button — rejected produce cannot be sold
+    document.querySelector(".btn-amber").style.display = "none";
 }
 
-// Reset the app for another image
+// ── Render: GOOD ──────────────────────────────────────────────────────────────
+async function showGoodResult(data, priceGrade) {
+    const section = document.getElementById("resultSection");
+    section.style.display = "block";
+
+    const resultImage         = document.getElementById("resultImage");
+    resultImage.src           = data.annotated_image_url || document.getElementById("previewImage").src;
+    resultImage.style.display = "block";
+
+    // Grade badge
+    const gradeBadge     = document.getElementById("gradeBadge");
+    const badgeClass     = priceGrade === "A" ? "grade-a" : priceGrade === "B" ? "grade-b" : "grade-c";
+    const displayLabel   = GRADE_LABEL[priceGrade] || priceGrade;
+    gradeBadge.className = `grade-badge ${badgeClass}`;
+    gradeBadge.innerHTML = `Grade: <span id="gradeValue">${displayLabel}</span>`;
+
+    document.getElementById("priceValue").textContent = "Fetching price…";
+
+    // ── Quality parameter table ────────────────────────────────────────────────
+    const tbody = document.getElementById("analysisDetails");
+    tbody.innerHTML = "";
+
+    const pillClass = priceGrade === "A" ? "pill-green" : priceGrade === "B" ? "pill-blue" : "pill-amber";
+    addRow(tbody, "AI Grade",
+        `<span class="status-pill ${pillClass}">${displayLabel}</span>`);
+
+    // Show the raw AGMARK class from tomatoAnalyzer alongside
+    addRow(tbody, "AGMARK Class", escHtml(data.grade || "—"));
+
+    if (data.grade_reasons && data.grade_reasons.length > 0) {
+        const ul = data.grade_reasons
+            .map(r => `<li style="margin-bottom:3px;font-size:12px;">${escHtml(r)}</li>`)
+            .join("");
+        addRow(tbody, "Grade Reasons", `<ul style="margin:0;padding-left:16px;">${ul}</ul>`);
+    } else {
+        addRow(tbody, "Grade Reasons", `<span style="color:#16a34a">Meets all criteria</span>`);
+    }
+
+    addRow(tbody, "Freshness",  `<span style="color:#16a34a">Fresh ✓</span>`);
+    addRow(tbody, "Pest Check", `<span style="color:#16a34a">Clear ✓</span>`);
+    addRow(tbody, "Cut/Damage", `<span style="color:#16a34a">None detected ✓</span>`);
+
+    // Show transaction button
+    document.querySelector(".btn-amber").style.display = "inline-block";
+
+    await fetchAndShowPrice(priceGrade);
+}
+
+// ── Price Fetch ────────────────────────────────────────────────────────────────
+async function fetchAndShowPrice(grade) {
+    try {
+        const res  = await fetch("/api/ceda-price", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ grade, commodity_id: COMMODITY_ID })
+        });
+        const data = await res.json();
+
+        if (data.success && data.price) {
+            currentPrice = data.price / 100;   // per quintal → per kg
+            const displayLabel = GRADE_LABEL[grade] || grade;
+            document.getElementById("priceValue").textContent =
+                `${displayLabel} — ₹${data.price.toLocaleString("en-IN")} / quintal  (≈ ₹${currentPrice.toFixed(2)}/kg)`;
+            document.getElementById("price").value = currentPrice.toFixed(2);
+        } else {
+            document.getElementById("priceValue").textContent = "Price unavailable";
+        }
+    } catch (err) {
+        document.getElementById("priceValue").textContent = "Price fetch failed";
+        console.error("Price fetch error:", err);
+    }
+}
+
+// ── Transaction Modal ──────────────────────────────────────────────────────────
+function openTransactionModal() {
+    if (!currentGrade) { alert("Please analyse an image first."); return; }
+
+    fetch("/api/auth/profile")
+        .then(r => r.json())
+        .then(data => {
+            if (data.user) {
+                document.getElementById("farmerId").value = data.user.farmerId || "";
+            }
+        })
+        .catch(() => {});
+
+    document.getElementById("produceName").value = currentProduceName;
+    // Store the display label in the modal so the farmer sees "Extra Class" etc.
+    document.getElementById("aiGrade").value     = GRADE_LABEL[currentGrade] || currentGrade;
+    if (currentPrice) document.getElementById("price").value = currentPrice.toFixed(2);
+
+    document.getElementById("errorMessage").textContent         = "";
+    document.getElementById("loadingModal").style.display       = "none";
+    document.getElementById("transactionFormWrap").style.display = "block";
+    document.getElementById("transactionModal").style.display   = "flex";
+    calculateTotal();
+}
+
+function closeTransactionModal() {
+    document.getElementById("transactionModal").style.display = "none";
+}
+
+function calculateTotal() {
+    const qty   = parseFloat(document.getElementById("quantity").value) || 0;
+    const price = parseFloat(document.getElementById("price").value)    || 0;
+    document.getElementById("totalAmount").textContent =
+        "Rs. " + (qty * price).toLocaleString("en-IN", { minimumFractionDigits: 2 });
+}
+
+async function submitTransaction() {
+    const farmerId    = document.getElementById("farmerId").value.trim();
+    const produceName = document.getElementById("produceName").value.trim();
+    const aiGradeDisp = document.getElementById("aiGrade").value.trim();   // display label
+    const quantity    = parseFloat(document.getElementById("quantity").value);
+    const price       = parseFloat(document.getElementById("price").value);
+    const status      = document.getElementById("status").value;
+    const errBox      = document.getElementById("errorMessage");
+
+    errBox.textContent = "";
+
+    if (!farmerId || !produceName || !aiGradeDisp || isNaN(quantity) || isNaN(price)) {
+        errBox.textContent = "Please fill in all required fields.";
+        return;
+    }
+    if (quantity <= 0) { errBox.textContent = "Quantity must be greater than 0."; return; }
+    if (price    <= 0) { errBox.textContent = "Price must be greater than 0.";    return; }
+
+    document.getElementById("loadingModal").style.display         = "block";
+    document.getElementById("transactionFormWrap").style.display  = "none";
+    document.getElementById("submitTransactionBtn").disabled      = true;
+
+    try {
+        const res  = await fetch("/api/blockchain/transactions", {
+            method:  "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                farmer_id:    farmerId,
+                produce_name: produceName,
+                quantity,
+                // Send the internal key (A/B/C) to the blockchain service so DB is consistent
+                ai_grade:     currentGrade,
+                price,
+                status
+            })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+            closeTransactionModal();
+            alert(`Transaction recorded!\nTx ID: ${data.transaction?.id || "—"}\nHash: ${data.hash || "—"}`);
+        } else {
+            document.getElementById("loadingModal").style.display        = "none";
+            document.getElementById("transactionFormWrap").style.display = "block";
+            errBox.textContent = data.error || "Transaction failed. Please try again.";
+        }
+    } catch (err) {
+        document.getElementById("loadingModal").style.display        = "none";
+        document.getElementById("transactionFormWrap").style.display = "block";
+        errBox.textContent = "Network error: " + err.message;
+    } finally {
+        document.getElementById("submitTransactionBtn").disabled = false;
+    }
+}
+
+// ── Reset ──────────────────────────────────────────────────────────────────────
 function resetApp() {
-    fileInput.value = '';
-    previewContainer.style.display = 'none';
-    resultSection.style.display = 'none';
-    analyzeBtn.disabled = true;
-    previewImage.src = '';
-    resultImage.src = '';
-    currentImage = null;
-    uploadArea.scrollIntoView({ behavior: 'smooth' });
+    currentGrade = null;
+    currentPrice = null;
+    document.getElementById("fileInput").value                = "";
+    document.getElementById("previewContainer").style.display = "none";
+    document.getElementById("resultSection").style.display    = "none";
+    document.getElementById("analyzeBtn").disabled            = true;
+    document.querySelector(".btn-amber").style.display        = "inline-block";
+    window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-window.addEventListener('DOMContentLoaded', () => {
-    console.log('VEGEGRADE AI ready.');
-});
+// ── Helpers ────────────────────────────────────────────────────────────────────
+function addRow(tbody, label, valueHtml) {
+    const tr = document.createElement("tr");
+    tr.innerHTML =
+        `<td style="font-weight:600;white-space:nowrap;padding:6px 12px 6px 0">${escHtml(label)}</td>` +
+        `<td style="padding:6px 0">${valueHtml}</td>`;
+    tbody.appendChild(tr);
+}
+
+function escHtml(str) {
+    if (!str) return "";
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+}
+
+function deriveReason(data) {
+    if (data.grade === "rotten") return "Step 6a (Freshness Classifier): Tomato detected as rotten";
+    if (data.message)            return data.message;
+    return "Image did not pass the quality pipeline — no specific reason provided by server";
+}
+
+function showError(msg) {
+    document.getElementById("resultSection").style.display = "none";
+    alert(msg);
+}

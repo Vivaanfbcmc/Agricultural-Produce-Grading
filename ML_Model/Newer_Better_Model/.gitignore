@@ -1,0 +1,36 @@
+# Other model formats
+*.pt
+*.onnx
+*.ckpt
+
+# Output / generated folders
+output/
+runs/
+debug/
+coin_output/
+input_images/
+inputer/
+sammodel/checkpoints/
+Detected_Images/
+Tomato_BoundingBoxes/valid/images
+Tomato_BoundingBoxes/train/images
+Tomato_BoundingBoxes/train/labels
+Tomato_BoundingBoxes/valid/labels
+Tomato_BoundingBoxes/test/images
+Tomato_BoundingBoxes/test/labels
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+
+# PyTorch model files
+*.pth
+
+# TensorFlow / Keras model files
+*.h5
+
+# Image files
+*.png
+*.jpeg
+*.jpg
+*.txt

@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FAQs - VEGEGRADE</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700&family=Source+Serif+Pro:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="AIIndex.css">
+    <style>
+        .faq-category { margin-bottom: 32px; }
+        .faq-category-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--gov-navy);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            border-bottom: 2px solid var(--gov-blue);
+            padding-bottom: 8px;
+            margin-bottom: 0;
+        }
+        .faq-item {
+            border-bottom: 1px solid var(--border);
+            overflow: hidden;
+        }
+        .faq-question {
+            width: 100%;
+            background: none;
+            border: none;
+            text-align: left;
+            padding: 16px 20px 16px 0;
+            font-size: 14.5px;
+            font-weight: 600;
+            color: var(--gov-navy);
+            font-family: inherit;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+        .faq-question:hover { color: var(--gov-blue); }
+        .faq-question .faq-icon {
+            flex-shrink: 0;
+            font-size: 20px;
+            color: var(--gov-blue);
+            transition: transform 0.25s;
+            font-weight: 300;
+            line-height: 1;
+        }
+        .faq-item.open .faq-icon { transform: rotate(45deg); }
+        .faq-answer {
+            display: none;
+            padding: 0 0 18px 0;
+            font-size: 14px;
+            color: #333;
+            line-height: 1.7;
+        }
+        .faq-item.open .faq-answer { display: block; }
+        .faq-answer p { margin-bottom: 8px; }
+        .faq-answer ul { padding-left: 20px; }
+        .faq-answer ul li { margin-bottom: 6px; }
+        .faq-answer a { color: var(--gov-blue); }
+        .contact-strip {
+            background: var(--gov-sky);
+            border: 1px solid var(--border);
+            border-left: 5px solid var(--gov-blue);
+            padding: 16px 20px;
+            font-size: 13.5px;
+            color: var(--text);
+            margin-top: 24px;
+        }
+        .contact-strip strong { color: var(--gov-navy); }
+    </style>
+</head>
+<body>
+
+<header class="site-header">
+    <div class="header-inner">
+        <div class="emblem">🌾</div>
+        <div class="site-title-block">
+            <h1>VEGE<span>GRADE</span></h1>
+            <p>AI-Powered Vegetable Quality Assessment &amp; Marketplace Portal</p>
+        </div>
+        <!--		<div class="header-right">-->
+        <!--			<span class="helpline">Helpline: 1800-180-1551</span>-->
+        <!--			<span>Mon-Sat, 9 AM – 5 PM IST</span>-->
+        <!--		</div>-->
+    </div>
+</header>
+
+<nav class="nav-bar">
+    <div class="nav-inner">
+        <a href="AIIndex.html" class="active">Home</a>
+        <a href="history.html">Transaction History</a>
+        <a href="market.html">Market Prices</a>
+        <a href="guidelines.html">Guidelines</a>
+        <a href="profile.html">My Profile</a>
+    </div>
+</nav>
+
+<div class="breadcrumb-bar">
+    <div class="inner">
+        <a href="AIIndex.html">Home</a><span>›</span>
+        Frequently Asked Questions
+    </div>
+</div>
+
+<div class="page-body">
+
+    <div class="main-col">
+
+        <div class="page-title-strip">
+            <h2>Frequently Asked Questions</h2>
+            <p>Find answers to common questions about VEGEGRADE and AI-based vegetable quality assessment.</p>
+        </div>
+
+        <div class="content-card">
+            <div class="content-card-body">
+
+                <!-- Category 1 -->
+                <div class="faq-category">
+                    <div class="faq-category-title">About VEGEGRADE</div>
+
+                    <div class="faq-item open">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            What is VEGEGRADE?
+                            <span class="faq-icon">+</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p>VEGEGRADE is a national AI-powered platform that helps farmers, traders, and market officials assess the quality of vegetables using computer vision. The system automatically assigns a grade (A, B, C, or Rotten) based on visual analysis of uploaded images.</p>
+                            <p>All grading and trade data is recorded on the Sepolia blockchain to ensure transparent and tamper-proof records.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            Which vegetables does VEGEGRADE currently support?
+                            <span class="faq-icon">+</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p>VEGEGRADE is currently operational for <strong>Tomatoes (Commodity ID: 23)</strong>. Support for additional vegetables including onion, potato, capsicum, and leafy greens is planned for upcoming releases.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            Is VEGEGRADE's grading result legally binding?
+                            <span class="faq-icon">+</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p>No. AI-based grade results are <strong>advisory in nature</strong> and are meant to assist in price discovery and quality benchmarking. For official grading purposes - such as for export certification or formal dispute resolution - you must contact your nearest <strong>APMC Market Committee</strong> for a certified assessment.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            Who can use VEGEGRADE?
+                            <span class="faq-icon">+</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p>VEGEGRADE is available to:</p>
+                            <ul>
+                                <li>Registered farmers and producer groups</li>
+                                <li>Licensed commission agents and traders</li>
+                                <li>APMC and mandi officials</li>
+                                <li>FPOs (Farmer Producer Organizations)</li>
+                            </ul>
+                            <p>All users must register on the portal with a valid Aadhaar-linked farmer ID or trader license number.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Category 2 -->
+                <div class="faq-category">
+                    <div class="faq-category-title">Using the AI Assessment Tool</div>
+
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            How do I get the most accurate grading result?
+                            <span class="faq-icon">+</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p>For best results, follow these practices when uploading images:</p>
+                            <ul>
+                                <li>Photograph vegetables under <strong>natural or bright, even lighting</strong> - avoid flash glare and deep shadows.</li>
+                                <li>Ensure the image is <strong>in focus and sharp</strong>.</li>
+                                <li>Place vegetables on a <strong>plain, light-coloured surface</strong> (white or cream).</li>
+                                <li>Keep the camera <strong>directly above</strong> the produce (top-down or slight angle).</li>
+                                <li>Avoid cluttered backgrounds or mixing multiple produce types in one image.</li>
+                            </ul>
+                            <p>See our full <a href="guidelines.html">Upload Guidelines</a> for illustrated instructions.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            What image formats and sizes are accepted?
+                            <span class="faq-icon">+</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p>The system accepts images in <strong>JPG, PNG, and WebP</strong> formats. The maximum file size is <strong>5 MB</strong>. Images larger than 5 MB will be rejected at upload. For best performance, use images with a resolution of at least 800 x 800 pixels.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            How long does analysis take?
+                            <span class="faq-icon">+</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p>Under normal server load, AI analysis is completed in <strong>5-15 seconds</strong>. During peak hours (9 AM - 12 PM and 3 PM - 6 PM), processing may take up to 30 seconds. Do not refresh the page while analysis is in progress.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            Can I re-analyze the same image to get a different result?
+                            <span class="faq-icon">+</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p>The AI model is deterministic - uploading the same image will consistently produce the same result. If you believe a result is inaccurate, consider uploading a <strong>better-quality photograph</strong> taken under different lighting conditions. For disputes, contact your APMC office.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Category 3 -->
+                <div class="faq-category">
+                    <div class="faq-category-title">Grading &amp; Pricing</div>
+
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            What do Grade A, B, C, and Rotten mean?
+                            <span class="faq-icon">+</span>
+                        </button>
+                        <div class="faq-answer">
+                            <ul>
+                                <li><strong>Grade A (Excellent):</strong> Premium quality produce with uniform colour, no defects, and optimal freshness. Commands the highest market price.</li>
+                                <li><strong>Grade B (Good):</strong> Minor surface blemishes or slight colour variation; suitable for retail and direct sale.</li>
+                                <li><strong>Grade C (Average):</strong> Noticeable defects, irregular size, or reduced freshness. Suitable for processing, juice, or secondary markets.</li>
+                                <li><strong>Rotten (Rejected):</strong> Significant decay, mould, or severe damage. Not suitable for sale. Rejected by the system.</li>
+                            </ul>
+                            <p>For detailed grading criteria, visit the <a href="grading-standards.html">Grading Standards</a> page.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            How are market prices determined?
+                            <span class="faq-icon">+</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p>Prices displayed on the portal are sourced daily from the <strong>CEDA (Commodity Exchange Data Authority)</strong> and reflect prevailing wholesale rates at major mandis. These are updated each morning before market opening. The portal does not set or control these prices.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            Why is my Grade A tomato priced lower than expected?
+                            <span class="faq-icon">+</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p>Market prices fluctuate based on supply and demand, seasonal factors, and geographic location. The prices displayed are <strong>indicative wholesale rates</strong>. Your final transaction price may vary depending on your local mandi, buyer negotiation, and current supply conditions.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Category 4 -->
+                <div class="faq-category">
+                    <div class="faq-category-title">Blockchain &amp; Transactions</div>
+
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            What is blockchain recording and why does it matter?
+                            <span class="faq-icon">+</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p>Every transaction created on VEGEGRADE is anchored to the <strong>Sepolia Testnet</strong> - a blockchain network - creating a permanent, tamper-proof record. This ensures:</p>
+                            <ul>
+                                <li>Transparent price discovery for farmers</li>
+                                <li>Fraud prevention in grading and trade</li>
+                                <li>An auditable trail for government oversight</li>
+                                <li>Protection against retroactive manipulation of records</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            Can I delete a transaction after it is submitted?
+                            <span class="faq-icon">+</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p>No. Once a transaction is submitted and recorded on the blockchain, it <strong>cannot be deleted or modified</strong>. This is by design to ensure data integrity. If a transaction was entered with incorrect data, please contact support with your transaction ID to flag it for review.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            Where can I view my past transactions?
+                            <span class="faq-icon">+</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p>All your past transactions are available under the <a href="history.html">Transaction History</a> tab. You can filter by date range, grade, and status. Each record includes the blockchain transaction hash for independent verification.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="contact-strip">
+                    <strong>Still have questions?</strong> Contact our helpline at
+                    <strong>1800-180-1551</strong> (Mon-Sat, 6 AM to 10 PM) or email
+                    <strong>support@vegegrade.gov.in</strong>. You can also visit your nearest
+                    Krishi Vigyan Kendra for in-person assistance.
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <aside class="side-col">
+        <div class="sidebar-box">
+            <div class="sb-head">Quick Links</div>
+            <div class="sb-body">
+                <ul>
+                    <li><a href="grading-standards.html">Grading Standards (AGMARK)</a></li>
+                    <li><a href="guidelines.html">Upload Guidelines</a></li>
+                    <li><a href="market.html">Market Price Board</a></li>
+                    <li><a href="faq.html">FAQs</a></li>
+                </ul>
+            </div>
+        </div>
+
+    </aside>
+
+</div>
+
+<footer class="site-footer">
+    <div class="footer-inner">
+        <div class="footer-col">
+            <h4>Related Services</h4>
+            <ul>
+                <li><a href="https://pmkisan.gov.in/">PM-KISAN Portal</a></li>
+                <li><a href="https://enam.gov.in/web/">eNAM Market</a></li>
+                <li><a href="https://www.soilhealth.dac.gov.in/home">Soil Health Card</a></li>
+                <li><a href="https://icar.org.in/en/krishi-vigyan-kendras">Krishi Vigyan Kendras</a></li>
+            </ul>
+        </div>
+        <div class="footer-col" style="flex:1; min-width:200px;">
+            <h4>About</h4>
+            <p style="font-size:13px; line-height:1.6;">
+                VEGEGRADE is a platform that uses AI to automatically grade vegetables based on visual quality. It records grading and trade data on blockchain to enable transparent and fair pricing.
+            </p>
+        </div>
+    </div>
+    <div class="footer-bottom">&nbsp;|&nbsp; Site Version 0.4</div>
+</footer>
+
+<script>
+    function toggleFaq(btn) {
+        const item = btn.closest('.faq-item');
+        item.classList.toggle('open');
+    }
+</script>
+</body>
+</html>
