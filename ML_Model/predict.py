@@ -17,10 +17,10 @@ def _load():
         if not os.path.exists(YOLO_MODEL_PATH):
             raise FileNotFoundError(f"YOLO model not found at: {YOLO_MODEL_PATH}")
         _yolo = YOLO(YOLO_MODEL_PATH)
-        print(f"✅ Custom tomato YOLO loaded from {YOLO_MODEL_PATH}")
+        print(f"Custom tomato YOLO loaded from {YOLO_MODEL_PATH}")
         print(f"   Classes: {_yolo.names}")
     except Exception as e:
-        print(f"❌ YOLO load failed: {e}")
+        print(f"YOLO load failed: {e}")
         raise
 
 _load()
