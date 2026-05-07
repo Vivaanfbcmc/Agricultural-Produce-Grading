@@ -31,11 +31,11 @@ YOLO_DETECT_PATH = os.path.join(
     BASE_DIR,
     "Basic_Requirement_Integration1",
     "IS_NOT_Tomato_paratwar",
-    "train2-20260415T061513Z-3-001", "train2", "best.pt"
+    "train2-20260415T061513Z-3-001", "train2", "weights", "best.pt"
 )
 YOLO_BBOX_PATH    = os.path.join(BASE_DIR, "Tomato_BoundingBoxes", "best.pt")
-YOLO_COIN_PATH    = os.path.join(BASE_DIR, "CoinDetection", "Coin_Detection-main",
-                                 "Coin_Detection-main", "best.pt")
+YOLO_COIN_PATH    = os.path.join(BASE_DIR, "Basic_Requirement_Integration1", "CoinDetection", 
+                                 "Coin_Detection-main", "Coin_Detection-main", "best.pt")
 FRESH_MODEL_PATH  = os.path.join(BASE_DIR, "Basic_Requirement_Integration1",
                                  "rotten_fres", "rotten_fresh_mobilenet_pytorch.pth")
 PEST_MODEL_PATH   = os.path.join(BASE_DIR, "Basic_Requirement_Integration1",
@@ -213,8 +213,8 @@ def step1_is_tomato(img_bgr, img_name):
     results = yolo_model(img_bgr, verbose=False)[0]
 
     if results.boxes is None or len(results.boxes) == 0:
-        print("  [Step 1] No object detected", file=sys.stderr)
-        return None, "Step 1 (Tomato Detection): No object detected in the image"
+        print("  [Step 1] No tomato detected", file=sys.stderr)
+        return None, "Step 1 (Tomato Detection): No tomato detected in the image"
 
     best_idx  = int(torch.argmax(results.boxes.conf).item())
     conf      = float(results.boxes.conf[best_idx])
